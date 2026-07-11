@@ -68,6 +68,76 @@
             font-size: 0.875rem;
             font-weight: 700;
         }
+        /* ── Intro · Pain (simple) ── */
+        .intro-bridge {
+            padding: 0.75rem 1rem; border-radius: 0.75rem;
+            background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.18);
+            font-size: 0.8125rem; color: #9ca3af; line-height: 1.55;
+        }
+        .pain-q-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .pain-q-card {
+            padding: 1.25rem 1.125rem;
+            border-radius: 0.875rem;
+            background: rgba(17,24,39,0.7);
+            border: 1px solid rgba(55,65,81,0.55);
+        }
+        .pain-q-mark {
+            font-size: 1.5rem; line-height: 1; color: rgba(239,68,68,0.45);
+            margin-bottom: 0.5rem;
+        }
+        .pain-q-text {
+            font-size: 0.9375rem; font-weight: 700; color: #f3f4f6;
+            line-height: 1.45; margin-bottom: 0.375rem;
+        }
+        .pain-q-text em { font-style: normal; color: #fca5a5; }
+        .pain-q-sub { font-size: 0.75rem; color: #6b7280; line-height: 1.5; }
+        .pain-contrast {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.75rem;
+            align-items: stretch;
+        }
+        .pain-contrast-box {
+            padding: 1.25rem 1rem;
+            border-radius: 0.875rem;
+            text-align: center;
+        }
+        .pain-contrast-box.is-now {
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.22);
+        }
+        .pain-contrast-box.is-omni {
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.28);
+        }
+        .pain-contrast-label {
+            font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.06em;
+            text-transform: uppercase; margin-bottom: 0.75rem;
+        }
+        .pain-contrast-box.is-now .pain-contrast-label { color: #fca5a5; }
+        .pain-contrast-box.is-omni .pain-contrast-label { color: #93c5fd; }
+        .pain-contrast-main {
+            font-size: 1rem; font-weight: 800; color: #f9fafb;
+            line-height: 1.35; margin-bottom: 0.375rem;
+        }
+        .pain-contrast-sub { font-size: 0.75rem; color: #9ca3af; line-height: 1.5; }
+        .pain-contrast-arrow {
+            display: flex; align-items: center; justify-content: center;
+            color: #4b5563; font-size: 1.25rem; font-weight: 300;
+        }
+        .pain-close {
+            display: flex; flex-wrap: wrap; align-items: center;
+            justify-content: space-between; gap: 1rem;
+            padding: 1.125rem 1.25rem; border-radius: 0.875rem;
+            background: rgba(17,24,39,0.65);
+            border: 1px solid rgba(55,65,81,0.55);
+        }
+        .pain-close-text { font-size: 0.875rem; color: #d1d5db; line-height: 1.55; max-width: 28rem; }
+        .pain-close-text strong { color: #93c5fd; font-weight: 700; }
         .feature-card {
             transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
         }
@@ -228,6 +298,15 @@
             .hero-kpi-grid .text-\[10px\] { font-size: 9px; }
             #brand .glass-strong { padding: 1.25rem; }
             #brand .grid.lg\:grid-cols-2 { gap: 1.5rem; }
+            .intro-bridge { font-size: 0.75rem; padding: 0.625rem 0.75rem; }
+            .pain-q-grid { grid-template-columns: 1fr; gap: 0.625rem; }
+            .pain-q-card { padding: 1rem; }
+            .pain-q-text { font-size: 0.875rem; }
+            .pain-contrast { grid-template-columns: 1fr; gap: 0.5rem; }
+            .pain-contrast-arrow { transform: rotate(90deg); padding: 0.125rem 0; }
+            .pain-close { flex-direction: column; align-items: stretch; text-align: center; padding: 1rem; }
+            .pain-close-text { max-width: none; }
+            .pain-close .page-tab-trigger { width: 100%; justify-content: center; min-height: 2.75rem; }
             .slogan-card:hover, .feature-card:hover { transform: none; }
             #preview-tabs {
                 flex-wrap: nowrap;
@@ -364,22 +443,20 @@
         </div>
     </header>
 
-    <!-- Brand Identity -->
-    <section id="brand" class="section-block">
+    <!-- Brand Identity → Problem bridge -->
+    <section id="brand" class="section-block pb-6 sm:pb-8">
         <div class="glass-strong p-5 sm:p-10">
-            <div class="grid lg:grid-cols-2 gap-10 items-start">
+            <div class="grid lg:grid-cols-2 gap-8 lg:gap-10 items-start">
                 <div>
                     <p class="text-[11px] font-bold text-blue-400 uppercase tracking-widest mb-3">The Power of &ldquo;Omni&rdquo;</p>
                     <h2 class="section-heading text-2xl sm:text-3xl font-bold mb-4 leading-snug">분산된 데이터를<br><span class="text-gradient">하나로 통합</span>하는 이름</h2>
                     <p class="text-sm text-gray-400 leading-relaxed mb-4">
-                        <strong class="text-gray-200">Omni</strong>는 라틴어 접두사로 &ldquo;모든 것(All / Universal)&rdquo;을 뜻합니다.
-                        이커머스 업계에서 이미 익숙한 <strong class="text-gray-300">옴니채널(Omni-channel)</strong>과 같은 어원으로,
-                        채널·팀·도구에 흩어진 운영 데이터를 단일 커맨드 센터로 모은다는 Omnify의 본질을 직관적으로 전달합니다.
+                        <strong class="text-gray-200">Omni</strong>는 &ldquo;모든 것(All)&rdquo; — 채널·팀·도구에 흩어진 운영 데이터를
+                        <strong class="text-gray-300">단일 커맨드 센터</strong>로 모은다는 Omnify의 본질을 직관적으로 전달합니다.
                     </p>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        <span class="text-gray-400 font-semibold">-ify</span>는 &ldquo;~하게 만들다&rdquo;는 의미를 더해,
-                        <em class="text-gray-400 not-italic">분산 → 통합 → 실행</em>까지 이어지는 SaaS 경험을 상징합니다.
-                    </p>
+                    <div class="intro-bridge mt-3">
+                        채널·팀·도구가 늘수록 데이터는 흩어집니다. <strong class="text-gray-300">아래 중 하나라도 해당되면</strong> Omnify가 필요합니다.
+                    </div>
                 </div>
                 <div class="space-y-3">
                     <div class="slogan-card is-primary glass p-5 rounded-xl">
@@ -402,34 +479,55 @@
         </div>
     </section>
 
-    <!-- Problem -->
-    <section id="problem" class="section-block space-y-8 sm:space-y-10">
+    <!-- Problem — simple empathy section (no section number) -->
+    <section id="problem" class="section-block space-y-6 sm:space-y-8 !border-t-0 pt-0">
         <div>
-            <span class="section-num">01</span>
-            <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-4">이런 고민, 하고 계신가요?</h2>
-            <p class="text-gray-400 max-w-2xl">멀티채널 이커머스 운영사의 90%가 겪는 데이터 파편화 문제 — <strong class="text-gray-300">Omnify</strong>가 해결합니다.</p>
+            <h2 class="section-heading text-2xl sm:text-3xl font-bold mb-2 leading-snug">이런 고민, 하고 계신가요?</h2>
+            <p class="text-gray-400 text-sm sm:text-base">채널은 늘었는데, 아직도 <strong class="text-gray-300">엑셀과 카톡</strong>으로 돌리고 계신가요?</p>
         </div>
-        <div class="grid md:grid-cols-2 gap-5">
-            <div class="glass p-6 border-l-4 border-l-red-500/70">
-                <h3 class="font-bold text-red-300 mb-3">😰 Before — 엑셀 지옥</h3>
-                <ul class="space-y-2 text-sm text-gray-400">
-                    <li>· 채널마다 다른 관리자 페이지, 매출·마진 계산 방식 불일치</li>
-                    <li>· 재고 불일치로 품절 취소·페널티 반복</li>
-                    <li>· API 토큰 만료 시 데이터 수집 중단 — 원인 파악에 반나절</li>
-                    <li>· CRM·프로모션 일정이 스프레드시트·카톡에 흩어짐</li>
-                    <li>· 팀 커뮤니케이션과 업무 요청 추적 불가</li>
-                </ul>
+
+        <div class="pain-q-grid">
+            <div class="pain-q-card">
+                <p class="pain-q-mark">&ldquo;</p>
+                <p class="pain-q-text">어제 <em>진짜 마진</em>이 얼마였을까?</p>
+                <p class="pain-q-sub">채널마다 숫자가 달라, 믿을 수 있는 한 가지 답이 없습니다.</p>
             </div>
-            <div class="glass p-6 border-l-4 border-l-emerald-500/70">
-                <h3 class="font-bold text-emerald-300 mb-3">✨ After — Omnify</h3>
-                <ul class="space-y-2 text-sm text-gray-300">
-                    <li>· <strong class="text-white">통합 대시보드</strong>에서 4채널 매출·마진·ROAS 한눈에</li>
-                    <li>· <strong class="text-white">WMS 통합 재고</strong> + 안전재고 경보로 품절 선제 대응</li>
-                    <li>· <strong class="text-white">API 상태 모니터링</strong> + n8n 워크플로우 자동 갱신</li>
-                    <li>· <strong class="text-white">CRM 빌더 · A/B · 프로모션 캘린더 · KPI</strong> 일원화</li>
-                    <li>· <strong class="text-white">팀 커뮤 · 활동 이력</strong>으로 운영 투명성 확보</li>
-                </ul>
+            <div class="pain-q-card">
+                <p class="pain-q-mark">&ldquo;</p>
+                <p class="pain-q-text"><em>재고 있는데</em> 왜 품절인가요?</p>
+                <p class="pain-q-sub">채널별 재고가 따로 놀면 취소·페널티가 반복됩니다.</p>
             </div>
+            <div class="pain-q-card">
+                <p class="pain-q-mark">&ldquo;</p>
+                <p class="pain-q-text"><em>오늘 매출</em>, 아직도 수동으로 취합하시나요?</p>
+                <p class="pain-q-sub">관리자 · 엑셀 · 시트를 오가며 하루가 끝납니다.</p>
+            </div>
+            <div class="pain-q-card">
+                <p class="pain-q-mark">&ldquo;</p>
+                <p class="pain-q-text"><em>캠페인 일정</em>, 어디에 적혀 있었죠?</p>
+                <p class="pain-q-sub">CRM · 프로모션이 흩어져 놓치기 쉽습니다.</p>
+            </div>
+        </div>
+
+        <div class="pain-contrast">
+            <div class="pain-contrast-box is-now">
+                <p class="pain-contrast-label">지금</p>
+                <p class="pain-contrast-main">채널 4곳 · 화면 4개</p>
+                <p class="pain-contrast-sub">엑셀 · 카톡 · 수기 관리</p>
+            </div>
+            <div class="pain-contrast-arrow" aria-hidden="true">→</div>
+            <div class="pain-contrast-box is-omni">
+                <p class="pain-contrast-label">Omnify</p>
+                <p class="pain-contrast-main">대시보드 1곳</p>
+                <p class="pain-contrast-sub">매출 · 재고 · CRM 통합</p>
+            </div>
+        </div>
+
+        <div class="pain-close">
+            <p class="pain-close-text">흩어진 운영 데이터를 <strong>하나의 화면</strong>으로 모읍니다. 매일 아침 30초면 전 채널 현황을 파악할 수 있습니다.</p>
+            <button type="button" class="page-tab-trigger inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/20 transition-all shrink-0" data-page-tab="features">
+                Omnify 기능 미리보기 →
+            </button>
         </div>
     </section>
 
@@ -442,7 +540,7 @@
     <section id="features" class="section-block space-y-6 sm:space-y-8">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-                <span class="section-num">02</span>
+                <span class="section-num">01</span>
                 <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-3 sm:mb-4">주요 기능별 대시보드 미리보기</h2>
                 <p class="text-gray-400">핵심 모듈을 탭으로 전환하며 Omnify 대시보드 UI를 확인하세요.</p>
             </div>
@@ -591,7 +689,7 @@
     <!-- Modules -->
     <section id="modules" class="section-block space-y-8 sm:space-y-10">
         <div>
-            <span class="section-num">03</span>
+            <span class="section-num">02</span>
             <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-4">13개 핵심 모듈 — 전체 기능 구성</h2>
             <p class="text-gray-400">Omnify가 제공하는 13개 핵심 모듈 구성입니다.</p>
         </div>
@@ -710,7 +808,7 @@
     <!-- Channels -->
     <section class="section-block space-y-6 sm:space-y-8">
         <div>
-            <span class="section-num">04</span>
+            <span class="section-num">03</span>
             <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-4">연동 채널</h2>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -732,7 +830,7 @@
     <!-- Partner Services -->
     <section id="partners" class="section-block space-y-8 sm:space-y-10">
         <div>
-            <span class="section-num">04+</span>
+            <span class="section-num">04</span>
             <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-4">Omnify 고객 전용 · 성장 파트너 연계</h2>
             <p class="text-gray-400 max-w-2xl leading-relaxed">
                 Omnify로 국내 멀티채널 데이터를 정리한 뒤, <strong class="text-gray-300">마케팅·해외 진출</strong>까지 이어지는 다음 단계를 고민하시나요?
