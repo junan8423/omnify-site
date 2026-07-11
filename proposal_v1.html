@@ -169,6 +169,7 @@
             .hero-compact { padding-top: 2.5rem; padding-bottom: 2.5rem; }
             .hero-title { font-size: 2.25rem; line-height: 1.1; }
             .hero-subtitle { font-size: 1.125rem; }
+            .hero-desc { line-height: 1.75; }
             .section-heading { font-size: 1.5rem; }
             .nav-actions .nav-btn-text { display: none; }
             .nav-actions .nav-btn-icon { display: inline; }
@@ -220,10 +221,11 @@
     <div id="page-tab-intro" class="page-tab-panel active" role="tabpanel">
 
     <!-- Hero -->
-    <header class="relative hero-compact sm:pt-16 sm:pb-20 pb-12 pt-10 overflow-hidden">
+    <header class="relative hero-compact sm:pt-16 sm:pb-20 pb-12 pt-10 overflow-hidden -mx-4 sm:-mx-5 px-5 sm:px-6 md:px-8">
         <div class="hero-glow bg-blue-600 -top-32 -left-32"></div>
         <div class="hero-glow bg-violet-600 top-0 right-0"></div>
         <div class="relative fade-up">
+            <div class="hero-copy max-w-3xl">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-[11px] font-bold text-blue-300 tracking-wide uppercase mb-6">
                 Omnify · JK글로벌컴퍼니
             </div>
@@ -233,9 +235,9 @@
             <p class="hero-subtitle text-lg sm:text-2xl font-semibold text-white mb-2">
                 Your Data, Unified. <span class="text-gray-500 font-normal text-lg sm:text-xl">· 데이터를 하나로</span>
             </p>
-            <p class="text-base sm:text-lg text-gray-400 max-w-2xl leading-relaxed mb-8">
-                멀티채널 이커머스를 위한 <strong class="text-gray-200 font-semibold">전문가급 데이터 커맨드 센터</strong> —
-                카페24 · 스마트스토어 · 쿠팡 · 에이블리 등 <strong class="text-white font-semibold">운영 중인 채널</strong>의 매출·마진·재고·CRM·알림톡을
+            <p class="hero-desc text-base sm:text-lg text-gray-400 leading-relaxed mb-8">
+                멀티채널 이커머스를 위한 <strong class="text-gray-200 font-semibold">전문가급 데이터 커맨드 센터</strong> —<br>
+                카페24 · 스마트스토어 · 쿠팡 · 에이블리 등 <strong class="text-white font-semibold">운영 중인 채널</strong>의 매출·마진·재고·CRM·알림톡을<br>
                 하나의 대시보드에서 실시간 통합. 매일 아침 카카오톡 브리핑으로 사업 현황을 30초 안에 파악하세요.
             </p>
             <div class="flex flex-wrap gap-2 sm:gap-3 mb-8 sm:mb-12">
@@ -246,6 +248,7 @@
                 <button type="button" class="page-tab-trigger inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl border border-gray-700 hover:border-gray-500 text-gray-200 font-semibold text-sm transition-colors" data-page-tab="plan">
                     요금제 보기
                 </button>
+            </div>
             </div>
             <!-- Hero KPI strip -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
