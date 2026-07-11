@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300" fill="none" role="img" aria-label="Omnify">
+  <defs>
+    <linearGradient id="bg" x1="40" y1="36" x2="260" y2="264" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="300" rx="66" fill="url(#bg)"/>
+  <g fill="#FFFFFF">
+    <!-- O: ring (stroke aligned to optical center) -->
+    <path fill-rule="evenodd" d="M150 58c50.81 0 92 41.19 92 92s-41.19 92-92 92-92-41.19-92-92 41.19-92 92-92zm0 34c32.03 0 58 25.97 58 58s-25.97 58-58 58-58-25.97-58-58 25.97-58 58-58z"/>
+    <!-- m: nested in O counter, geometric rounded sans -->
+    <path d="M118 168v-34c0-6.63 5.37-12 12-12h8c3.2 0 6.12 1.26 8.28 3.32 2.16-2.06 5.08-3.32 8.28-3.32h8c6.63 0 12 5.37 12 12v34c0 4.42-3.58 8-8 8s-8-3.58-8-8v-26h-8v26c0 4.42-3.58 8-8 8s-8-3.58-8-8v-26h-8v26c0 4.42-3.58 8-8 8s-8-3.58-8-8z"/>
+  </g>
+</svg>

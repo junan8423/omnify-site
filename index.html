@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(주)SAMPLE — 옴니채널 데이터 커맨드 센터</title>
+    <meta name="description" content="이커머스 옴니채널 매출·마진·재고·API를 실시간 통합 관리하는 SaaS 대시보드">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Pretendard', 'sans-serif'] },
+                    colors: {
+                        dark: '#030712',
+                        panel: '#0b1120',
+                        surface: '#111827',
+                        border: '#1f2937',
+                        primary: '#3b82f6',
+                        accent: '#8b5cf6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --glass: rgba(11, 17, 32, 0.75);
+            --glass-border: rgba(55, 65, 81, 0.6);
+            --glow-primary: rgba(59, 130, 246, 0.15);
+            --glow-accent: rgba(139, 92, 246, 0.12);
+        }
+        * { box-sizing: border-box; }
+        body {
+            background: var(--dark, #030712);
+            color: #f9fafb;
+            font-family: 'Pretendard', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+        }
+        .glass-strong {
+            background: rgba(17, 24, 39, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .kpi-glow { box-shadow: 0 0 0 1px rgba(59,130,246,0.1), 0 8px 32px rgba(0,0,0,0.4); }
+        .kpi-glow-danger { box-shadow: 0 0 0 1px rgba(239,68,68,0.2), 0 8px 32px rgba(239,68,68,0.08); }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+            100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        @keyframes flow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        .fade-in { animation: fadeIn 0.35s ease-out; }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        .pulse-live { animation: pulse-ring 2s infinite; }
+        .flow-line::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 40%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.6), transparent);
+            animation: flow 1.5s infinite;
+        }
+        .nav-item { transition: all 0.2s ease; border: 1px solid transparent; }
+        .nav-item.active {
+            background: rgba(59,130,246,0.12);
+            color: #60a5fa;
+            border-color: rgba(59,130,246,0.25);
+        }
+        .nav-item:not(.active) { color: #9ca3af; }
+        .nav-item:not(.active):hover { background: #1f2937; color: #f3f4f6; }
+        .nav-home {
+            background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.1));
+            border: 1px solid rgba(59,130,246,0.25);
+            color: #93c5fd;
+            font-weight: 600;
+        }
+        .nav-home:hover { background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.15)); color: #fff; }
+        .nav-home.active { background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(139,92,246,0.2)); color: #fff; border-color: rgba(59,130,246,0.4); }
+        .nav-group {
+            margin-bottom: 4px;
+            padding: 8px;
+            border-radius: 12px;
+            background: rgba(17,24,39,0.4);
+            border: 1px solid rgba(31,41,55,0.6);
+        }
+        .nav-group-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #6b7280;
+            letter-spacing: 0.04em;
+            text-transform: none;
+        }
+        .nav-group-label .group-icon { font-size: 12px; opacity: 0.9; }
+        .brand-btn { transition: opacity 0.2s; }
+        .brand-btn:hover { opacity: 0.85; }
+        .breadcrumb-home {
+            color: #9ca3af;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+        .breadcrumb-home:hover { color: #60a5fa; }
+        .breadcrumb-sep { color: #4b5563; font-size: 12px; margin: 0 6px; }
+        .breadcrumb-current { color: #f3f4f6; font-size: 13px; font-weight: 600; }
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.02em; }
+        .demo-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 1px 7px; border-radius: 5px; font-size: 9px; font-weight: 800;
+            letter-spacing: 0.04em; text-transform: uppercase;
+            background: rgba(245,158,11,0.15); color: #fbbf24;
+            border: 1px solid rgba(245,158,11,0.35); vertical-align: middle; margin-right: 4px;
+        }
+        .demo-mode-badge {
+            display: flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 8px;
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25);
+        }
+        .demo-mode-badge .status-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+        .demo-mode-badge span { font-size: 11px; font-family: ui-monospace, monospace; color: #fbbf24; font-weight: 700; }
+        .date-range-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            background: rgba(31,41,55,0.8); border: 1px solid rgba(55,65,81,0.8);
+            color: #d1d5db; transition: border-color 0.15s, color 0.15s;
+        }
+        .date-range-btn:hover { border-color: rgba(59,130,246,0.5); color: #fff; }
+        .date-range-menu {
+            display: none; position: absolute; top: calc(100% + 6px); right: 0;
+            min-width: 160px; z-index: 55; border-radius: 10px; overflow: hidden;
+            background: rgba(17,24,39,0.98); border: 1px solid rgba(55,65,81,0.8);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+        }
+        .date-range-menu.open { display: block; }
+        .date-range-menu button {
+            display: block; width: 100%; text-align: left; padding: 8px 12px;
+            font-size: 11px; color: #9ca3af; transition: background 0.12s;
+        }
+        .date-range-menu button:hover { background: rgba(59,130,246,0.12); color: #fff; }
+        .date-range-menu button.active { color: #93c5fd; background: rgba(59,130,246,0.15); }
+        .kpi-drill { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .kpi-drill:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.12); }
+        .kpi-drill-hint { font-size: 9px; color: #6b7280; margin-top: 2px; }
+        .notif-item { cursor: pointer; transition: opacity 0.15s, background 0.15s; }
+        .notif-item.read { opacity: 0.55; }
+        .notif-item:not(.read):hover { background: rgba(31,41,55,0.6); }
+        .mention-dropdown {
+            display: none; position: absolute; z-index: 70;
+            min-width: 180px; max-height: 160px; overflow-y: auto;
+            background: rgba(17,24,39,0.98); border: 1px solid rgba(55,65,81,0.8);
+            border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .mention-dropdown.open { display: block; }
+        .mention-item {
+            display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+            font-size: 11px; cursor: pointer; transition: background 0.12s;
+        }
+        .mention-item:hover { background: rgba(59,130,246,0.12); }
+        .user-switch-menu {
+            display: none; position: absolute; bottom: calc(100% + 8px); left: 0; right: 0;
+            z-index: 50; border-radius: 10px; overflow: hidden;
+            background: rgba(17,24,39,0.98); border: 1px solid rgba(55,65,81,0.8);
+            box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
+        }
+        .user-switch-menu.open { display: block; }
+        .user-switch-item {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+            padding: 8px 12px; font-size: 11px; text-align: left;
+            transition: background 0.12s;
+        }
+        .user-switch-item:hover { background: rgba(59,130,246,0.12); }
+        .user-switch-item.active { background: rgba(59,130,246,0.15); color: #93c5fd; }
+        .db-sort-btn { cursor: pointer; user-select: none; transition: color 0.12s; }
+        .db-sort-btn:hover { color: #93c5fd; }
+        .db-sort-btn.active { color: #60a5fa; }
+        .briefing-toggle { cursor: pointer; }
+        .crm-modal { display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.72); position: fixed; inset: 0; z-index: 66; }
+        .crm-modal.open { display: flex; }
+        .crm-modal-panel { width: 100%; max-width: 720px; max-height: 92vh; overflow-y: auto; animation: fadeIn 0.2s ease; }
+        .crm-wizard-steps { display: flex; gap: 4px; margin-bottom: 16px; }
+        .crm-wizard-step {
+            flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 10px; font-weight: 600;
+            background: rgba(31,41,55,0.6); color: #6b7280; border: 1px solid transparent; transition: all 0.15s;
+        }
+        .crm-wizard-step.active { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.35); }
+        .crm-wizard-step.done { color: #10b981; border-color: rgba(16,185,129,0.25); }
+        .crm-step-panel { display: none; }
+        .crm-step-panel.active { display: block; }
+        .crm-template-btn.active { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.45); color: #c4b5fd; }
+        .crm-campaign-card { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+        .crm-campaign-card:hover { border-color: rgba(59,130,246,0.35); }
+        .crm-campaign-card.selected { border-color: rgba(59,130,246,0.55); background: rgba(59,130,246,0.08); }
+        .crm-audience-bar { height: 6px; border-radius: 3px; background: rgba(55,65,81,0.6); overflow: hidden; }
+        .crm-audience-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.35s ease; }
+        .crm-funnel-step { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 11px; border-bottom: 1px solid rgba(55,65,81,0.4); }
+        .crm-funnel-step:last-child { border-bottom: none; }
+        .crm-tab-btn { padding: 8px 16px; font-size: 12px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
+        .crm-tab-btn:hover { color: #d1d5db; }
+        .crm-tab-btn.active { color: #93c5fd; border-bottom-color: #3b82f6; }
+        .promo-cal-grid { display: grid; gap: 1px; background: rgba(55,65,81,0.5); border-radius: 12px; overflow: hidden; border: 1px solid rgba(55,65,81,0.6); }
+        .promo-cal-grid.month { grid-template-columns: repeat(7, 1fr); }
+        .promo-cal-grid.week { grid-template-columns: repeat(7, 1fr); min-height: 320px; }
+        .promo-cal-head { background: rgba(17,24,39,0.9); padding: 8px 4px; text-align: center; font-size: 10px; font-weight: 700; color: #9ca3af; }
+        .promo-cal-cell { background: rgba(17,24,39,0.65); min-height: 88px; padding: 6px; cursor: pointer; transition: background 0.15s; position: relative; }
+        .promo-cal-cell.week-cell { min-height: 280px; }
+        .promo-cal-cell:hover { background: rgba(31,41,55,0.85); }
+        .promo-cal-cell.other-month { opacity: 0.35; }
+        .promo-cal-cell.today { box-shadow: inset 0 0 0 1px rgba(59,130,246,0.55); background: rgba(59,130,246,0.06); }
+        .promo-cal-day-num { font-size: 11px; font-weight: 700; color: #9ca3af; margin-bottom: 4px; }
+        .promo-cal-cell.today .promo-cal-day-num { color: #93c5fd; }
+        .promo-cal-event { font-size: 9px; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-weight: 600; }
+        .promo-cal-event.type-season { background: rgba(59,130,246,0.25); color: #93c5fd; border-left: 2px solid #3b82f6; }
+        .promo-cal-event.type-flash { background: rgba(239,68,68,0.2); color: #fca5a5; border-left: 2px solid #ef4444; }
+        .promo-cal-event.type-coupon { background: rgba(139,92,246,0.2); color: #c4b5fd; border-left: 2px solid #8b5cf6; }
+        .promo-cal-event.type-crm { background: rgba(16,185,129,0.2); color: #6ee7b7; border-left: 2px solid #10b981; }
+        .promo-cal-event.type-bundle { background: rgba(249,115,22,0.2); color: #fdba74; border-left: 2px solid #f97316; }
+        .promo-kpi-bar { height: 6px; border-radius: 3px; background: rgba(55,65,81,0.6); overflow: hidden; }
+        .promo-kpi-bar-fill { height: 100%; border-radius: 3px; transition: width 0.35s ease; }
+        .promo-kpi-bar-fill.good { background: linear-gradient(90deg, #10b981, #34d399); }
+        .promo-kpi-bar-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .promo-kpi-bar-fill.bad { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .ab-variant-card { border: 1px solid rgba(55,65,81,0.6); border-radius: 10px; padding: 12px; transition: border-color 0.15s; }
+        .ab-variant-card.winner { border-color: rgba(16,185,129,0.55); background: rgba(16,185,129,0.06); }
+        .ab-variant-card.leading { border-color: rgba(59,130,246,0.4); }
+        .promo-modal { display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.72); position: fixed; inset: 0; z-index: 67; }
+        .promo-modal.open { display: flex; }
+        .promo-modal-panel { width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; animation: fadeIn 0.2s ease; }
+        .promo-cal-mode-btn.active { background: rgba(59,130,246,0.15); color: #93c5fd; }
+        .promo-template-btn.active { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.45); color: #c4b5fd; }
+        .promo-duration-btn.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.45); color: #93c5fd; }
+        .channel-cafe24 { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+        .channel-smartstore { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+        .channel-coupang { background: rgba(249,115,22,0.15); color: #fdba74; border: 1px solid rgba(249,115,22,0.3); }
+        .channel-ably { background: rgba(236,72,153,0.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.3); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .status-dot.live { background: #10b981; box-shadow: 0 0 6px #10b981; }
+        .status-dot.warn { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+        .status-dot.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+        .table-row { transition: background 0.15s; }
+        .table-row:hover { background: rgba(31,41,55,0.6); }
+        .cmd-palette { display: none; }
+        .cmd-palette.open { display: flex; }
+        .comms-modal { display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.72); }
+        .comms-modal.open { display: flex; }
+        .comms-modal-panel { width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: fadeIn 0.2s ease; }
+        .comms-type-btn.active { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.4); }
+        .comms-assignee-btn.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.45); box-shadow: 0 0 0 1px rgba(59,130,246,0.25); }
+        .comms-priority-btn.active { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.4); }
+        .comms-priority-btn.active.urgent { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.4); }
+        .comms-template-btn:hover { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.08); }
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+        .toast { animation: fadeIn 0.3s ease; }
+        #mobile-sidebar { transition: transform 0.3s ease; }
+        @media (max-width: 767px) {
+            #mobile-sidebar { transform: translateX(-100%); }
+            #mobile-sidebar.open { transform: translateX(0); }
+        }
+        @media (min-width: 768px) {
+            #mobile-sidebar { transform: none !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+        .sparkline { display: block; width: 72px !important; height: 28px !important; max-width: 72px; max-height: 28px; }
+        .kpi-card { position: relative; padding: 1rem; }
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #9ca3af;
+            line-height: 1.4;
+            word-break: keep-all;
+            margin-bottom: 8px;
+            padding-right: 0;
+        }
+        .kpi-body {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .kpi-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            flex: 1;
+            min-width: 0;
+        }
+        @media (min-width: 1280px) {
+            .kpi-value { font-size: 1.875rem; }
+        }
+        .kpi-spark-wrap {
+            width: 72px;
+            height: 28px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .kpi-footer {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+            margin-top: 8px;
+            font-size: 11px;
+        }
+        .admin-quicklinks {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            border-radius: 10px;
+            background: rgba(17,24,39,0.6);
+            border: 1px solid rgba(55,65,81,0.5);
+        }
+        .admin-quicklink {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .admin-quicklink:hover { transform: translateY(-1px); filter: brightness(1.15); }
+        .admin-quicklink .ql-tip {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            z-index: 30;
+            pointer-events: none;
+        }
+        .admin-quicklink:hover .ql-tip { display: block; }
+        .header-quick-btn {
+            width: 34px; height: 34px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(139,92,246,0.15); color: #c4b5fd;
+            border: 1px solid rgba(139,92,246,0.3);
+            transition: all 0.15s; position: relative;
+        }
+        .header-quick-btn:hover { transform: translateY(-1px); background: rgba(139,92,246,0.25); }
+        .header-quick-btn .ql-tip {
+            display: none; position: absolute; top: calc(100% + 6px); left: 50%;
+            transform: translateX(-50%); white-space: nowrap; font-size: 10px; font-weight: 600;
+            padding: 3px 8px; border-radius: 6px; background: #1f2937; border: 1px solid #374151;
+            color: #e5e7eb; z-index: 30; pointer-events: none;
+        }
+        .header-quick-btn:hover .ql-tip { display: block; }
+        .header-quick-btn .hq-badge {
+            position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px;
+            background: #8b5cf6; border-radius: 8px; font-size: 9px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            border: 2px solid #111827;
+        }
+        .archive-dropzone {
+            border: 2px dashed rgba(139,92,246,0.35); border-radius: 12px;
+            transition: all 0.2s; background: rgba(139,92,246,0.05);
+        }
+        .archive-dropzone.dragover { border-color: #8b5cf6; background: rgba(139,92,246,0.12); }
+        .file-icon-pdf { color: #ef4444; }
+        .file-icon-xlsx { color: #10b981; }
+        .file-icon-doc { color: #3b82f6; }
+        .file-icon-img { color: #f59e0b; }
+        .file-icon-zip { color: #a78bfa; }
+        .comms-thread.active { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.08); }
+        .comms-status-request { background: rgba(249,115,22,0.15); color: #fdba74; }
+        .comms-status-progress { background: rgba(59,130,246,0.15); color: #93c5fd; }
+        .comms-status-done { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+        .comms-status-hold { background: rgba(107,114,128,0.2); color: #9ca3af; }
+        .ql-cafe24 { background: rgba(59,130,246,0.2); color: #93c5fd; border-color: rgba(59,130,246,0.35); }
+        .ql-smartstore { background: rgba(16,185,129,0.2); color: #6ee7b7; border-color: rgba(16,185,129,0.35); }
+        .ql-coupang { background: rgba(249,115,22,0.2); color: #fdba74; border-color: rgba(249,115,22,0.35); }
+        .ql-ably { background: rgba(236,72,153,0.2); color: #f9a8d4; border-color: rgba(236,72,153,0.35); }
+        .activity-timeline { position: relative; padding-left: 20px; }
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6, transparent);
+            border-radius: 1px;
+        }
+        .activity-item { position: relative; padding-bottom: 16px; }
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            left: -17px;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #1f2937;
+            border: 2px solid #3b82f6;
+        }
+        .activity-item.type-warning::before { border-color: #f59e0b; }
+        .activity-item.type-danger::before { border-color: #ef4444; }
+        .activity-item.type-success::before { border-color: #10b981; }
+        .datahub-period-btn.active { background: #1f2937; color: #fff; border-color: rgba(59,130,246,0.4); }
+        .datahub-channel-btn.active { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.35); }
+        .db-table th { position: sticky; top: 0; background: #111827; z-index: 1; }
+        .db-table tbody tr:hover { background: rgba(31,41,55,0.6); }
+        .settings-tab-btn.active { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.35); }
+        .settings-input {
+            width: 100%; background: #0d1117; border: 1px solid #374151; border-radius: 8px;
+            padding: 8px 12px; font-size: 13px; outline: none; color: #fff;
+        }
+        .settings-input:focus { border-color: rgba(59,130,246,0.5); }
+        .settings-label { font-size: 11px; color: #9ca3af; margin-bottom: 4px; display: block; }
+        .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 640px) { .settings-row { grid-template-columns: 1fr; } }
+        .tab-btn.active { background: #1f2937; color: #fff; }
+        .progress-bar { transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+        .chart-card { display: flex; flex-direction: column; }
+        .chart-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            min-height: 32px;
+        }
+        .chart-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            flex: 1;
+        }
+        .chart-card-title h2 {
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chart-unit-badge {
+            font-size: 10px;
+            color: #6b7280;
+            background: rgba(31,41,55,0.8);
+            border: 1px solid rgba(55,65,81,0.6);
+            padding: 2px 7px;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .chart-legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 14px;
+            margin-bottom: 8px;
+            font-size: 10px;
+            color: #9ca3af;
+        }
+        .chart-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .chart-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .chart-canvas-wrap {
+            position: relative;
+            height: 240px;
+            flex-shrink: 0;
+        }
+        .chart-canvas-wrap.tall { height: 280px; }
+        .chart-canvas-wrap.short { height: 160px; }
+        @media (max-width: 768px) {
+            .hide-mobile { display: none !important; }
+        }
+    </style>
+</head>
+<body class="flex h-screen selection:bg-primary selection:text-white">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 md:hidden" onclick="toggleMobileSidebar()"></div>
+
+<!-- Sidebar -->
+<aside id="mobile-sidebar" class="fixed md:static inset-y-0 left-0 w-72 bg-panel border-r border-border flex flex-col z-50 md:z-20 shrink-0">
+    <div class="h-16 flex items-center justify-between px-5 border-b border-border">
+        <button onclick="goHome()" class="brand-btn flex items-center gap-2.5 text-left" title="홈으로 이동">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div>
+                <span class="font-bold text-base tracking-tight">(주)SAMPLE</span>
+            </div>
+        </button>
+        <button class="md:hidden p-1 text-gray-400 hover:text-white" onclick="toggleMobileSidebar()">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+    <!-- Subscription Badge -->
+    <div class="mx-4 mt-4 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold text-primary uppercase tracking-wider">Enterprise Plan</span>
+            <span class="status-dot live"></span>
+        </div>
+        <p class="text-xs text-gray-400">월 구독 · API 무중단 모니터링</p>
+        <p class="text-[10px] text-gray-500 mt-1">다음 결제일: 2026.08.01</p>
+    </div>
+
+    <nav class="p-3 flex-1 overflow-y-auto mt-2" id="nav-container">
+
+        <!-- 홈 -->
+        <button data-target="view-dashboard" data-title="통합 대시보드" data-group="" class="nav-item nav-home active w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left text-sm mb-3">
+            <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <div class="flex-1">
+                <span class="block font-semibold">홈</span>
+                <span class="block text-[10px] text-gray-500 font-normal">통합 대시보드</span>
+            </div>
+        </button>
+
+        <!-- 매일 보는 리포트 -->
+        <div class="nav-group mb-2">
+            <div class="nav-group-label"><span class="group-icon">📊</span>매일 보는 리포트</div>
+            <div class="space-y-0.5">
+                <button data-target="view-datahub" data-title="누적 데이터 DB" data-group="매일 보는 리포트" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                    <span class="flex-1">누적 데이터 DB</span>
+                    <span class="ml-auto text-[9px] bg-primary/20 text-blue-400 px-1.5 py-0.5 rounded font-bold">DB</span>
+                </button>
+                <button data-target="view-briefing" data-title="데일리 브리핑" data-group="매일 보는 리포트" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                    <span class="flex-1">데일리 브리핑</span>
+                    <span class="ml-auto text-[9px] bg-warning/20 text-warning px-1.5 py-0.5 rounded font-bold">NEW</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 일상 운영 -->
+        <div class="nav-group mb-2">
+            <div class="nav-group-label"><span class="group-icon">📦</span>일상 운영</div>
+            <div class="space-y-0.5">
+                <button data-target="view-orders" data-title="주문 · 발주" data-group="일상 운영" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span class="flex-1">주문 · 발주</span>
+                    <span class="ml-auto text-[10px] bg-warning/20 text-warning w-5 h-5 rounded-full flex items-center justify-center font-bold" id="nav-badge-orders">3</span>
+                </button>
+                <button data-target="view-inventory" data-title="통합 재고" data-group="일상 운영" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    <span class="flex-1">통합 재고 <span class="text-[10px] text-gray-500">(WMS)</span></span>
+                    <span class="ml-auto text-[10px] bg-danger/20 text-danger w-5 h-5 rounded-full flex items-center justify-center font-bold" id="nav-badge-inventory">2</span>
+                </button>
+                <button data-target="view-comms" data-title="커뮤니케이션" data-group="일상 운영" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+                    <span class="flex-1">커뮤니케이션</span>
+                    <span class="ml-auto text-[10px] bg-accent/20 text-purple-300 w-5 h-5 rounded-full flex items-center justify-center font-bold" id="comms-nav-badge">3</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 성장 · 마케팅 -->
+        <div class="nav-group mb-2">
+            <div class="nav-group-label"><span class="group-icon">📈</span>성장 · 마케팅</div>
+            <div class="space-y-0.5">
+                <button data-target="view-crm" data-title="프로모션 · CRM" data-group="성장 · 마케팅" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                    <span class="flex-1">프로모션 · CRM</span>
+                </button>
+                <button data-target="view-profit" data-title="AI 수익성 분석" data-group="성장 · 마케팅" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span class="flex-1">AI 수익성 분석</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 인프라 · 자동화 -->
+        <div class="nav-group mb-2">
+            <div class="nav-group-label"><span class="group-icon">⚙️</span>인프라 · 자동화</div>
+            <div class="space-y-0.5">
+                <button data-target="view-api" data-title="API 연동 상태" data-group="인프라 · 자동화" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span class="flex-1">API 연동 상태</span>
+                </button>
+                <button data-target="view-workflow" data-title="워크플로우" data-group="인프라 · 자동화" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="flex-1">워크플로우 <span class="text-[10px] text-gray-500">(n8n)</span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 관리 -->
+        <div class="nav-group mb-2">
+            <div class="nav-group-label"><span class="group-icon">🛡️</span>관리</div>
+            <div class="space-y-0.5">
+                <button data-target="view-activity" data-title="활동 이력" data-group="관리" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span class="flex-1">활동 이력</span>
+                    <span class="ml-auto text-[10px] bg-primary/20 text-blue-400 w-5 h-5 rounded-full flex items-center justify-center font-bold" id="nav-badge-activity">7</span>
+                </button>
+                <button data-target="view-settings" data-title="설정" data-group="관리" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="flex-1">설정</span>
+                </button>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="p-4 border-t border-border relative">
+        <div class="flex items-center gap-3 cursor-pointer rounded-lg hover:bg-surface/50 p-1 -m-1 transition-colors" onclick="toggleUserSwitchMenu(event)">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-white" id="sidebar-user-avatar">김</div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold truncate" id="sidebar-user-name">김지현 대표</p>
+                <p class="text-[11px] text-gray-500 truncate" id="sidebar-user-role">(주)SAMPLE · 대표</p>
+            </div>
+            <button class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors" title="설정" onclick="navigateTo('view-settings')">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </button>
+        </div>
+        <div class="user-switch-menu" id="user-switch-menu"></div>
+    </div>
+</aside>
+
+<!-- Main -->
+<main class="flex-1 flex flex-col overflow-hidden relative">
+    <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[140px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/8 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- Header -->
+    <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-border/60 glass-strong z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <button class="md:hidden p-2 rounded-lg hover:bg-surface text-gray-400" onclick="toggleMobileSidebar()">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div>
+                <nav class="flex items-center mb-0.5" aria-label="breadcrumb">
+                    <button id="breadcrumb-home" onclick="goHome()" class="breadcrumb-home flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        홈
+                    </button>
+                    <span class="breadcrumb-sep" id="breadcrumb-sep" style="display:none">/</span>
+                    <span class="breadcrumb-current" id="breadcrumb-group" style="display:none"></span>
+                    <span class="breadcrumb-sep" id="breadcrumb-sep2" style="display:none">·</span>
+                    <span class="breadcrumb-current text-base font-bold" id="header-title">통합 대시보드</span>
+                </nav>
+                <p id="header-subtitle" class="text-[11px] text-gray-500 hidden sm:block"><span class="demo-pill">목업 데이터</span>데모 시연용 샘플 · 마지막 갱신 <span id="last-sync">--:--:--</span></p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- 쇼핑몰 어드민 바로가기 -->
+            <div class="hide-mobile admin-quicklinks" id="admin-quicklinks">
+                <button class="admin-quicklink ql-cafe24" onclick="openAdminLink('Cafe24 어드민','https://eclogin.cafe24.com/Shop/')">C24<span class="ql-tip">Cafe24 어드민</span></button>
+                <button class="admin-quicklink ql-smartstore" onclick="openAdminLink('스마트스토어 센터','https://sell.smartstore.naver.com/')">N<span class="ql-tip">스마트스토어</span></button>
+                <button class="admin-quicklink ql-coupang" onclick="openAdminLink('쿠팡 Wing','https://wing.coupang.com/')">CP<span class="ql-tip">쿠팡 Wing</span></button>
+                <button class="admin-quicklink ql-ably" onclick="openAdminLink('에이블리 셀러','https://seller.a-bly.com/')">AB<span class="ql-tip">에이블리</span></button>
+            </div>
+            <button class="hide-mobile header-quick-btn" onclick="navigateTo('view-archive')" title="자료실">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>
+                <span class="hq-badge" id="archive-header-badge">6</span>
+                <span class="ql-tip">자료실</span>
+            </button>
+            <div class="hide-mobile relative" id="date-range-wrap">
+                <button type="button" class="date-range-btn" onclick="toggleDateRangeMenu(event)" id="date-range-btn">
+                    <svg class="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span id="date-range-label">최근 7일</span>
+                    <svg class="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="date-range-menu" id="date-range-menu"></div>
+            </div>
+            <button onclick="openCommandPalette()" class="hide-mobile flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-border text-xs text-gray-400 hover:text-white hover:border-gray-600 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                검색
+                <kbd class="px-1.5 py-0.5 bg-dark rounded text-[10px] font-mono border border-border">⌘K</kbd>
+            </button>
+            <div class="hide-mobile demo-mode-badge" id="demo-mode-badge" title="실데이터 연동 전 데모 시연 모드">
+                <span class="status-dot pulse-live"></span>
+                <span>데모 모드</span>
+            </div>
+            <button id="notif-btn" onclick="toggleNotifications()" class="relative p-2 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                <span class="absolute top-1 right-1 w-4 h-4 bg-danger rounded-full text-[9px] font-bold flex items-center justify-center text-white" id="notif-count-badge">5</span>
+            </button>
+            <div class="hide-mobile text-right border-l border-border pl-3 ml-1">
+                <p id="live-date" class="text-xs font-medium">2026. 07. 10 (금)</p>
+                <p id="live-time" class="text-[11px] text-gray-500 font-mono">22:34:12 KST</p>
+            </div>
+            <button onclick="showToast('리포트 생성을 시작합니다...', 'info')" class="bg-primary hover:bg-blue-600 text-white text-xs font-semibold px-3 sm:px-4 py-2 rounded-lg transition-all shadow-lg shadow-primary/25 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span class="hide-mobile">리포트</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Notification Dropdown -->
+    <div id="notif-panel" class="hidden absolute top-16 right-4 lg:right-8 w-80 glass-strong rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h3 class="font-bold text-sm">알림 센터</h3>
+            <button class="text-xs text-primary hover:underline" onclick="markAllNotificationsRead()">모두 읽음</button>
+        </div>
+        <div class="max-h-80 overflow-y-auto divide-y divide-border" id="notif-list"></div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto p-4 lg:p-8 z-10 relative" id="main-content">
+        <!-- VIEWS_PLACEHOLDER -->
+    </div>
+</main>
+
+<!-- Command Palette -->
+<div id="cmd-palette" class="cmd-palette fixed inset-0 z-[60] items-start justify-center pt-[20vh] bg-black/70" onclick="if(event.target===this)closeCommandPalette()">
+    <div class="w-full max-w-lg glass-strong rounded-xl shadow-2xl overflow-hidden mx-4" onclick="event.stopPropagation()">
+        <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
+            <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="cmd-input" type="text" placeholder="메뉴, 기능, 데이터 검색..." class="flex-1 bg-transparent outline-none text-sm text-white placeholder-gray-500" oninput="filterCommands(this.value)">
+            <kbd class="text-[10px] text-gray-500 bg-dark px-1.5 py-0.5 rounded border border-border">ESC</kbd>
+        </div>
+        <div id="cmd-results" class="max-h-64 overflow-y-auto py-2"></div>
+    </div>
+</div>
+
+<!-- 커뮤니케이션 새 요청 모달 -->
+<div id="comms-modal" class="comms-modal fixed inset-0 z-[65]" onclick="if(event.target===this)closeCommsModal()">
+    <div class="comms-modal-panel glass-strong rounded-2xl shadow-2xl mx-4 border border-border/80" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <div>
+                <h3 class="font-bold text-base">새 업무 요청</h3>
+                <p class="text-[11px] text-gray-500 mt-0.5">담당자에게 요청을 전달합니다</p>
+            </div>
+            <button onclick="closeCommsModal()" class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="comms-request-form" class="p-5 space-y-4" onsubmit="submitCommsRequestForm(event)">
+            <div>
+                <label class="settings-label">요청 유형</label>
+                <div class="flex gap-2" id="comms-type-btns">
+                    <button type="button" onclick="setCommsFormType('request')" data-ctype="request" class="comms-type-btn flex-1 text-xs py-2 rounded-lg border border-border bg-surface active">📋 업무 요청</button>
+                    <button type="button" onclick="setCommsFormType('check')" data-ctype="check" class="comms-type-btn flex-1 text-xs py-2 rounded-lg border border-border bg-surface">✅ 체크 요청</button>
+                    <button type="button" onclick="setCommsFormType('agenda')" data-ctype="agenda" class="comms-type-btn flex-1 text-xs py-2 rounded-lg border border-border bg-surface">📌 공지</button>
+                </div>
+            </div>
+            <div>
+                <label class="settings-label" for="comms-form-title">제목 <span class="text-danger">*</span></label>
+                <input id="comms-form-title" type="text" required maxlength="80" placeholder="요청 제목을 입력하세요" class="settings-input">
+            </div>
+            <div>
+                <label class="settings-label">담당자 <span class="text-danger">*</span></label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="comms-assignee-btns"></div>
+            </div>
+            <div class="settings-row">
+                <div>
+                    <label class="settings-label">우선순위</label>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="setCommsFormPriority('normal')" data-cpri="normal" class="comms-priority-btn flex-1 text-xs py-2 rounded-lg border border-border bg-surface active">일반</button>
+                        <button type="button" onclick="setCommsFormPriority('high')" data-cpri="high" class="comms-priority-btn urgent flex-1 text-xs py-2 rounded-lg border border-border bg-surface">🔥 긴급</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="settings-label" for="comms-form-due">마감일</label>
+                    <input id="comms-form-due" type="date" class="settings-input">
+                </div>
+            </div>
+            <div>
+                <label class="settings-label">빠른 템플릿</label>
+                <div class="flex flex-wrap gap-1.5" id="comms-template-btns"></div>
+            </div>
+            <div class="relative">
+                <label class="settings-label" for="comms-form-body">요청 내용 <span class="text-gray-600 font-normal">(@로 멘션)</span></label>
+                <textarea id="comms-form-body" rows="4" placeholder="상세 내용을 입력하세요. @이름 으로 멘션 · Ctrl+Enter로 등록" class="settings-input resize-none" oninput="handleCommsBodyInput(this)" onkeydown="handleCommsBodyKeydown(event)"></textarea>
+                <div class="mention-dropdown" id="mention-dropdown"></div>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input id="comms-form-agenda" type="checkbox" class="rounded" checked>
+                <span class="text-xs text-gray-400">아젠다에도 자동 등록</span>
+            </label>
+        </form>
+        <div class="flex justify-end gap-2 px-5 py-4 border-t border-border bg-surface/30">
+            <button type="button" onclick="closeCommsModal()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors">취소</button>
+            <button type="submit" form="comms-request-form" class="text-xs font-semibold px-5 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                요청 전송
+            </button>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- CRM 캠페인 마법사 -->
+<!-- 프로모션 일정 · KPI 모달 -->
+<div id="promo-modal" class="promo-modal" onclick="if(event.target===this)closePromoPlanModal()">
+    <div class="promo-modal-panel glass-strong rounded-2xl shadow-2xl mx-4 border border-border/80" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <div>
+                <h3 class="font-bold text-base" id="promo-modal-title">프로모션 일정 등록</h3>
+                <p class="text-[11px] text-gray-500 mt-0.5">기획 · 채널 · 목표 KPI 설정 · <span class="demo-pill">데모</span></p>
+            </div>
+            <button onclick="closePromoPlanModal()" class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="p-5 space-y-4" id="promo-modal-body"></div>
+        <div class="flex justify-between gap-2 px-5 py-4 border-t border-border bg-surface/30">
+            <button type="button" id="promo-modal-delete" onclick="deletePromoPlan()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-danger/40 text-danger hover:bg-danger/10 transition-colors hidden">삭제</button>
+            <div class="flex-1"></div>
+            <button type="button" onclick="closePromoPlanModal()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors">취소</button>
+            <button type="button" id="promo-modal-save" onclick="savePromoPlan()" class="text-xs font-semibold px-5 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors">일정 등록</button>
+        </div>
+    </div>
+</div>
+
+<div id="crm-modal" class="crm-modal" onclick="if(event.target===this)closeCrmWizard()">
+    <div class="crm-modal-panel glass-strong rounded-2xl shadow-2xl mx-4 border border-border/80" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+            <div>
+                <h3 class="font-bold text-base">새 캠페인 마법사</h3>
+                <p class="text-[11px] text-gray-500 mt-0.5">타겟 설정 → 메시지 → 일정 → 검토 · <span class="demo-pill">데모</span></p>
+            </div>
+            <button onclick="closeCrmWizard()" class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="px-5 pt-4">
+            <div class="crm-wizard-steps" id="crm-wizard-steps">
+                <div class="crm-wizard-step active" data-step="1">1. 기본 정보</div>
+                <div class="crm-wizard-step" data-step="2">2. 타겟 오디언스</div>
+                <div class="crm-wizard-step" data-step="3">3. 메시지 · 혜택</div>
+                <div class="crm-wizard-step" data-step="4">4. 일정 · 검토</div>
+            </div>
+        </div>
+        <div class="p-5 space-y-4" id="crm-wizard-body"></div>
+        <div class="flex justify-between gap-2 px-5 py-4 border-t border-border bg-surface/30">
+            <button type="button" id="crm-wizard-back" onclick="crmWizardBack()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors hidden">← 이전</button>
+            <div class="flex-1"></div>
+            <button type="button" onclick="closeCrmWizard()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors">취소</button>
+            <button type="button" id="crm-wizard-next" onclick="crmWizardNext()" class="text-xs font-semibold px-5 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors">다음 →</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="js/dashboard-app.js"></script>
+</body>
+</html>
