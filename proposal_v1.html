@@ -105,15 +105,46 @@
             letter-spacing: -0.04em;
         }
         .slogan-card {
-            transition: border-color 0.2s, transform 0.2s, background 0.2s;
+            backdrop-filter: blur(16px);
+            border-radius: 1rem;
+            transition: border-color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s;
         }
-        .slogan-card:hover {
-            border-color: rgba(59, 130, 246, 0.45);
-            transform: translateY(-2px);
+        .slogan-card:hover { transform: translateY(-2px); }
+        .glass.slogan-card.is-primary,
+        .slogan-card.is-primary.glass {
+            border: 1px solid rgba(59, 130, 246, 0.55);
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2), 0 0 24px rgba(59, 130, 246, 0.1);
         }
-        .slogan-card.is-primary {
-            border-color: rgba(59, 130, 246, 0.5);
-            background: rgba(59, 130, 246, 0.06);
+        .glass.slogan-card.is-primary:hover,
+        .slogan-card.is-primary.glass:hover {
+            border-color: rgba(96, 165, 250, 0.85);
+            background: rgba(59, 130, 246, 0.14);
+            box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.35), 0 12px 32px rgba(59, 130, 246, 0.15);
+        }
+        .glass.slogan-card.is-growth,
+        .slogan-card.is-growth.glass {
+            border: 1px solid rgba(16, 185, 129, 0.55);
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2), 0 0 24px rgba(16, 185, 129, 0.1);
+        }
+        .glass.slogan-card.is-growth:hover,
+        .slogan-card.is-growth.glass:hover {
+            border-color: rgba(52, 211, 153, 0.85);
+            background: rgba(16, 185, 129, 0.14);
+            box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.35), 0 12px 32px rgba(16, 185, 129, 0.15);
+        }
+        .glass.slogan-card.is-vision,
+        .slogan-card.is-vision.glass {
+            border: 1px solid rgba(167, 139, 250, 0.55);
+            background: rgba(167, 139, 250, 0.1);
+            box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.2), 0 0 24px rgba(167, 139, 250, 0.1);
+        }
+        .glass.slogan-card.is-vision:hover,
+        .slogan-card.is-vision.glass:hover {
+            border-color: rgba(196, 181, 253, 0.85);
+            background: rgba(167, 139, 250, 0.14);
+            box-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.35), 0 12px 32px rgba(167, 139, 250, 0.15);
         }
         /* Page tabs */
         .page-tab-panel { display: none; animation: fadeUp 0.35s ease-out; }
@@ -278,18 +309,18 @@
                     </p>
                 </div>
                 <div class="space-y-3">
-                    <div class="slogan-card is-primary glass p-5 border border-blue-500/30 rounded-xl">
+                    <div class="slogan-card is-primary glass p-5 rounded-xl">
                         <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">Primary</p>
                         <p class="text-lg font-bold text-white">Omnify: Your Data, Unified.</p>
                         <p class="text-sm text-gray-400 mt-1">데이터를 하나로 — 매출·마진·재고·CRM을 단일 KPI로</p>
                     </div>
-                    <div class="slogan-card glass p-5 border border-gray-700/80 rounded-xl">
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Growth</p>
+                    <div class="slogan-card is-growth glass p-5 rounded-xl">
+                        <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Growth</p>
                         <p class="text-lg font-bold text-white">Omnify: The Core of Your Commerce.</p>
                         <p class="text-sm text-gray-400 mt-1">커머스의 핵심 — 운영·마케팅·수익성의 중심 허브</p>
                     </div>
-                    <div class="slogan-card glass p-5 border border-gray-700/80 rounded-xl">
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Vision</p>
+                    <div class="slogan-card is-vision glass p-5 rounded-xl">
+                        <p class="text-[10px] font-bold text-violet-400 uppercase tracking-wider mb-1">Vision</p>
                         <p class="text-lg font-bold text-white">Omnify: Beyond Expansion.</p>
                         <p class="text-sm text-gray-400 mt-1">확장 그 이상 — 채널 추가를 넘어 데이터 기반 성장으로</p>
                     </div>
