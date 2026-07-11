@@ -235,6 +235,12 @@
         .promo-cal-grid.month { grid-template-columns: repeat(7, 1fr); }
         .promo-cal-grid.week { grid-template-columns: repeat(7, 1fr); min-height: 320px; }
         .promo-cal-wrap { width: 100%; overflow: hidden; }
+        /* 주간 — PC/모바일 이중 레이아웃 (CSS로 전환, JS width 감지 불필요) */
+        .promo-cal-week-dual { width: 100%; }
+        .promo-cal-week-mobile-only { display: none; width: 100%; }
+        .promo-cal-week-desktop-only { display: block; width: 100%; }
+        .promo-cal-title-mobile { display: none; }
+        .promo-cal-title-desktop { display: inline; }
         .promo-cal-week-list-wrap { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .promo-cal-week-summary {
             display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
@@ -655,6 +661,28 @@
             #promo-calendar-title { min-width: 0 !important; flex: 1; font-size: 0.8125rem; padding: 0 0.25rem; }
             .promo-cal-shell { padding: 0.625rem !important; }
             .promo-cal-wrap { overflow: visible; }
+            /* 모바일 주간: 세로 리스트 표시 / PC 7열 그리드 숨김 */
+            .promo-cal-week-mobile-only { display: flex; flex-direction: column; }
+            .promo-cal-week-desktop-only { display: none !important; }
+            .promo-cal-title-mobile { display: inline; }
+            .promo-cal-title-desktop { display: none; }
+            /* 구버전 JS 캐시 폴백 — 7열 그리드가 남아도 세로 스택 */
+            #promo-calendar-grid.promo-cal-grid.week:not(.promo-cal-week-desktop-only) {
+                display: flex !important;
+                flex-direction: column !important;
+                grid-template-columns: none !important;
+                min-height: 0 !important;
+                gap: 8px;
+                background: transparent;
+                border: none;
+                overflow: visible;
+            }
+            #promo-calendar-grid.promo-cal-grid.week:not(.promo-cal-week-desktop-only) .promo-cal-head { display: none !important; }
+            #promo-calendar-grid.promo-cal-grid.week:not(.promo-cal-week-desktop-only) .promo-cal-cell.week-cell {
+                min-height: auto !important;
+                width: 100%;
+                border-radius: 10px;
+            }
             .promo-cal-grid.month { border-radius: 10px; }
             .promo-cal-grid.month .promo-cal-head { padding: 5px 2px; font-size: 9px; }
             .promo-cal-grid.month .promo-cal-cell { min-height: 0; aspect-ratio: 1 / 1; padding: 3px 2px; overflow: hidden; }
@@ -1039,6 +1067,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 
-<script src="js/dashboard-app.js"></script>
+<script src="js/dashboard-app.js?v=20260711-week-v2"></script>
 </body>
 </html>

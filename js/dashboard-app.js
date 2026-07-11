@@ -783,7 +783,7 @@ var crmAudienceFilter = { purchase: 0, amount: 0, category: 0 };
 var crmWizardState = { step: 1, editId: null };
 var PROMO_STORAGE_KEY = 'sample_promo_plans_v1';
 var promoPlans = null;
-var promoCalendarMode = 'month';
+var promoCalendarMode = 'week';
 var promoCalendarCursor = new Date(2026, 6, 10);
 var promoActivePlanId = null;
 var promoModalState = { editId: null, defaultDate: null, fromCalendar: false };
@@ -1479,11 +1479,108 @@ function shiftPromoCalendar(dir) {
     renderPromoCalendar();
 }
 
+function isPromoCalMobile() {
+    return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function formatPromoShortDate(dateStr) {
+    if (!dateStr) return '';
+    var p = dateStr.split('-');
+    return parseInt(p[1], 10) + '/' + parseInt(p[2], 10);
+}
+
+function formatPromoWeekTitle(weekStart, weekEnd, mobile) {
+    if (!mobile) {
+        return (weekStart.getMonth() + 1) + '/' + weekStart.getDate() + ' ~ ' + (weekEnd.getMonth() + 1) + '/' + weekEnd.getDate();
+    }
+    var dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+    return (weekStart.getMonth() + 1) + '/' + weekStart.getDate() + '(' + dayLabels[weekStart.getDay()] + ') ~ ' +
+        (weekEnd.getMonth() + 1) + '/' + weekEnd.getDate() + '(' + dayLabels[weekEnd.getDay()] + ')';
+}
+
+function renderPromoMobileWeekEventCard(p) {
+    var ti = getPromoTypeInfo(p.type);
+    var st = PROMO_STATUS_OPTIONS[p.status] || PROMO_STATUS_OPTIONS.planning;
+    var selected = promoActivePlanId === p.id ? ' selected' : '';
+    var period = p.startDate === p.endDate
+        ? formatPromoShortDate(p.startDate)
+        : formatPromoShortDate(p.startDate) + '~' + formatPromoShortDate(p.endDate);
+    return '<div class="promo-cal-week-event-card ' + ti.css + selected + '" onclick="event.stopPropagation();selectPromoPlan(\'' + p.id + '\')">' +
+        '<p class="promo-cal-week-event-title">' + p.title + '</p>' +
+        '<div class="promo-cal-week-event-meta">' +
+        '<span class="promo-cal-week-event-chip ' + st[1] + '">' + st[0] + '</span>' +
+        '<span class="promo-cal-week-event-chip bg-surface border border-border text-gray-400">' + ti.label + '</span>' +
+        '<span class="promo-cal-week-event-period">' + period + '</span>' +
+        '</div></div>';
+}
+
+function renderPromoMobileWeekList(weekStart, todayStr) {
+    var weekdayNames = ['월', '화', '수', '목', '금', '토', '일'];
+    var weekEventIds = {};
+    var weekEventCount = 0;
+    var listRows = [];
+    for (var w = 0; w < 7; w++) {
+        var wd = new Date(weekStart);
+        wd.setDate(wd.getDate() + w);
+        var wStr = formatPromoDate(wd);
+        var wEvents = getPromoPlansForDate(wStr);
+        wEvents.forEach(function(p) {
+            if (!weekEventIds[p.id]) { weekEventIds[p.id] = true; weekEventCount++; }
+        });
+        var wToday = wStr === todayStr;
+        var rowClass = 'promo-cal-week-row' +
+            (wToday ? ' today' : '') +
+            (w === 5 ? ' is-sat' : '') +
+            (w === 6 ? ' is-sun' : '') +
+            (wEvents.length ? ' has-events' : '');
+        var eventsHtml = wEvents.length
+            ? '<div class="promo-cal-week-events">' + wEvents.map(renderPromoMobileWeekEventCard).join('') + '</div>'
+            : '<div class="promo-cal-week-empty">등록된 일정 없음</div>';
+        listRows.push('<div class="' + rowClass + '">' +
+            '<div class="promo-cal-week-head" onclick="openPromoScheduleModal(\'' + wStr + '\')">' +
+            '<div class="promo-cal-week-head-left">' +
+            '<span class="promo-cal-weekday">' + weekdayNames[w] + '요일</span>' +
+            '<span class="promo-cal-week-daynum">' + (wd.getMonth() + 1) + '월 ' + wd.getDate() + '일</span>' +
+            (wToday ? '<span class="promo-cal-week-today-pill">오늘</span>' : '') +
+            '</div>' +
+            '<span class="promo-cal-week-add-btn">+ 일정</span>' +
+            '</div>' +
+            '<div class="promo-cal-week-body">' + eventsHtml + '</div>' +
+            '</div>');
+    }
+    var weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    var summaryHtml = '<div class="promo-cal-week-summary">' +
+        '<strong>' + formatPromoWeekTitle(weekStart, weekEnd, true) + '</strong>' +
+        '<span class="promo-cal-week-summary-count">이번 주 프로모션 ' + weekEventCount + '건</span></div>';
+    return summaryHtml + '<div class="promo-cal-week-list">' + listRows.join('') + '</div>';
+}
+
+function renderPromoDesktopWeekGrid(weekStart, todayStr) {
+    var weekCells = ['<div class="promo-cal-head">월</div>', '<div class="promo-cal-head">화</div>', '<div class="promo-cal-head">수</div>', '<div class="promo-cal-head">목</div>', '<div class="promo-cal-head">금</div>', '<div class="promo-cal-head">토</div>', '<div class="promo-cal-head">일</div>'];
+    for (var w = 0; w < 7; w++) {
+        var wd = new Date(weekStart);
+        wd.setDate(wd.getDate() + w);
+        var wStr = formatPromoDate(wd);
+        var wEvents = getPromoPlansForDate(wStr);
+        var wToday = wStr === todayStr;
+        weekCells.push('<div class="promo-cal-cell week-cell' + (wToday ? ' today' : '') + '" onclick="openPromoScheduleModal(\'' + wStr + '\')">' +
+            '<span class="promo-cal-day-num">' + (wd.getMonth() + 1) + '/' + wd.getDate() + '</span>' +
+            wEvents.map(function(p) {
+                var ti = getPromoTypeInfo(p.type);
+                return '<div class="promo-cal-event ' + ti.css + ' mb-1" onclick="event.stopPropagation();selectPromoPlan(\'' + p.id + '\')" title="' + p.title + '">' + p.title + '</div>';
+            }).join('') + '</div>');
+    }
+    return weekCells.join('');
+}
+
 function renderPromoCalendar() {
     var titleEl = document.getElementById('promo-calendar-title');
     var gridEl = document.getElementById('promo-calendar-grid');
     var listEl = document.getElementById('promo-calendar-events-list');
     if (!gridEl) return;
+    var mobile = isPromoCalMobile();
+    var maxMonthEvents = mobile ? 1 : 3;
     document.querySelectorAll('.promo-cal-mode-btn').forEach(function(btn) {
         btn.classList.toggle('active', btn.dataset.mode === promoCalendarMode);
     });
@@ -1507,11 +1604,11 @@ function renderPromoCalendar() {
             var isToday = dateStr === todayStr;
             cells.push('<div class="promo-cal-cell' + (isToday ? ' today' : '') + '" onclick="openPromoScheduleModal(\'' + dateStr + '\')">' +
                 '<span class="promo-cal-day-num">' + day + '</span>' +
-                events.slice(0, 3).map(function(p) {
+                events.slice(0, maxMonthEvents).map(function(p) {
                     var ti = getPromoTypeInfo(p.type);
                     return '<div class="promo-cal-event ' + ti.css + '" onclick="event.stopPropagation();selectPromoPlan(\'' + p.id + '\')" title="' + p.title + '">' + p.title + '</div>';
                 }).join('') +
-                (events.length > 3 ? '<div class="text-[8px] text-gray-500 mt-0.5">+' + (events.length - 3) + '건</div>' : '') +
+                (events.length > maxMonthEvents ? '<div class="promo-cal-more text-[8px] text-gray-500 mt-0.5">+' + (events.length - maxMonthEvents) + '건</div>' : '') +
                 '</div>');
         }
         var totalCells = startOffset + daysInMonth;
@@ -1521,29 +1618,22 @@ function renderPromoCalendar() {
             cells.push('<div class="promo-cal-cell other-month" onclick="openPromoScheduleModal(\'' + ndStr + '\')"><span class="promo-cal-day-num">' + j + '</span></div>');
         }
         gridEl.className = 'promo-cal-grid month';
+        gridEl.removeAttribute('data-promo-cal-layout');
         gridEl.innerHTML = cells.join('');
     } else {
         var weekStart = new Date(promoCalendarCursor);
         weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
         var weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 6);
-        if (titleEl) titleEl.textContent = (weekStart.getMonth() + 1) + '/' + weekStart.getDate() + ' ~ ' + (weekEnd.getMonth() + 1) + '/' + weekEnd.getDate();
-        var weekCells = ['<div class="promo-cal-head">월</div>', '<div class="promo-cal-head">화</div>', '<div class="promo-cal-head">수</div>', '<div class="promo-cal-head">목</div>', '<div class="promo-cal-head">금</div>', '<div class="promo-cal-head">토</div>', '<div class="promo-cal-head">일</div>'];
-        for (var w = 0; w < 7; w++) {
-            var wd = new Date(weekStart);
-            wd.setDate(wd.getDate() + w);
-            var wStr = formatPromoDate(wd);
-            var wEvents = getPromoPlansForDate(wStr);
-            var wToday = wStr === todayStr;
-            weekCells.push('<div class="promo-cal-cell week-cell' + (wToday ? ' today' : '') + '" onclick="openPromoScheduleModal(\'' + wStr + '\')">' +
-                '<span class="promo-cal-day-num">' + (wd.getMonth() + 1) + '/' + wd.getDate() + '</span>' +
-                wEvents.map(function(p) {
-                    var ti = getPromoTypeInfo(p.type);
-                    return '<div class="promo-cal-event ' + ti.css + ' mb-1" onclick="event.stopPropagation();selectPromoPlan(\'' + p.id + '\')" title="' + p.title + '">' + p.title + '</div>';
-                }).join('') + '</div>');
+        if (titleEl) {
+            titleEl.innerHTML = '<span class="promo-cal-title-desktop">' + formatPromoWeekTitle(weekStart, weekEnd, false) + '</span>' +
+                '<span class="promo-cal-title-mobile">' + formatPromoWeekTitle(weekStart, weekEnd, true) + '</span>';
         }
-        gridEl.className = 'promo-cal-grid week';
-        gridEl.innerHTML = weekCells.join('');
+        gridEl.className = 'promo-cal-week-dual';
+        gridEl.setAttribute('data-promo-cal-layout', 'week-dual-v2');
+        gridEl.innerHTML =
+            '<div class="promo-cal-week-mobile-only promo-cal-week-list-wrap">' + renderPromoMobileWeekList(weekStart, todayStr) + '</div>' +
+            '<div class="promo-cal-week-desktop-only promo-cal-grid week">' + renderPromoDesktopWeekGrid(weekStart, todayStr) + '</div>';
     }
     if (listEl) {
         var sorted = promoPlans.slice().sort(function(a, b) { return a.startDate.localeCompare(b.startDate); });
@@ -2445,20 +2535,22 @@ App.views['view-crm'] = () => `
     </div>
 
     <div id="crm-panel-calendar" class="hidden space-y-5">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div class="flex gap-1 p-1 rounded-lg bg-surface border border-border">
-                <button class="promo-cal-mode-btn text-xs px-3 py-1.5 rounded-md font-semibold active" data-mode="week" onclick="setPromoCalendarMode('week')">주간</button>
-                <button class="promo-cal-mode-btn text-xs px-3 py-1.5 rounded-md font-semibold" data-mode="month" onclick="setPromoCalendarMode('month')">월간</button>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 promo-cal-toolbar">
+            <div class="flex gap-1 p-1 rounded-lg bg-surface border border-border w-full sm:w-auto">
+                <button class="promo-cal-mode-btn flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-md font-semibold active" data-mode="week" onclick="setPromoCalendarMode('week')">주간</button>
+                <button class="promo-cal-mode-btn flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-md font-semibold" data-mode="month" onclick="setPromoCalendarMode('month')">월간</button>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="shiftPromoCalendar(-1)" class="p-2 rounded-lg border border-border hover:border-primary/40 text-gray-400 hover:text-white transition-colors">◀</button>
-                <span class="text-sm font-bold min-w-[140px] text-center" id="promo-calendar-title">2026년 7월</span>
-                <button onclick="shiftPromoCalendar(1)" class="p-2 rounded-lg border border-border hover:border-primary/40 text-gray-400 hover:text-white transition-colors">▶</button>
+            <div class="flex items-center gap-2 sm:gap-3 promo-cal-nav w-full sm:w-auto">
+                <button onclick="shiftPromoCalendar(-1)" class="p-2 rounded-lg border border-border hover:border-primary/40 text-gray-400 hover:text-white transition-colors shrink-0" aria-label="이전">◀</button>
+                <span class="text-sm font-bold min-w-[140px] text-center flex-1 sm:flex-none" id="promo-calendar-title">2026년 7월</span>
+                <button onclick="shiftPromoCalendar(1)" class="p-2 rounded-lg border border-border hover:border-primary/40 text-gray-400 hover:text-white transition-colors shrink-0" aria-label="다음">▶</button>
             </div>
-            <button onclick="openPromoScheduleModal()" class="text-xs font-semibold px-4 py-2 rounded-lg bg-primary text-white hover:bg-blue-600 transition-colors">+ 일정 등록</button>
+            <button onclick="openPromoScheduleModal()" class="promo-cal-add-btn text-xs font-semibold px-4 py-2 rounded-lg bg-primary text-white hover:bg-blue-600 transition-colors inline-flex items-center justify-center w-full sm:w-auto">+ 일정 등록</button>
         </div>
-        <div class="glass rounded-xl p-4">
-            <div id="promo-calendar-grid"></div>
+        <div class="glass rounded-xl p-4 promo-cal-shell">
+            <div class="promo-cal-wrap">
+                <div id="promo-calendar-grid"></div>
+            </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div class="lg:col-span-2 glass rounded-xl p-5" id="promo-calendar-events-list"></div>
@@ -4429,5 +4521,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         var us = document.getElementById('user-switch-menu');
         if (us && !e.target.closest('.p-4.border-t')) us.classList.remove('open');
+    });
+    var promoCalResizeTimer;
+    window.addEventListener('resize', function() {
+        if (crmActiveTab !== 'calendar' || !document.getElementById('promo-calendar-grid')) return;
+        clearTimeout(promoCalResizeTimer);
+        promoCalResizeTimer = setTimeout(renderPromoCalendar, 150);
     });
 });
