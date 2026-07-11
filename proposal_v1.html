@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omnify — Your Data, Unified. | 멀티채널 이커머스 데이터 SaaS</title>
+    <title>Omnify 옴니파이 — Your Data, Unified. | 멀티채널 이커머스 데이터 SaaS</title>
     <meta name="description" content="Omnify by JK글로벌컴퍼니 — 분산된 멀티채널 이커머스 데이터를 하나로 통합하는 전문가급 커맨드 센터. 매출·마진·재고·CRM·알림톡을 단일 대시보드에서 관리합니다.">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/omnify-brand/favicon/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/omnify-brand/pwa/apple-touch-icon-180x180.png">
@@ -100,10 +100,12 @@
         .preview-panel { display: none; animation: fadeUp 0.35s ease-out; }
         .preview-panel.active { display: block; }
         .sticky-nav { backdrop-filter: blur(12px); background: rgba(3,7,18,0.85); border-bottom: 1px solid rgba(55,65,81,0.5); }
-        .brand-mark {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            letter-spacing: -0.04em;
+        .brand-ko {
+            font-weight: 500;
+            color: #9ca3af;
+            letter-spacing: -0.02em;
         }
+        .hero-title .brand-ko { font-weight: 700; }
         .slogan-card {
             backdrop-filter: blur(16px);
             border-radius: 1rem;
@@ -289,9 +291,10 @@
 <!-- Sticky Nav -->
 <nav class="sticky top-0 z-50 sticky-nav no-print">
     <div class="max-w-6xl mx-auto px-4 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-3">
-        <button type="button" class="flex items-center gap-2 shrink-0 page-tab-trigger" data-page-tab="intro" aria-label="Omnify 소개">
-            <img src="assets/omnify-brand/png/omnify-64x64.png" alt="Omnify" width="32" height="32" class="w-8 h-8 rounded-lg shrink-0">
-            <span class="font-bold text-sm hidden sm:block">Omnify</span>
+        <button type="button" class="flex items-center gap-2 shrink-0 page-tab-trigger" data-page-tab="intro" aria-label="Omnify 옴니파이 소개">
+            <img src="assets/omnify-brand/png/omnify-64x64.png" alt="Omnify 옴니파이" width="32" height="32" class="w-8 h-8 rounded-lg shrink-0">
+            <span class="font-bold text-sm hidden sm:inline">Omnify <span class="brand-ko font-normal">옴니파이</span></span>
+            <span class="font-semibold text-xs sm:hidden brand-ko">옴니파이</span>
         </button>
         <div class="nav-actions flex items-center gap-1.5 sm:gap-2">
             <a href="/" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold px-2.5 sm:px-3 py-2 rounded-lg border border-gray-700 hover:border-violet-500/50 text-gray-300 hover:text-white transition-colors whitespace-nowrap">
@@ -327,10 +330,10 @@
         <div class="relative fade-up">
             <div class="hero-copy max-w-3xl">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-[11px] font-bold text-blue-300 tracking-wide uppercase mb-6">
-                Omnify · JK글로벌컴퍼니
+                Omnify <span class="brand-ko font-normal">옴니파이</span> · JK글로벌컴퍼니
             </div>
             <h1 class="hero-title text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-4">
-                <span class="text-gradient">Omnify</span>
+                <span class="text-gradient">Omnify</span><span class="brand-ko text-xl sm:text-3xl lg:text-5xl"> 옴니파이</span>
             </h1>
             <p class="hero-subtitle text-lg sm:text-2xl font-semibold text-white mb-2">
                 Your Data, Unified. <span class="text-gray-500 font-normal text-lg sm:text-xl">· 데이터를 하나로</span>
@@ -909,7 +912,7 @@
             <div class="relative max-w-3xl mx-auto">
                 <div class="text-center mb-10">
                     <p class="text-sm font-semibold text-blue-300 mb-3 tracking-wide">Omnify: The Core of Your Commerce.</p>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold mb-4"><span class="text-gradient">Omnify</span> 도입 상담</h2>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mb-4"><span class="text-gradient">Omnify</span><span class="brand-ko text-lg sm:text-2xl"> 옴니파이</span> 도입 상담</h2>
                     <p class="text-gray-400 max-w-lg mx-auto">Your Data, Unified. — 멀티채널 데이터 통합·자동화에 대해 궁금한 점을 남겨 주시면 빠르게 답변드립니다.</p>
                 </div>
 
@@ -945,8 +948,8 @@
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-8">
             <div class="text-left">
                 <div class="flex items-center gap-2 mb-3">
-                    <img src="assets/omnify-brand/png/omnify-64x64.png" alt="Omnify" width="32" height="32" class="w-8 h-8 rounded-lg shrink-0">
-                    <span class="font-bold text-lg">Omnify</span>
+                    <img src="assets/omnify-brand/png/omnify-64x64.png" alt="Omnify 옴니파이" width="32" height="32" class="w-8 h-8 rounded-lg shrink-0">
+                    <span class="font-bold text-lg">Omnify <span class="brand-ko text-sm font-normal">옴니파이</span></span>
                 </div>
                 <p class="text-sm text-gray-500 leading-relaxed">Your Data, Unified.<br>Beyond Expansion.</p>
             </div>
@@ -959,7 +962,7 @@
             </div>
         </div>
         <div class="border-t border-gray-800 pt-6 text-center text-xs text-gray-600">
-            <p>© 2026 JK글로벌컴퍼니. All rights reserved. · Omnify</p>
+            <p>© 2026 JK글로벌컴퍼니. All rights reserved. · Omnify <span class="brand-ko">옴니파이</span></p>
         </div>
     </div>
 </footer>
