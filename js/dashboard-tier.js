@@ -206,7 +206,7 @@ function injectTierDemoSwitcher(current) {
             '<a href="demo-dashboard.html" class="text-[11px] font-semibold text-blue-400 hover:text-blue-300">Enterprise 데모 →</a>';
     } else {
         box.innerHTML = '<p class="text-[10px] text-gray-500 mb-1.5">보급형 데모</p>' +
-            '<a href="index-standard.html" class="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300">Standard 데모 →</a>';
+            '<a href="demo-standard.html" class="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300">Standard 데모 →</a>';
     }
     var footer = aside.querySelector('.p-4.border-t');
     if (footer) aside.insertBefore(box, footer);
