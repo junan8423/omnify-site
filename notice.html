@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 | Omnify 옴니파이</title>
+    <meta name="description" content="Omnify 옴니파이 공지사항 — 서비스 업데이트 및 운영 안내">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/omnify-brand/favicon/favicon-32x32.png">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Pretendard', 'sans-serif'] },
+                    colors: { dark: '#030712', panel: '#0b1120', surface: '#111827', border: '#1f2937' }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Pretendard', sans-serif; background: #030712; color: #e5e7eb; -webkit-font-smoothing: antialiased; }
+        .notice-item {
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(55, 65, 81, 0.55);
+            background: rgba(11, 17, 32, 0.65);
+            transition: border-color 0.2s;
+        }
+        .notice-item:hover { border-color: rgba(96, 165, 250, 0.3); }
+        .notice-item-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .notice-pin {
+            font-size: 0.625rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+            padding: 0.15rem 0.45rem; border-radius: 0.25rem;
+            background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .notice-date { font-size: 0.75rem; color: #6b7280; }
+        .notice-item-title { font-size: 1.0625rem; font-weight: 800; color: #f9fafb; margin-bottom: 0.625rem; line-height: 1.4; }
+        .notice-item-body { font-size: 0.875rem; color: #9ca3af; line-height: 1.75; }
+        .notice-admin-panel {
+            margin-top: 2.5rem; padding: 1.5rem; border-radius: 1rem;
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            background: linear-gradient(160deg, rgba(139, 92, 246, 0.08) 0%, rgba(11, 17, 32, 0.9) 100%);
+        }
+        .notice-admin-row {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem; border-radius: 0.5rem;
+            border: 1px solid rgba(55, 65, 81, 0.5); background: rgba(17, 24, 39, 0.5);
+            margin-bottom: 0.5rem;
+        }
+        .notice-admin-btn {
+            font-size: 0.6875rem; font-weight: 700; padding: 0.35rem 0.65rem;
+            border-radius: 0.375rem; border: 1px solid rgba(75, 85, 99, 0.8);
+            color: #d1d5db; background: rgba(31, 41, 55, 0.8); cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .notice-admin-btn:hover { background: rgba(59, 130, 246, 0.2); color: #fff; border-color: rgba(59, 130, 246, 0.4); }
+        .notice-admin-btn.danger:hover { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
+        .notice-field {
+            width: 100%; padding: 0.625rem 0.875rem; border-radius: 0.5rem;
+            border: 1px solid rgba(55, 65, 81, 0.8); background: rgba(17, 24, 39, 0.8);
+            color: #f3f4f6; font-size: 0.875rem;
+        }
+        .notice-field:focus { outline: none; border-color: rgba(139, 92, 246, 0.5); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15); }
+        textarea.notice-field { min-height: 7rem; resize: vertical; line-height: 1.6; }
+        .notice-modal-backdrop {
+            position: fixed; inset: 0; z-index: 60;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; padding: 1rem;
+        }
+        .notice-modal {
+            width: 100%; max-width: 22rem; padding: 1.5rem; border-radius: 1rem;
+            border: 1px solid rgba(55, 65, 81, 0.8); background: #0b1120;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="selection:bg-blue-500 selection:text-white">
+
+<header class="sticky top-0 z-50 border-b border-gray-800 bg-dark/90 backdrop-blur-md">
+    <div class="max-w-3xl mx-auto px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+        <a href="index.html" class="flex items-center gap-2 shrink-0">
+            <img src="assets/omnify-brand/png/omnify-64x64.png" alt="Omnify" width="28" height="28" class="w-7 h-7 rounded-lg">
+            <span class="font-bold text-sm">Omnify <span class="text-gray-400 font-normal">옴니파이</span></span>
+        </a>
+        <div class="flex items-center gap-2">
+            <button type="button" id="notice-login-open" class="text-[10px] font-semibold px-2.5 py-1.5 rounded-md border border-gray-700 text-gray-500 hover:text-gray-300 hover:border-gray-500 transition-colors">관리자</button>
+            <a href="index.html" class="text-xs text-gray-400 hover:text-white transition-colors">← 메인으로</a>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 sm:px-5 py-8 sm:py-12 pb-20">
+
+    <div class="mb-8">
+        <p class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">Notice</p>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">공지사항</h1>
+        <p class="text-sm text-gray-500">Omnify 서비스 운영 및 업데이트 소식을 안내합니다.</p>
+    </div>
+
+    <div id="notice-admin-bar" class="hidden mb-6 flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border border-violet-500/30 bg-violet-500/10">
+        <span class="text-xs font-semibold text-violet-300">관리자 모드</span>
+        <button type="button" id="notice-logout" class="text-[10px] font-bold text-gray-400 hover:text-white px-2 py-1 rounded border border-gray-700 hover:border-gray-500 transition-colors">로그아웃</button>
+    </div>
+
+    <div id="notice-list" class="space-y-4"></div>
+    <p id="notice-empty" class="hidden text-center text-sm text-gray-500 py-12">등록된 공지가 없습니다.</p>
+
+    <div id="notice-admin-panel" class="notice-admin-panel hidden">
+        <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <span class="text-violet-400">⚙</span> 공지 관리
+        </h2>
+
+        <form id="notice-form" class="space-y-3 mb-6 pb-6 border-b border-gray-800">
+            <p id="notice-form-title" class="text-sm font-bold text-gray-300">공지 등록</p>
+            <div>
+                <label for="notice-title" class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">제목</label>
+                <input type="text" id="notice-title" class="notice-field" placeholder="공지 제목" maxlength="120" required>
+            </div>
+            <div>
+                <label for="notice-content" class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">내용</label>
+                <textarea id="notice-content" class="notice-field" placeholder="공지 내용을 입력하세요" required></textarea>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
+                <input type="checkbox" id="notice-pinned" class="rounded border-gray-600 bg-surface text-violet-500 focus:ring-violet-500/30">
+                상단 고정
+            </label>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                <button type="submit" class="text-sm font-bold px-5 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white transition-colors">저장</button>
+                <button type="button" id="notice-form-cancel" class="text-sm font-semibold px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 hover:border-gray-400 transition-colors">취소</button>
+                <span id="notice-save-status" class="text-xs text-emerald-400 ml-1"></span>
+            </div>
+        </form>
+
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">등록된 공지</h3>
+        <div id="notice-admin-list"></div>
+    </div>
+
+</main>
+
+<div id="notice-login-modal" class="notice-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="notice-login-heading">
+    <div class="notice-modal">
+        <h2 id="notice-login-heading" class="text-lg font-bold text-white mb-1">관리자 로그인</h2>
+        <p class="text-xs text-gray-500 mb-4">공지 등록·수정·삭제는 관리자만 가능합니다.</p>
+        <form id="notice-login-form" class="space-y-3">
+            <input type="password" id="notice-login-password" class="notice-field" placeholder="관리자 비밀번호" autocomplete="current-password" required>
+            <p id="notice-login-error" class="text-xs text-red-400 min-h-[1rem]"></p>
+            <div class="flex gap-2 pt-1">
+                <button type="submit" class="flex-1 text-sm font-bold py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white transition-colors">확인</button>
+                <button type="button" id="notice-login-close" class="flex-1 text-sm font-semibold py-2.5 rounded-lg border border-gray-600 text-gray-300 hover:border-gray-400 transition-colors">취소</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer class="border-t border-gray-800 py-6">
+    <p class="text-center text-xs text-gray-600">© 2026 JK글로벌 · Omnify 옴니파이</p>
+</footer>
+
+<script src="js/notice-app.js?v=20260712"></script>
+</body>
+</html>
