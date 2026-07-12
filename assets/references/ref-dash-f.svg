@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="none">
+  <rect width="800" height="450" fill="#04120d"/>
+  <rect x="0" y="0" width="800" height="64" fill="#052e1f"/>
+  <text x="24" y="40" fill="#6ee7b7" font-size="13" font-weight="700" font-family="system-ui">오늘의 브리핑 · 08:00 발송</text>
+  <rect x="24" y="84" width="360" height="330" rx="12" fill="#0a1f16" stroke="#065f46"/>
+  <text x="60" y="162" fill="#ecfdf5" font-size="13" font-family="system-ui">어제 매출 ₩3,820만 · 마진 35.1%</text>
+  <rect x="404" y="84" width="372" height="150" rx="10" fill="#0a1f16" stroke="#047857"/>
+  <circle cx="440" cy="150" r="6" fill="#10b981"/>
+  <text x="456" y="154" fill="#d1fae5" font-size="12" font-family="system-ui">5/5 채널 정상</text>
+  <rect x="404" y="250" width="372" height="164" rx="10" fill="#0a1f16" stroke="#047857"/>
+  <polyline points="430,380 550,360 670,260" stroke="#34d399" stroke-width="3" fill="none"/>
+</svg>

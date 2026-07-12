@@ -437,6 +437,165 @@
             .footer-info .footer-row { flex-wrap: wrap; }
             .footer-info .footer-label { flex-basis: 100%; margin-bottom: 0.125rem; }
         }
+        /* References tab */
+        .ref-hero { padding: 2.5rem 0 2rem; text-align: center; }
+        .ref-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+        @media (min-width: 768px) { .ref-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1100px) { .ref-grid { grid-template-columns: repeat(3, 1fr); } }
+        .ref-card {
+            display: flex;
+            flex-direction: column;
+            border-radius: 1rem;
+            border: 1px solid rgba(55, 65, 81, 0.55);
+            background: rgba(11, 17, 32, 0.65);
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .ref-card:hover {
+            border-color: rgba(96, 165, 250, 0.35);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        }
+        .ref-card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 1rem 1.125rem 0.75rem;
+        }
+        .ref-card-title { min-width: 0; }
+        .ref-badge {
+            display: block;
+            font-size: 0.9375rem;
+            font-weight: 800;
+            color: #f9fafb;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+        .ref-channels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+        .ref-channel-pill {
+            font-size: 0.625rem;
+            font-weight: 600;
+            color: #d1d5db;
+            padding: 0.2rem 0.45rem;
+            border-radius: 0.25rem;
+            background: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.8);
+            white-space: nowrap;
+        }
+        .ref-industry {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #9ca3af;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            background: rgba(31, 41, 55, 0.8);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .ref-dash-wrap {
+            margin: 0 0.875rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            background: #0f172a;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+        .ref-dash-wrap img {
+            display: block;
+            width: 100%;
+            height: auto;
+            vertical-align: top;
+        }
+        .ref-quote {
+            flex: 1;
+            margin: 1rem 1.125rem 0.5rem;
+            padding: 0.875rem 1rem;
+            border-radius: 0.625rem;
+            background: rgba(17, 24, 39, 0.55);
+            border-left: 3px solid rgba(59, 130, 246, 0.55);
+            font-size: 0.8125rem;
+            line-height: 1.65;
+            color: #d1d5db;
+        }
+        .ref-quote strong { color: #f3f4f6; font-weight: 700; }
+        .ref-quote em { font-style: normal; color: #93c5fd; font-weight: 600; }
+        .ref-meta {
+            padding: 0 1.125rem 1.125rem;
+            font-size: 0.6875rem;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        .ref-stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem 2.5rem;
+            margin: 2rem 0 2.5rem;
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(55, 65, 81, 0.5);
+            background: rgba(11, 17, 32, 0.5);
+        }
+        .ref-stat-num { font-size: 1.5rem; font-weight: 800; color: #f9fafb; }
+        .ref-stat-label { font-size: 0.75rem; color: #9ca3af; margin-top: 0.125rem; }
+        /* Kakao channel floating banner */
+        .kakao-float {
+            position: fixed;
+            right: 1rem;
+            bottom: 1.5rem;
+            z-index: 45;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem 0.625rem 0.75rem;
+            border-radius: 9999px;
+            background: #fee500;
+            color: #191919;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-decoration: none;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            max-width: calc(100vw - 2rem);
+        }
+        .kakao-float:hover {
+            background: #fada0a;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.08);
+        }
+        .kakao-float:active { transform: translateY(0); }
+        .kakao-float-icon {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: #191919;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .kakao-float-icon svg { width: 1.125rem; height: 1.125rem; }
+        .kakao-float-text { white-space: nowrap; padding-right: 0.125rem; }
+        @media (max-width: 480px) {
+            .kakao-float {
+                right: 0.75rem;
+                bottom: 1rem;
+                padding: 0.5rem 0.875rem 0.5rem 0.625rem;
+                font-size: 0.75rem;
+            }
+            .kakao-float-icon { width: 1.75rem; height: 1.75rem; }
+            .kakao-float-icon svg { width: 1rem; height: 1rem; }
+        }
+        @media print { .kakao-float { display: none !important; } }
     </style>
 </head>
 <body class="selection:bg-blue-500 selection:text-white">
@@ -449,7 +608,7 @@
             <span class="font-bold text-xs sm:text-sm whitespace-nowrap">Omnify <span class="brand-ko font-normal">옴니파이</span></span>
         </button>
         <div class="nav-actions flex items-center gap-1.5 sm:gap-2">
-            <a href="/demo-dashboard.html" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold px-2.5 sm:px-3 py-2 rounded-lg border border-gray-700 hover:border-violet-500/50 text-gray-300 hover:text-white transition-colors whitespace-nowrap">
+            <a href="demo-dashboard.html" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold px-2.5 sm:px-3 py-2 rounded-lg border border-gray-700 hover:border-violet-500/50 text-gray-300 hover:text-white transition-colors whitespace-nowrap">
                 <span class="nav-btn-text">대시보드 체험</span><span class="nav-btn-icon" aria-hidden="true">🖥️</span>
             </a>
             <button type="button" class="text-xs font-bold px-3 sm:px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-colors whitespace-nowrap page-tab-trigger" data-page-tab="contact">상담 문의</button>
@@ -466,6 +625,7 @@
             <button type="button" class="page-tab-btn page-tab-trigger" data-page-tab="connect" role="tab" aria-selected="false">연동 · 확장</button>
             <button type="button" class="page-tab-btn page-tab-trigger" data-page-tab="plan" role="tab" aria-selected="false">요금 · 도입</button>
             <button type="button" class="page-tab-btn page-tab-trigger" data-page-tab="contact" role="tab" aria-selected="false">문의</button>
+            <button type="button" class="page-tab-btn page-tab-trigger" data-page-tab="references" role="tab" aria-selected="false">레퍼런스</button>
         </div>
     </div>
 </div>
@@ -616,7 +776,7 @@
                 <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-3 sm:mb-4">주요 기능별 대시보드 미리보기</h2>
                 <p class="text-gray-400">핵심 모듈을 탭으로 전환하며 Omnify 대시보드 UI를 확인하세요.</p>
             </div>
-            <a href="/demo-dashboard.html" target="_blank" rel="noopener noreferrer" class="demo-cta-btn inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-500/25 transition-all shrink-0 no-print mb-1 sm:mb-0">
+            <a href="demo-dashboard.html" target="_blank" rel="noopener noreferrer" class="demo-cta-btn inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-500/25 transition-all shrink-0 no-print mb-1 sm:mb-0">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 대시보드 체험하기
             </a>
@@ -987,7 +1147,7 @@
             <div class="glass p-5 sm:p-8 flex flex-col pricing-card">
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Enterprise</p>
                 <h3 class="text-xl font-bold mb-1">엔터프라이즈</h3>
-                <p class="text-sm text-gray-500 mb-6">5채널 이상 · 맞춤 개발</p>
+                <p class="text-sm text-gray-500 mb-6">3채널+ · 맞춤 개발</p>
                 <div class="mb-6"><span class="text-3xl font-extrabold">별도</span><p class="text-xs text-gray-600 mt-1">견적 상담</p></div>
                 <div class="mb-6 pb-6 border-b border-gray-800"><span class="text-2xl font-extrabold text-violet-400">30</span><span class="text-gray-400 text-sm">만원~/월</span></div>
                 <ul class="space-y-2 text-sm text-gray-400 flex-1">
@@ -1112,6 +1272,167 @@
 
     </div><!-- /page-tab-contact -->
 
+    <!-- TAB: 레퍼런스 -->
+    <div id="page-tab-references" class="page-tab-panel" role="tabpanel">
+
+    <section class="ref-hero">
+        <p class="text-xs font-bold text-violet-400 uppercase tracking-wider mb-3">Customer References</p>
+        <h2 class="section-heading text-2xl sm:text-3xl font-bold mb-3">도입 고객사 레퍼런스</h2>
+        <p class="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+            멀티채널 이커머스 기업들이 Omnify로 데이터를 통합하고 운영 효율을 높인 사례입니다.<br class="hidden sm:inline">
+            <span class="text-gray-500 text-xs sm:text-sm">※ 고객사명은 비식별 처리되었으며, 대시보드는 도입 환경을 반영한 예시입니다.</span>
+        </p>
+        <div class="ref-stats">
+            <div class="text-center">
+                <div class="ref-stat-num text-gradient">6+</div>
+                <div class="ref-stat-label">도입 업종</div>
+            </div>
+            <div class="text-center">
+                <div class="ref-stat-num text-gradient-emerald">3채널+</div>
+                <div class="ref-stat-label">평균 연동 채널</div>
+            </div>
+            <div class="text-center">
+                <div class="ref-stat-num" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;color:transparent">30초</div>
+                <div class="ref-stat-label">아침 브리핑 파악 시간</div>
+            </div>
+            <div class="text-center">
+                <div class="ref-stat-num" style="background:linear-gradient(135deg,#a78bfa,#8b5cf6);-webkit-background-clip:text;color:transparent">3.5H+</div>
+                <div class="ref-stat-label">업무 절약 시간</div>
+            </div>
+            <div class="text-center">
+                <div class="ref-stat-num" style="background:linear-gradient(135deg,#f472b6,#ec4899);-webkit-background-clip:text;color:transparent">5.5+</div>
+                <div class="ref-stat-label">프로모션 추가</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="ref-grid mb-12">
+
+        <article class="ref-card">
+            <div class="ref-card-head">
+                <div class="ref-card-title">
+                    <span class="ref-badge">A사</span>
+                    <div class="ref-channels">
+                        <span class="ref-channel-pill">Cafe24</span>
+                        <span class="ref-channel-pill">스마트스토어</span>
+                        <span class="ref-channel-pill">쿠팡</span>
+                        <span class="ref-channel-pill">지그재그</span>
+                    </div>
+                </div>
+                <span class="ref-industry">패션</span>
+            </div>
+            <div class="ref-dash-wrap">
+                <img src="assets/references/ref-shot-a.png" alt="A사 Omnify 통합 대시보드 스크린샷" loading="lazy" width="1168" height="784">
+            </div>
+            <blockquote class="ref-quote">「Cafe24·스마트스토어·쿠팡 매출을 <strong>한 화면</strong>에서 봅니다. 아침마다 엑셀 붙이던 <em>2시간이 사라졌어요.</em>」</blockquote>
+            <p class="ref-meta">Enterprise · 통합 대시보드</p>
+        </article>
+
+        <article class="ref-card">
+            <div class="ref-card-head">
+                <div class="ref-card-title">
+                    <span class="ref-badge">B사</span>
+                    <div class="ref-channels">
+                        <span class="ref-channel-pill">스마트스토어</span>
+                        <span class="ref-channel-pill">쿠팡</span>
+                    </div>
+                </div>
+                <span class="ref-industry">식품</span>
+            </div>
+            <div class="ref-dash-wrap">
+                <img src="assets/references/ref-shot-b.png" alt="B사 Omnify 마진 분석 스크린샷" loading="lazy" width="1168" height="784">
+            </div>
+            <blockquote class="ref-quote">「채널별 수수료·원가가 자동 반영돼 <strong>실마진</strong>을 바로 알 수 있습니다. <em>가격 전략이 명확</em>해졌습니다.」</blockquote>
+            <p class="ref-meta">Growth · 마진 · 수익성 분석</p>
+        </article>
+
+        <article class="ref-card">
+            <div class="ref-card-head">
+                <div class="ref-card-title">
+                    <span class="ref-badge">C사</span>
+                    <div class="ref-channels">
+                        <span class="ref-channel-pill">Cafe24</span>
+                        <span class="ref-channel-pill">지그재그</span>
+                        <span class="ref-channel-pill">스마트스토어</span>
+                    </div>
+                </div>
+                <span class="ref-industry">뷰티</span>
+            </div>
+            <div class="ref-dash-wrap">
+                <img src="assets/references/ref-shot-c.png" alt="C사 Omnify CRM 알림톡 스크린샷" loading="lazy" width="1168" height="784">
+            </div>
+            <blockquote class="ref-quote">「재구매 캠페인을 <strong>알림톡으로 자동 발송</strong>합니다. CRM과 매출이 한곳에 연결돼 <em>전환율이 2배</em> 올랐어요.」</blockquote>
+            <p class="ref-meta">Enterprise · CRM · 알림톡</p>
+        </article>
+
+        <article class="ref-card">
+            <div class="ref-card-head">
+                <div class="ref-card-title">
+                    <span class="ref-badge">D사</span>
+                    <div class="ref-channels">
+                        <span class="ref-channel-pill">Cafe24</span>
+                        <span class="ref-channel-pill">쿠팡</span>
+                    </div>
+                </div>
+                <span class="ref-industry">리빙</span>
+            </div>
+            <div class="ref-dash-wrap">
+                <img src="assets/references/ref-shot-d.png" alt="D사 Omnify 재고 발주 스크린샷" loading="lazy" width="1168" height="784">
+            </div>
+            <blockquote class="ref-quote">「재고 부족 SKU를 미리 알려줘서 <strong>품절 손실이 70% 줄었습니다.</strong> 발주도 <em>대시보드 한 곳</em>에서 처리합니다.」</blockquote>
+            <p class="ref-meta">Growth · 주문 · 재고 관리</p>
+        </article>
+
+        <article class="ref-card">
+            <div class="ref-card-head">
+                <div class="ref-card-title">
+                    <span class="ref-badge">E사</span>
+                    <div class="ref-channels">
+                        <span class="ref-channel-pill">스마트스토어</span>
+                        <span class="ref-channel-pill">Cafe24</span>
+                        <span class="ref-channel-pill">쿠팡</span>
+                        <span class="ref-channel-pill">에이블리</span>
+                    </div>
+                </div>
+                <span class="ref-industry">유아동</span>
+            </div>
+            <div class="ref-dash-wrap">
+                <img src="assets/references/ref-shot-e.png" alt="E사 Omnify 채널 통합 스크린샷" loading="lazy" width="1168" height="784">
+            </div>
+            <blockquote class="ref-quote">「스마트스토어·쿠팡·자사몰 비중을 <strong>실시간으로 비교</strong>합니다. 채널별 전략 회의가 <em>데이터 기반</em>으로 바뀌었습니다.」</blockquote>
+            <p class="ref-meta">Enterprise · 통합 대시보드</p>
+        </article>
+
+        <article class="ref-card">
+            <div class="ref-card-head">
+                <div class="ref-card-title">
+                    <span class="ref-badge">F사</span>
+                    <div class="ref-channels">
+                        <span class="ref-channel-pill">Cafe24</span>
+                        <span class="ref-channel-pill">스마트스토어</span>
+                    </div>
+                </div>
+                <span class="ref-industry">스포츠</span>
+            </div>
+            <div class="ref-dash-wrap">
+                <img src="assets/references/ref-shot-f.png" alt="F사 Omnify 카카오 브리핑 스크린샷" loading="lazy" width="1168" height="784">
+            </div>
+            <blockquote class="ref-quote">「매일 8시 <strong>카카오 브리핑</strong>으로 <em>30초 만에</em> 어제 실적을 파악합니다. API 장애도 즉시 알림 받아요.」</blockquote>
+            <p class="ref-meta">Enterprise · 카카오 브리핑 · API 모니터링</p>
+        </article>
+
+    </div>
+
+    <section class="text-center pb-8">
+        <p class="text-gray-400 text-sm mb-5">우리 업종과 비슷한 도입 사례가 궁금하신가요?</p>
+        <div class="flex flex-wrap justify-center gap-3">
+            <button type="button" class="page-tab-trigger inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/20 transition-all" data-page-tab="contact">도입 상담 신청</button>
+            <a href="demo-dashboard.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-600 hover:border-gray-400 text-gray-200 font-semibold text-sm transition-colors">대시보드 체험하기</a>
+        </div>
+    </section>
+
+    </div><!-- /page-tab-references -->
+
 </main>
 
 <footer class="border-t border-gray-800 py-8 sm:py-10 no-print">
@@ -1156,9 +1477,9 @@
         </div>
         <div class="border-t border-gray-800 pt-6">
             <div class="footer-legal flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-4 text-sm">
-                <a href="/legal.html#terms" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">이용약관</a>
+                <a href="legal.html#terms" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">이용약관</a>
                 <span class="text-gray-700 hidden sm:inline" aria-hidden="true">|</span>
-                <a href="/legal.html#privacy" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">개인정보처리방침</a>
+                <a href="legal.html#privacy" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">개인정보처리방침</a>
             </div>
             <p class="text-center text-xs text-gray-600">© 2026 JK글로벌. All rights reserved. · Omnify <span class="brand-ko">옴니파이</span></p>
         </div>
@@ -1187,7 +1508,8 @@
         features: 'features', modules: 'features',
         connect: 'connect', partners: 'connect', channels: 'connect',
         plan: 'plan', pricing: 'plan', process: 'plan', faq: 'plan',
-        contact: 'contact'
+        contact: 'contact',
+        references: 'references', reference: 'references', refs: 'references'
     };
 
     function switchPageTab(tabId, updateHash) {
@@ -1232,6 +1554,15 @@
     initFromHash();
 })();
 </script>
+
+<a href="http://pf.kakao.com/_fxlxgwX" class="kakao-float no-print" target="_blank" rel="noopener noreferrer" aria-label="카카오채널 상담하기">
+    <span class="kakao-float-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="#FEE500" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3C6.48 3 2 6.58 2 11c0 2.84 1.87 5.35 4.68 6.86-.15.53-.55 1.93-.63 2.22-.1.38.14.37.29.27.12-.08 1.92-1.28 2.7-1.82.77.11 1.57.17 2.38.17 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
+        </svg>
+    </span>
+    <span class="kakao-float-text">카카오채널 상담하기</span>
+</a>
 
 </body>
 </html>

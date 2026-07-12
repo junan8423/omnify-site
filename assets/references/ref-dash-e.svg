@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="none">
+  <rect width="800" height="450" fill="#020617"/>
+  <rect x="24" y="20" width="752" height="36" rx="8" fill="#0f172a"/>
+  <text x="40" y="44" fill="#38bdf8" font-size="12" font-weight="600" font-family="system-ui">채널별 매출 비교 · 실시간</text>
+  <rect x="24" y="72" width="178" height="120" rx="10" fill="#0f172a" stroke="#0ea5e9" stroke-opacity="0.3"/>
+  <text x="40" y="128" fill="#38bdf8" font-size="20" font-weight="700" font-family="system-ui">38%</text>
+  <rect x="214" y="72" width="178" height="120" rx="10" fill="#0f172a" stroke="#1e293b"/>
+  <text x="230" y="128" fill="#7dd3fc" font-size="20" font-weight="700" font-family="system-ui">31%</text>
+  <rect x="404" y="72" width="178" height="120" rx="10" fill="#0f172a" stroke="#1e293b"/>
+  <text x="420" y="128" fill="#bae6fd" font-size="20" font-weight="700" font-family="system-ui">22%</text>
+  <rect x="24" y="208" width="752" height="218" rx="12" fill="#0b1120" stroke="#1e293b"/>
+  <path d="M60 380 L300 280 L540 250 L760 160" stroke="#0ea5e9" stroke-width="3" fill="none"/>
+</svg>
