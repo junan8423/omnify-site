@@ -631,6 +631,7 @@ function toggleBriefingItem(id) {
 }
 
 function drillDownKpi(type) {
+    if (App.isStandard && drillDownKpiStandard(type)) return;
     App.pendingDrillDown = { type: type };
     if (type === 'revenue') {
         dataHubFilter.period = App.globalDateRange.dataHubPeriod || 'daily';
@@ -4170,7 +4171,8 @@ function renderNav() {
     if (!container) return;
     var html = '';
 
-    App.navGroups.forEach(function(group) {
+    var navSource = (typeof getNavGroupsForTier === 'function') ? getNavGroupsForTier() : App.navGroups;
+    navSource.forEach(function(group) {
         if (!group.label) {
             group.items.forEach(function(item) {
                 html += '<button data-target="' + item.target + '" data-title="' + item.title + '" data-group="" class="nav-item nav-home w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left text-sm mb-3">';
@@ -4400,6 +4402,10 @@ function initCharts() {
     }
 }
 function switchView(targetId) {
+    if (typeof isViewAllowedForTier === 'function' && !isViewAllowedForTier(targetId)) {
+        showToast('Standard 플랜에서는 제공되지 않는 기능입니다.', 'warning');
+        return;
+    }
     App.currentView = targetId;
     var renderer = App.views[targetId];
     if (!renderer) return;
@@ -4490,16 +4496,19 @@ function initKeyboard() {
     });
 }
 document.addEventListener('DOMContentLoaded', function() {
+    if (typeof initDashboardTier === 'function') initDashboardTier();
     App.demoLastRefresh = new Date();
     loadGlobalDateRange();
     loadNotificationReadState();
     loadCurrentUser();
     loadBriefingConfig();
-    loadCrmCampaigns();
-    loadPromoPlans();
+    if (!App.isStandard) {
+        loadCrmCampaigns();
+        loadPromoPlans();
+        loadArchive();
+        loadComms();
+    }
     loadSettings();
-    loadArchive();
-    loadComms();
     initDateRangePicker();
     updateCurrentUserUI();
     renderNotifications();

@@ -736,13 +736,13 @@
     </div>
 
     <!-- Subscription Badge -->
-    <div class="mx-4 mt-4 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+    <div class="mx-4 mt-4 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20" id="plan-badge">
         <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-bold text-primary uppercase tracking-wider">Enterprise Plan</span>
+            <span class="text-[10px] font-bold text-primary uppercase tracking-wider" id="plan-badge-label">Enterprise Plan</span>
             <span class="status-dot live"></span>
         </div>
-        <p class="text-xs text-gray-400">월 구독 · API 무중단 모니터링</p>
-        <p class="text-[10px] text-gray-500 mt-1">다음 결제일: 2026.08.01</p>
+        <p class="text-xs text-gray-400" id="plan-badge-desc">월 구독 · API 무중단 모니터링</p>
+        <p class="text-[10px] text-gray-500 mt-1" id="plan-badge-sub">다음 결제일: 2026.08.01</p>
     </div>
 
     <nav class="p-3 flex-1 overflow-y-auto mt-2" id="nav-container">
@@ -891,7 +891,7 @@
                 <button class="admin-quicklink ql-coupang" onclick="openAdminLink('쿠팡 Wing','https://wing.coupang.com/')">CP<span class="ql-tip">쿠팡 Wing</span></button>
                 <button class="admin-quicklink ql-ably" onclick="openAdminLink('에이블리 셀러','https://seller.a-bly.com/')">AB<span class="ql-tip">에이블리</span></button>
             </div>
-            <button class="hide-mobile header-quick-btn" onclick="navigateTo('view-archive')" title="자료실">
+            <button class="hide-mobile header-quick-btn tier-pro-only" onclick="navigateTo('view-archive')" title="자료실">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>
                 <span class="hq-badge" id="archive-header-badge">6</span>
                 <span class="ql-tip">자료실</span>
@@ -1077,6 +1077,8 @@
 
 <div class="toast-container" id="toast-container"></div>
 
-<script src="js/dashboard-app.js?v=20260711-week-pc"></script>
+<script>window.DASHBOARD_TIER = window.DASHBOARD_TIER || 'pro';</script>
+<script src="js/dashboard-app.js?v=20260712-tier"></script>
+<script src="js/dashboard-tier.js?v=20260712-tier"></script>
 </body>
 </html>
