@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omnify 데이터 연동을 위한 API Key 발급 매뉴얼</title>
+    <meta name="description" content="Omnify 옴니파이 — 스마트스토어, 쿠팡, 카페24 API Key 발급 가이드. 조회 전용(Read-only) 안전 연동.">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/omnify-brand/favicon/favicon-32x32.png">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Pretendard', 'sans-serif'] },
+                    colors: {
+                        dark: '#030712',
+                        panel: '#0b1120',
+                        surface: '#111827',
+                        border: '#1f2937',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #030712;
+            color: #e5e7eb;
+            -webkit-font-smoothing: antialiased;
+        }
+        .doc-intro {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid rgba(55, 65, 81, 0.6);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            line-height: 1.75;
+        }
+        .platform-card {
+            scroll-margin-top: 5.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(55, 65, 81, 0.55);
+            background: rgba(11, 17, 32, 0.65);
+            overflow: hidden;
+        }
+        .platform-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+        }
+        .platform-card-body { padding: 1.25rem 1.5rem 1.5rem; }
+        .path-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #9ca3af;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.375rem;
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.6);
+            font-family: ui-monospace, 'Cascadia Code', monospace;
+            word-break: break-all;
+        }
+        .step-list { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+        .step-list li {
+            counter-increment: step;
+            position: relative;
+            padding-left: 2.25rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.65;
+            font-size: 0.875rem;
+            color: #d1d5db;
+        }
+        .step-list li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0.1rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+        }
+        .field-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #e5e7eb;
+            padding: 0.3rem 0.65rem;
+            border-radius: 0.375rem;
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            margin: 0.2rem 0.35rem 0.2rem 0;
+        }
+        .security-box {
+            border-radius: 1rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.25) 0%, rgba(11, 17, 32, 0.9) 100%);
+            box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.08), 0 12px 40px rgba(0, 0, 0, 0.35);
+        }
+        .doc-nav a.active { color: #fff; border-color: rgba(96, 165, 250, 0.5); background: rgba(59, 130, 246, 0.1); }
+        .accent-naver { --accent: #03c75a; }
+        .accent-coupang { --accent: #f97316; }
+        .accent-cafe24 { --accent: #3b82f6; }
+        .platform-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.625rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            background: color-mix(in srgb, var(--accent) 18%, transparent);
+            color: var(--accent);
+            border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+        }
+        .step-list.accent li::before {
+            background: color-mix(in srgb, var(--accent) 18%, transparent);
+            color: var(--accent);
+            border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+        }
+    </style>
+</head>
+<body class="selection:bg-blue-500 selection:text-white">
+
+<header class="sticky top-0 z-50 border-b border-gray-800 bg-dark/90 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+        <a href="index.html" class="flex items-center gap-2 shrink-0">
+            <img src="assets/omnify-brand/png/omnify-64x64.png" alt="Omnify 옴니파이" width="28" height="28" class="w-7 h-7 rounded-lg">
+            <span class="font-bold text-sm">Omnify <span class="text-gray-400 font-normal">옴니파이</span></span>
+        </a>
+        <a href="index.html" class="text-xs text-gray-400 hover:text-white transition-colors whitespace-nowrap">← 메인으로</a>
+    </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-5 py-8 sm:py-12 pb-16">
+
+    <div class="mb-8">
+        <p class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">API Integration Manual</p>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight">Omnify 데이터 연동을 위한<br class="sm:hidden"> API Key 발급 매뉴얼</h1>
+        <p class="text-sm text-gray-500">JK글로벌 · Omnify 옴니파이 · Technical Documentation</p>
+    </div>
+
+    <div class="doc-intro text-sm text-gray-300 mb-8 space-y-3">
+        <p>Omnify는 대표님의 이커머스 매출 데이터를 실시간으로 수집하여 대시보드에 시각화합니다. 이 과정에서 고객님의 정보 보안을 최우선으로 하며, 모든 데이터 접근은 <strong class="text-emerald-400 font-semibold">「조회 전용(Read-only)」</strong> 권한으로 안전하게 이루어집니다.</p>
+        <p class="text-gray-400">다음 가이드를 참고하여 각 플랫폼에서 API 인증 정보를 발급받아 <strong class="text-gray-200">계약서 폼</strong>에 입력해 주세요.</p>
+    </div>
+
+    <nav class="doc-nav flex flex-wrap gap-2 mb-10 p-1 rounded-xl bg-surface/60 border border-border" aria-label="플랫폼 바로가기">
+        <a href="#naver" class="flex-1 min-w-[7rem] text-center text-xs sm:text-sm font-semibold px-3 py-2.5 rounded-lg border border-transparent text-gray-400 hover:text-white transition-colors">스마트스토어</a>
+        <a href="#coupang" class="flex-1 min-w-[7rem] text-center text-xs sm:text-sm font-semibold px-3 py-2.5 rounded-lg border border-transparent text-gray-400 hover:text-white transition-colors">쿠팡</a>
+        <a href="#cafe24" class="flex-1 min-w-[7rem] text-center text-xs sm:text-sm font-semibold px-3 py-2.5 rounded-lg border border-transparent text-gray-400 hover:text-white transition-colors">카페24</a>
+        <a href="#security" class="flex-1 min-w-[7rem] text-center text-xs sm:text-sm font-semibold px-3 py-2.5 rounded-lg border border-transparent text-emerald-400/80 hover:text-emerald-300 transition-colors">보안 안내</a>
+    </nav>
+
+    <div class="space-y-6 mb-10">
+
+        <!-- Naver -->
+        <article id="naver" class="platform-card accent-naver">
+            <div class="platform-card-header">
+                <div class="flex items-start gap-3">
+                    <div class="platform-icon">N</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:var(--accent)">Platform 01</p>
+                        <h2 class="text-lg sm:text-xl font-bold text-white mb-2">네이버 스마트스토어</h2>
+                        <p class="text-xs text-gray-500 mb-2">Naver Commerce API</p>
+                        <div class="path-badge">스마트스토어센터 &gt; 판매자정보 &gt; API 정보</div>
+                    </div>
+                    <a href="https://sell.smartstore.naver.com/" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex text-[10px] font-semibold px-2.5 py-1.5 rounded-md border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-colors shrink-0">센터 열기 ↗</a>
+                </div>
+            </div>
+            <div class="platform-card-body">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">발급 절차</h3>
+                <ol class="step-list accent mb-5">
+                    <li>「판매자정보」 메뉴 내 <strong class="text-white">「API 정보」</strong> 클릭</li>
+                    <li>「API 대행사」 항목에서 <strong class="text-white">「직접연동」</strong> 선택 또는 Omnify 가이드에 따른 API ID 생성</li>
+                </ol>
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">입력 필요 항목</h3>
+                <div>
+                    <span class="field-tag">판매자 ID</span>
+                    <span class="field-tag">API ID</span>
+                    <span class="field-tag">API Secret Key</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Coupang -->
+        <article id="coupang" class="platform-card accent-coupang">
+            <div class="platform-card-header">
+                <div class="flex items-start gap-3">
+                    <div class="platform-icon">CP</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:var(--accent)">Platform 02</p>
+                        <h2 class="text-lg sm:text-xl font-bold text-white mb-2">쿠팡</h2>
+                        <p class="text-xs text-gray-500 mb-2">Coupang WING API</p>
+                        <div class="path-badge">쿠팡 윙(WING) &gt; 판매자정보 &gt; 업체정보 &gt; API Key 발급</div>
+                    </div>
+                    <a href="https://wing.coupang.com/" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex text-[10px] font-semibold px-2.5 py-1.5 rounded-md border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-colors shrink-0">WING 열기 ↗</a>
+                </div>
+            </div>
+            <div class="platform-card-body">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">발급 절차</h3>
+                <ol class="step-list accent mb-5">
+                    <li>쿠팡 윙 접속 후 <strong class="text-white">「판매자 정보」</strong> 탭 클릭</li>
+                    <li><strong class="text-white">「API Key 발급」</strong> 메뉴 진입</li>
+                    <li><strong class="text-white">「API Key 생성」</strong> 버튼 클릭</li>
+                </ol>
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">입력 필요 항목</h3>
+                <div>
+                    <span class="field-tag">Access Key</span>
+                    <span class="field-tag">Secret Key</span>
+                    <span class="field-tag">Vendor ID (업체코드)</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Cafe24 -->
+        <article id="cafe24" class="platform-card accent-cafe24">
+            <div class="platform-card-header">
+                <div class="flex items-start gap-3">
+                    <div class="platform-icon">C24</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:var(--accent)">Platform 03</p>
+                        <h2 class="text-lg sm:text-xl font-bold text-white mb-2">카페24</h2>
+                        <p class="text-xs text-gray-500 mb-2">Cafe24 App / API</p>
+                        <div class="path-badge">카페24 어드민 &gt; 앱 관리 &gt; 내 앱 관리</div>
+                    </div>
+                    <a href="https://eclogin.cafe24.com/Shop/" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex text-[10px] font-semibold px-2.5 py-1.5 rounded-md border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-colors shrink-0">어드민 열기 ↗</a>
+                </div>
+            </div>
+            <div class="platform-card-body">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">발급 절차</h3>
+                <ol class="step-list accent mb-5">
+                    <li>「앱 관리」 메뉴에서 <strong class="text-white">「내 앱 관리」</strong> 접속</li>
+                    <li>「앱 추가」 버튼을 눌러 <strong class="text-white">Omnify 자동화용 앱</strong> 생성 (또는 기존 연동 앱 확인)</li>
+                    <li>생성된 앱 상세 정보에서 <strong class="text-white">Client ID</strong>와 <strong class="text-white">Secret Key</strong> 확인</li>
+                </ol>
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">입력 필요 항목</h3>
+                <div>
+                    <span class="field-tag">Client ID</span>
+                    <span class="field-tag">Client Secret</span>
+                    <span class="field-tag">Shop ID (몰 ID)</span>
+                </div>
+            </div>
+        </article>
+
+    </div>
+
+    <!-- Security -->
+    <section id="security" class="security-box p-6 sm:p-8 scroll-mt-20">
+        <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-lg" aria-hidden="true">🔒</div>
+            <div class="min-w-0">
+                <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">Security Notice</p>
+                <h2 class="text-xl font-bold text-white mb-4">보안 안내</h2>
+                <div class="space-y-4 text-sm text-gray-300 leading-relaxed">
+                    <div class="pl-4 border-l-2 border-emerald-500/40">
+                        <p class="font-bold text-white mb-1">권한 범위</p>
+                        <p class="text-gray-400">Omnify는 위 API 키를 사용하여 주문, 정산, 배송 데이터만을 <strong class="text-emerald-300">「조회」</strong>하며, 상품 등록이나 삭제 등 <strong class="text-gray-200">「수정」 권한은 사용하지 않습니다.</strong></p>
+                    </div>
+                    <div class="pl-4 border-l-2 border-emerald-500/40">
+                        <p class="font-bold text-white mb-1">데이터 관리</p>
+                        <p class="text-gray-400">발급받으신 API 키는 <strong class="text-gray-200">암호화된 서버</strong>에 저장되며, <strong class="text-gray-200">서비스 해지 시 즉시 파기</strong>됩니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="mt-10 pt-8 border-t border-gray-800 text-center">
+        <p class="text-sm text-gray-500 mb-4">발급 중 어려움이 있으신가요?</p>
+        <div class="flex flex-wrap justify-center gap-3">
+            <a href="mailto:omnify@omnify.kr?subject=Omnify%20API%20연동%20문의" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors">이메일 문의</a>
+            <a href="http://pf.kakao.com/_fxlxgwX" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-600 hover:border-gray-400 text-gray-200 text-sm font-semibold transition-colors">카카오채널 상담</a>
+        </div>
+    </div>
+
+</main>
+
+<footer class="border-t border-gray-800 py-6">
+    <p class="text-center text-xs text-gray-600">© 2026 JK글로벌 · Omnify <span class="text-gray-500">옴니파이</span></p>
+</footer>
+
+<script>
+(function () {
+    var links = document.querySelectorAll('.doc-nav a');
+    function setActive() {
+        var hash = (location.hash || '#naver').replace('#', '');
+        links.forEach(function (a) {
+            var on = a.getAttribute('href') === '#' + hash;
+            a.classList.toggle('active', on);
+        });
+    }
+    window.addEventListener('hashchange', setActive);
+    setActive();
+})();
+</script>
+
+</body>
+</html>
