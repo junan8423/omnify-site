@@ -1434,8 +1434,30 @@
     <!-- TAB: 문의 -->
     <div id="page-tab-contact" class="page-tab-panel" role="tabpanel">
 
+    <!-- FAQ -->
+    <section id="faq" class="section-block pt-8 sm:pt-12 space-y-6 sm:space-y-8">
+        <div>
+            <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-2">자주 묻는 질문 (FAQ)</h2>
+            <p class="text-gray-400 text-sm sm:text-base">도입 상담 전에 많이 물어보시는 내용을 정리했습니다.</p>
+        </div>
+        <div class="space-y-3 max-w-3xl mx-auto">
+            <details class="glass p-5 group faq-item">
+                <summary class="font-bold cursor-pointer list-none flex justify-between items-center">실제 데이터 연동이 가능한가요?<span class="text-gray-500 group-open:rotate-45 transition-transform">+</span></summary>
+                <p class="text-sm text-gray-400 mt-3 leading-relaxed">네. 각 채널 Open API와 n8n 워크플로우를 통해 실데이터 파이프라인을 구축합니다. 도입 전 상담을 통해 연동 범위와 일정을 안내해 드립니다.</p>
+            </details>
+            <details class="glass p-5 group faq-item">
+                <summary class="font-bold cursor-pointer list-none flex justify-between items-center">기존 ERP/WMS와 충돌하지 않나요?<span class="text-gray-500 group-open:rotate-45 transition-transform">+</span></summary>
+                <p class="text-sm text-gray-400 mt-3 leading-relaxed">읽기(Read) 중심의 통합 뷰로 설계되어 기존 시스템을 대체하지 않습니다. API 또는 CSV 배치로 데이터를 수집·집계하는 방식입니다.</p>
+            </details>
+            <details class="glass p-5 group faq-item">
+                <summary class="font-bold cursor-pointer list-none flex justify-between items-center">구독 해지 시 데이터는 어떻게 되나요?<span class="text-gray-500 group-open:rotate-45 transition-transform">+</span></summary>
+                <p class="text-sm text-gray-400 mt-3 leading-relaxed">해지 전 누적 데이터 Excel/CSV 전량 Export를 제공합니다. 엔터프라이즈 플랜은 소스코드·워크플로우 이전 옵션 협의 가능합니다.</p>
+            </details>
+        </div>
+    </section>
+
     <!-- CTA / Contact -->
-    <section id="contact" class="section-block pt-8 sm:pt-12">
+    <section id="contact" class="section-block">
         <div class="glass-strong p-5 sm:p-10 md:p-14 relative overflow-hidden contact-panel">
             <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-violet-600/10"></div>
             <div class="relative max-w-3xl mx-auto">
@@ -1469,28 +1491,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq" class="section-block space-y-6 sm:space-y-8">
-        <div>
-            <h2 class="section-heading text-2xl sm:text-3xl font-bold mt-1 mb-2">자주 묻는 질문</h2>
-            <p class="text-gray-400 text-sm sm:text-base">도입 상담 전에 많이 물어보시는 내용을 정리했습니다.</p>
-        </div>
-        <div class="space-y-3 max-w-3xl mx-auto">
-            <details class="glass p-5 group faq-item">
-                <summary class="font-bold cursor-pointer list-none flex justify-between items-center">실제 데이터 연동이 가능한가요?<span class="text-gray-500 group-open:rotate-45 transition-transform">+</span></summary>
-                <p class="text-sm text-gray-400 mt-3 leading-relaxed">네. 각 채널 Open API와 n8n 워크플로우를 통해 실데이터 파이프라인을 구축합니다. 도입 전 상담을 통해 연동 범위와 일정을 안내해 드립니다.</p>
-            </details>
-            <details class="glass p-5 group faq-item">
-                <summary class="font-bold cursor-pointer list-none flex justify-between items-center">기존 ERP/WMS와 충돌하지 않나요?<span class="text-gray-500 group-open:rotate-45 transition-transform">+</span></summary>
-                <p class="text-sm text-gray-400 mt-3 leading-relaxed">읽기(Read) 중심의 통합 뷰로 설계되어 기존 시스템을 대체하지 않습니다. API 또는 CSV 배치로 데이터를 수집·집계하는 방식입니다.</p>
-            </details>
-            <details class="glass p-5 group faq-item">
-                <summary class="font-bold cursor-pointer list-none flex justify-between items-center">구독 해지 시 데이터는 어떻게 되나요?<span class="text-gray-500 group-open:rotate-45 transition-transform">+</span></summary>
-                <p class="text-sm text-gray-400 mt-3 leading-relaxed">해지 전 누적 데이터 Excel/CSV 전량 Export를 제공합니다. 엔터프라이즈 플랜은 소스코드·워크플로우 이전 옵션 협의 가능합니다.</p>
-            </details>
         </div>
     </section>
 
