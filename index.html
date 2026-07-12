@@ -356,6 +356,7 @@
             .contact-panel .glass { padding: 1rem !important; }
             footer .footer-label { width: auto; display: block; margin-bottom: 0.125rem; }
             footer .footer-info p { line-height: 1.5; margin-bottom: 0.625rem; }
+            footer .footer-legal { flex-direction: column; gap: 0.5rem; }
         }
         @media (min-width: 640px) {
             .nav-actions .nav-btn-icon { display: none; }
@@ -1052,16 +1053,23 @@
                 </div>
                 <p class="text-sm text-gray-500 leading-relaxed">Your Data, Unified.<br>Beyond Expansion.</p>
             </div>
-            <div class="text-left text-sm text-gray-400 space-y-1.5 footer-info">
-                <p><span class="text-gray-500 w-28 inline-block footer-label">상호</span> <strong class="text-gray-300 font-semibold">JK글로벌컴퍼니</strong></p>
-                <p><span class="text-gray-500 w-28 inline-block footer-label">대표자</span> 최준환</p>
-                <p><span class="text-gray-500 w-28 inline-block footer-label">사업자등록번호</span> 455-03-03979</p>
-                <p><span class="text-gray-500 w-28 inline-block footer-label">이메일</span> <a href="mailto:omnify.io@gmail.com" class="text-blue-400 hover:underline">omnify.io@gmail.com</a></p>
-                <p><span class="text-gray-500 w-28 inline-block footer-label">연락처</span> <a href="tel:01063947431" class="text-blue-400 hover:underline">010-6394-7431</a></p>
+            <div class="text-left text-sm text-gray-400 space-y-1.5 footer-info md:max-w-md">
+                <p><span class="text-gray-500 w-32 sm:w-36 inline-block footer-label">상호명</span> <strong class="text-gray-300 font-semibold">JK글로벌</strong></p>
+                <p><span class="text-gray-500 w-32 sm:w-36 inline-block footer-label">대표자</span> 최준환</p>
+                <p><span class="text-gray-500 w-32 sm:w-36 inline-block footer-label">사업자등록번호</span> 455-03-03979</p>
+                <p><span class="text-gray-500 w-32 sm:w-36 inline-block footer-label align-top">사업장 소재지</span> <span class="text-gray-300">서울특별시 송파구 중대로 207, 2층 201-J545호(가락동, 대명빌딩)</span></p>
+                <p><span class="text-gray-500 w-32 sm:w-36 inline-block footer-label">개인정보보호책임자</span> 최준환</p>
+                <p><span class="text-gray-500 w-32 sm:w-36 inline-block footer-label">고객센터 연락처</span> <a href="tel:01063947431" class="text-blue-400 hover:underline">010-6394-7431</a></p>
+                <p><span class="text-gray-500 w-32 sm:w-36 inline-block footer-label">고객센터 이메일</span> <a href="mailto:omnify@omnify.kr" class="text-blue-400 hover:underline">omnify@omnify.kr</a></p>
             </div>
         </div>
-        <div class="border-t border-gray-800 pt-6 text-center text-xs text-gray-600">
-            <p>© 2026 JK글로벌컴퍼니. All rights reserved. · Omnify <span class="brand-ko">옴니파이</span></p>
+        <div class="border-t border-gray-800 pt-6">
+            <div class="footer-legal flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-4 text-sm">
+                <a href="/legal.html#terms" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">이용약관</a>
+                <span class="text-gray-700 hidden sm:inline" aria-hidden="true">|</span>
+                <a href="/legal.html#privacy" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">개인정보처리방침</a>
+            </div>
+            <p class="text-center text-xs text-gray-600">© 2026 JK글로벌. All rights reserved. · Omnify <span class="brand-ko">옴니파이</span></p>
         </div>
     </div>
 </footer>
