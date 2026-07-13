@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omnify 구축 어드민</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --bg: #030712;
+            --panel: #0b1120;
+            --surface: #111827;
+            --border: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Pretendard, system-ui, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(59,130,246,.18), transparent),
+                        radial-gradient(900px 500px at 100% 0%, rgba(16,185,129,.08), transparent),
+                        var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        a { color: #93c5fd; }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+        header.admin-top {
+            display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+        }
+        header h1 { margin: 0; font-size: 1.35rem; }
+        header p { margin: .35rem 0 0; color: var(--muted); font-size: .875rem; line-height: 1.45; }
+        .grid {
+            display: grid; gap: 1.25rem;
+            grid-template-columns: 1.15fr .85fr;
+        }
+        @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: rgba(11,17,32,.85);
+            border: 1px solid rgba(55,65,81,.7);
+            border-radius: 1rem;
+            padding: 1.15rem 1.2rem;
+            backdrop-filter: blur(8px);
+        }
+        .card h2 { margin: 0 0 1rem; font-size: 1rem; }
+        .muted { color: var(--muted); font-size: .75rem; line-height: 1.4; }
+        label.field { display: block; margin-bottom: .85rem; }
+        label.field > span { display: block; font-size: .72rem; color: var(--muted); margin-bottom: .3rem; font-weight: 600; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
+            width: 100%; padding: .55rem .7rem; border-radius: .55rem;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+            font: inherit;
+        }
+        textarea { min-height: 72px; resize: vertical; }
+        textarea.tall { min-height: 110px; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+        .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
+        @media (max-width: 640px) {
+            .row2, .row3 { grid-template-columns: 1fr; }
+        }
+        .channel-grid, .module-grid, .briefing-item-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .75rem;
+            padding: .6rem; border: 1px solid var(--border); border-radius: .6rem; background: rgba(3,7,18,.5);
+        }
+        .chk { font-size: .8rem; color: #d1d5db; display: flex; gap: .4rem; align-items: center; }
+        .checkline { display: flex; align-items: center; gap: .5rem; font-size: .85rem; margin: .5rem 0 1rem; color: #d1d5db; }
+        .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+        .btn, .btn-sm {
+            border: 1px solid var(--border); background: var(--surface); color: var(--text);
+            border-radius: .55rem; padding: .55rem .9rem; font: inherit; font-weight: 600; cursor: pointer;
+        }
+        .btn-sm { padding: .35rem .6rem; font-size: .75rem; }
+        .btn.primary { background: var(--primary); border-color: #2563eb; color: #fff; }
+        .btn.ghost { background: transparent; }
+        .btn.block { display: block; text-align: center; text-decoration: none; margin-top: 1rem; }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-sm.danger { color: #fca5a5; border-color: rgba(239,68,68,.4); }
+        .tenant-list { display: flex; flex-direction: column; gap: .65rem; max-height: 420px; overflow: auto; }
+        .tenant-card {
+            border: 1px solid var(--border); border-radius: .75rem; padding: .75rem .85rem; background: rgba(3,7,18,.45);
+        }
+        .tenant-card-top { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; }
+        .tenant-card h3 { margin: 0; font-size: .95rem; }
+        .tenant-card .meta { margin: .4rem 0 .55rem; font-size: .72rem; color: var(--muted); }
+        .tenant-actions { display: flex; flex-wrap: wrap; gap: .35rem; }
+        .badge {
+            font-size: .65rem; font-weight: 700; padding: .2rem .45rem; border-radius: 999px;
+            border: 1px solid var(--border); white-space: nowrap;
+        }
+        .badge.ready { color: #6ee7b7; border-color: rgba(16,185,129,.45); background: rgba(16,185,129,.12); }
+        .badge.draft, .badge.pending { color: #fcd34d; border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.1); }
+        .badge.error { color: #fca5a5; border-color: rgba(239,68,68,.45); background: rgba(239,68,68,.1); }
+        .prov-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+        .prov-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .45rem; }
+        .prov-steps li { display: flex; gap: .6rem; align-items: flex-start; padding: .45rem .5rem; border-radius: .5rem; background: rgba(3,7,18,.4); border: 1px solid transparent; }
+        .prov-done { border-color: rgba(16,185,129,.25) !important; }
+        .prov-pending .prov-ico { color: var(--muted); }
+        .prov-done .prov-ico { color: var(--success); }
+        .prov-skipped .prov-ico { color: var(--muted); }
+        .prov-label { margin: 0; font-size: .82rem; font-weight: 600; }
+        .admin-toast {
+            position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%) translateY(120%);
+            background: #111827; border: 1px solid var(--border); padding: .65rem 1rem; border-radius: .75rem;
+            font-size: .85rem; font-weight: 600; opacity: 0; transition: .25s ease; z-index: 50;
+            box-shadow: 0 10px 40px rgba(0,0,0,.45);
+        }
+        .admin-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .admin-toast.warning { border-color: rgba(245,158,11,.5); }
+        .admin-toast.success { border-color: rgba(16,185,129,.5); }
+        .hidden { display: none !important; }
+        .side-stack { display: flex; flex-direction: column; gap: 1.25rem; }
+        .hint {
+            margin: 0 0 1rem; padding: .65rem .75rem; border-radius: .6rem;
+            background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.25);
+            font-size: .78rem; color: #bfdbfe; line-height: 1.45;
+        }
+        .tabs {
+            display: flex; gap: .35rem; margin-bottom: 1rem; padding: .25rem;
+            background: rgba(3,7,18,.55); border: 1px solid var(--border); border-radius: .7rem;
+        }
+        .tab-btn {
+            flex: 1; border: 0; background: transparent; color: var(--muted);
+            font: inherit; font-size: .82rem; font-weight: 700; padding: .55rem .6rem;
+            border-radius: .55rem; cursor: pointer;
+        }
+        .tab-btn.active { background: var(--primary); color: #fff; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .section-block {
+            margin: 1.15rem 0 0; padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .section-block:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+        .section-title {
+            margin: 0 0 .55rem; font-size: .8rem; font-weight: 800;
+            letter-spacing: .02em; color: #93c5fd; text-transform: uppercase;
+        }
+        .weight-row {
+            display: grid; grid-template-columns: 1.1fr .7fr 1.4fr; gap: .5rem; align-items: end;
+            margin-bottom: .55rem;
+        }
+        @media (max-width: 640px) { .weight-row { grid-template-columns: 1fr; } }
+        .weight-row .ch-name { font-size: .8rem; font-weight: 600; padding-bottom: .45rem; }
+        .completeness {
+            margin: 0 0 .75rem; font-size: .8rem; color: #d1d5db;
+        }
+        .completeness strong { color: #6ee7b7; }
+        .pipe-help { font-size: .7rem; color: var(--muted); margin: -.35rem 0 .65rem; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="admin-top">
+            <div>
+                <h1>Omnify 구축 어드민</h1>
+                <p>① 계약·기본 → ② 대시보드 커스텀 → 초안·인프라 구축<br>
+                    데모 구조를 뼈대로 두고, 고객 KPI·채널·브리핑·팀을 입력값으로 객관화합니다.</p>
+            </div>
+            <div class="actions">
+                <a class="btn ghost" href="index.html">랜딩</a>
+                <a class="btn ghost" href="demo-dashboard.html" target="_blank" rel="noopener">공통 데모</a>
+            </div>
+        </header>
+
+        <div class="grid">
+            <section class="card">
+                <h2 id="form-title">신규 계약 등록</h2>
+                <div class="tabs" role="tablist">
+                    <button type="button" class="tab-btn active" data-tab="basic" id="tab-btn-basic">1. 계약 · 기본</button>
+                    <button type="button" class="tab-btn" data-tab="custom" id="tab-btn-custom">2. 대시보드 커스텀</button>
+                </div>
+
+                <div id="tab-basic" class="tab-panel active">
+                    <p class="hint">필수: 고객사명 · 채널 1개 이상. 청구 플랜과 서비스 티어를 다르게 둘 수 있습니다(특수관계 가격).</p>
+
+                    <label class="field"><span>고객사명 *</span><input id="f-company" type="text" placeholder="예: 갓바디" autocomplete="organization"></label>
+                    <div class="row2">
+                        <label class="field"><span>영문/슬러그용</span><input id="f-company-en" type="text" placeholder="Gotbody"></label>
+                        <label class="field"><span>사업자번호</span><input id="f-bizno" type="text" placeholder="000-00-00000"></label>
+                    </div>
+                    <div class="row2">
+                        <label class="field"><span>담당자</span><input id="f-contact" type="text"></label>
+                        <label class="field"><span>연락처</span><input id="f-phone" type="tel"></label>
+                    </div>
+                    <label class="field"><span>이메일</span><input id="f-email" type="email"></label>
+
+                    <div class="row2">
+                        <label class="field"><span>청구 플랜</span>
+                            <select id="f-billing">
+                                <option value="starter">Starter</option>
+                                <option value="growth" selected>Growth</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </label>
+                        <label class="field"><span>서비스 티어 (실제 기능)</span>
+                            <select id="f-service">
+                                <option value="starter">Starter</option>
+                                <option value="growth">Growth</option>
+                                <option value="enterprise" selected>Enterprise</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="checkline"><input id="f-special" type="checkbox"> 특수가격 (청구≠서비스)</label>
+
+                    <div class="row2">
+                        <label class="field"><span>작업 좌석 수</span><input id="f-seats" type="number" min="1" max="99" value="10"></label>
+                        <label class="field"><span>알림톡 수신(명)</span><input id="f-briefing" type="number" min="1" max="50" value="5"></label>
+                    </div>
+                    <div class="row2">
+                        <label class="field"><span>WMS</span>
+                            <select id="f-wms">
+                                <option value="none">없음 (채널만)</option>
+                                <option value="sabangnet" selected>사방넷 풀필먼트</option>
+                            </select>
+                        </label>
+                        <label class="field"><span>SKU(대략)</span><input id="f-sku" type="number" min="0" placeholder="50"></label>
+                    </div>
+                    <label class="checkline"><input id="f-inv-write" type="checkbox"> 재고·발주 쓰기 커스텀 포함 (Ent·별도 · 기본 OFF)</label>
+
+                    <p class="muted" style="margin:1rem 0 .4rem">Google Drive 자료실 (전 플랜)</p>
+                    <label class="checkline"><input id="f-drive-on" type="checkbox" checked> Drive 연동 포함</label>
+                    <label class="field"><span>공유 폴더 URL 또는 ID</span><input id="f-drive-url" type="text" placeholder="https://drive.google.com/drive/folders/…"></label>
+                    <div class="row2">
+                        <label class="field"><span>폴더 소유자 이메일</span><input id="f-drive-owner" type="email" placeholder="ops@customer.com"></label>
+                        <label class="field"><span>Omnify에 공유한 계정</span><input id="f-drive-shared" type="text" placeholder="service@omnify… (고객이 초대)"></label>
+                    </div>
+                    <p class="muted" style="margin:.2rem 0 .6rem;font-size:.8rem">고객이 Drive 폴더에 Omnify 서비스 계정을 뷰어/편집자로 공유한 뒤 URL을 넣어 주세요.</p>
+
+                    <p class="muted" style="margin:0 0 .4rem">판매 채널 *</p>
+                    <div class="channel-grid" id="channel-grid"></div>
+
+                    <label class="field" style="margin-top:.9rem"><span>메모</span><textarea id="f-notes" placeholder="특수관계, 1차 채널 범위, 일정…"></textarea></label>
+                </div>
+
+                <div id="tab-custom" class="tab-panel">
+                    <p class="hint">데모 대시보드 모듈 구조는 유지하고, 아래 값으로 고객사 초안을 시드합니다. 빈 항목은 데모 기본값을 씁니다.</p>
+                    <p class="completeness" id="custom-completeness">커스텀 완성도: <strong>0%</strong></p>
+
+                    <div class="section-block">
+                        <p class="section-title">브랜드 · 표시</p>
+                        <div class="row2">
+                            <label class="field"><span>대시보드 표시명</span><input id="c-display" type="text" placeholder="갓바디"></label>
+                            <label class="field"><span>법적 상호</span><input id="c-legal" type="text" placeholder="(주)갓바디"></label>
+                        </div>
+                        <label class="field"><span>타이틀 접미어</span><input id="c-title-suffix" type="text" value="커맨드 센터" placeholder="커맨드 센터"></label>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">비즈니스 · 구축 범위</p>
+                        <div class="row3">
+                            <label class="field"><span>월 GMV 대략(억)</span><input id="c-gmv" type="number" min="0" step="0.1" placeholder="15"></label>
+                            <label class="field"><span>자사몰 비중(%)</span><input id="c-mall-share" type="number" min="0" max="100" value="50"></label>
+                            <label class="field"><span>평균 객단가(원)</span><input id="c-aov" type="number" min="0" step="1000" placeholder="45000"></label>
+                        </div>
+                        <label class="field"><span>오픈(Go-live) 목표일</span><input id="c-golive" type="date"></label>
+                        <p class="muted" style="margin:0 0 .4rem">1차 오픈 모듈 (Phase 1)</p>
+                        <div class="module-grid" id="phase1-grid"></div>
+                        <label class="field" style="margin-top:.85rem"><span>커스텀 요청 (개발 백로그)</span><textarea id="c-requests" class="tall" placeholder="예: 채널별 정산 탭 추가, 사방넷 발주 상태 컬럼, 브리핑에 반품률…"></textarea></label>
+                        <label class="field"><span>구축 메모</span><textarea id="c-build-notes" placeholder="킥오프 일정, 권한자, 데이터 샘플 수급…"></textarea></label>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">KPI · 목표</p>
+                        <div class="row2">
+                            <label class="field"><span>월 매출 목표(억)</span><input id="c-target-eok" type="number" min="0" step="0.1" value="8.5"></label>
+                            <label class="field"><span>현재 월 매출(억)</span><input id="c-current-eok" type="number" min="0" step="0.1" value="6.4"></label>
+                        </div>
+                        <div class="row3">
+                            <label class="field"><span>일 주문 목표</span><input id="c-daily-orders" type="number" min="0" value="1500"></label>
+                            <label class="field"><span>목표 마진(%)</span><input id="c-target-margin" type="number" min="0" max="100" step="0.1" value="32"></label>
+                            <label class="field"><span>목표 ROAS</span><input id="c-target-roas" type="number" min="0" step="0.1" value="3.5"></label>
+                        </div>
+                        <label class="field"><span>통합 마진 시드(%)</span><input id="c-margin-global" type="number" min="0" max="100" step="0.1" value="32"></label>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">채널 비중 · 어드민 URL</p>
+                        <p class="pipe-help">기본 탭에서 선택한 채널만 표시됩니다. 비중 합계 100% 권장.</p>
+                        <div id="channel-custom-grid"></div>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">재고 경보 기준</p>
+                        <div class="row3">
+                            <label class="field"><span>안전재고(일)</span><input id="c-safety-days" type="number" min="1" value="14"></label>
+                            <label class="field"><span>발주점(수량)</span><input id="c-reorder" type="number" min="0" value="50"></label>
+                            <label class="field"><span>리드타임(일)</span><input id="c-lead" type="number" min="0" value="7"></label>
+                        </div>
+                        <label class="checkline"><input id="c-auto-alert" type="checkbox" checked> 재고 자동 경보 ON</label>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">데일리 브리핑</p>
+                        <label class="field"><span>발송 시각</span><input id="c-brief-time" type="time" value="08:30"></label>
+                        <p class="muted" style="margin:0 0 .4rem">포함 항목</p>
+                        <div class="briefing-item-grid" id="briefing-items-grid"></div>
+                        <label class="field" style="margin-top:.85rem"><span>수신자 시드</span><textarea id="c-brief-recipients" class="tall" placeholder="김지현|대표|010-1234-5678"></textarea></label>
+                        <p class="pipe-help">한 줄당 1명 · 형식: 이름|역할|전화</p>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">팀 · 좌석 시드</p>
+                        <label class="field"><span>팀원 목록</span><textarea id="c-team" class="tall" placeholder="김지현|대표|ceo@corp.com|admin&#10;박서연|물류|ops@corp.com|member"></textarea></label>
+                        <p class="pipe-help">형식: 이름|역할|이메일|좌석(admin/member/viewer)</p>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">광고 매체 시드</p>
+                        <label class="field"><span>월 광고비(만원)</span><input id="c-ad-budget" type="number" min="0" value="1500"></label>
+                        <label class="field"><span>매체 목록</span><textarea id="c-ad-media" class="tall">Meta Ads|SNS|50&#10;Google Ads|검색|35&#10;네이버 검색광고|검색|40</textarea></label>
+                        <p class="pipe-help">형식: 매체명|유형|일예산(만원) · 선택적 4열 ROAS</p>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="btn primary" id="btn-submit">초안 생성 · 인프라 자동 구축</button>
+                    <button type="button" class="btn ghost" id="btn-reset">초기화</button>
+                    <button type="button" class="btn ghost" id="btn-gotbody">갓바디 예시 채우기</button>
+                </div>
+            </section>
+
+            <div class="side-stack">
+                <section class="card">
+                    <h2>자동 구축 진행</h2>
+                    <div id="provision-panel"><p class="muted">계약을 등록하면 구축 단계가 여기에 표시됩니다.</p></div>
+                </section>
+                <section class="card">
+                    <h2>커스텀 체크리스트</h2>
+                    <div id="custom-checklist"><p class="muted">2번 탭 입력값이 여기에 요약됩니다.</p></div>
+                </section>
+                <section class="card">
+                    <h2>등록된 테넌트</h2>
+                    <p id="tenant-empty" class="muted">아직 없습니다. 좌측에서 신규 계약을 등록하세요.</p>
+                    <div class="tenant-list" id="tenant-list"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-toast" class="admin-toast" role="status"></div>
+
+    <script src="js/tenant-registry.js?v=20260714-admin2"></script>
+    <script src="js/admin-app.js?v=20260714-admin2"></script>
+</body>
+</html>

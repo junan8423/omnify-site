@@ -44,32 +44,33 @@ const App = {
         { name: '에이블리', icon: '👗', status: 'warn', tokenExpiry: '7일 후', lastSync: '5분 전', orders: 156 },
     ],
 
-    workflows: [
-        { name: 'Morning Order Sync', desc: '매일 09:00 — 전 채널 주문 수집', status: 'active', runs: 847, lastRun: '오늘 09:00', success: 99.8 },
-        { name: 'Daily Kakao Briefing', desc: '매일 08:30 — 마진율·재고 경보 발송', status: 'active', runs: 847, lastRun: '오늘 08:30', success: 100 },
-        { name: 'Low Inventory Alert', desc: '재고 안전선 미달 시 즉시 알림', status: 'active', runs: 2341, lastRun: '3분 전', success: 100 },
-        { name: 'API Token Auto-Renew', desc: '토큰 만료 14일 전 자동 갱신', status: 'active', runs: 48, lastRun: '어제 03:00', success: 100 },
-        { name: 'Invoice Auto-Send', desc: '에이블리·지그재그 송장 자동 전송', status: 'active', runs: 1203, lastRun: '10분 전', success: 97.2 },
-        { name: 'Monthly Tax Report', desc: '매월 1일 세금계산서 리포트 생성', status: 'paused', runs: 12, lastRun: '2026.06.01', success: 100 },
+    syncHistory: [
+        { time: '23:08:05', channel: 'Cafe24', icon: '☁️', job: '주문 · 재고 동기화', status: 'success', records: 428, duration: '42초' },
+        { time: '23:08:12', channel: '스마트스토어', icon: '🛒', job: '주문 동기화', status: 'success', records: 312, duration: '38초' },
+        { time: '23:07:55', channel: '쿠팡', icon: '📦', job: '주문 · 정산 동기화', status: 'success', records: 248, duration: '51초' },
+        { time: '22:38:02', channel: '에이블리', icon: '👗', job: '주문 · 송장 동기화', status: 'warn', records: 184, duration: '1m 12s', note: '송장 대기 184건' },
+        { time: '08:30:00', channel: '전체', icon: '💬', job: '데일리 브리핑 발송', status: 'success', records: 1, duration: '3초' },
+        { time: '22:05:18', channel: 'Cafe24', icon: '☁️', job: '주문 · 재고 동기화', status: 'success', records: 415, duration: '39초' },
+        { time: '21:35:44', channel: '에이블리', icon: '👗', job: 'OAuth 토큰 갱신', status: 'success', records: 1, duration: '2초' },
     ],
 
     teamMembers: [
-        { id: 'kim', name: '김지현', role: '대표', avatar: '김', color: 'from-primary to-accent' },
-        { id: 'park', name: '박서연', role: '운영팀', avatar: '박', color: 'from-emerald-500 to-teal-500' },
-        { id: 'lee', name: '이준호', role: '마케팅', avatar: '이', color: 'from-violet-500 to-purple-500' },
-        { id: 'choi', name: '최민지', role: 'CS팀', avatar: '최', color: 'from-orange-500 to-amber-500' },
+        { id: 'kim', name: '김지현', role: '대표', email: 'kim@sample.co.kr', avatar: '김', color: 'from-primary to-accent', seatType: 'admin', active: true },
+        { id: 'park', name: '박서연', role: '운영팀', email: 'park@sample.co.kr', avatar: '박', color: 'from-emerald-500 to-teal-500', seatType: 'member', active: true },
+        { id: 'lee', name: '이준호', role: '마케팅', email: 'lee@sample.co.kr', avatar: '이', color: 'from-violet-500 to-purple-500', seatType: 'member', active: false },
+        { id: 'choi', name: '최민지', role: 'CS팀', email: 'choi@sample.co.kr', avatar: '최', color: 'from-orange-500 to-amber-500', seatType: 'viewer', active: false },
     ],
 
     activityLogs: [
         { id: 1, userId: 'kim', action: '로그인', category: 'auth', type: 'success', detail: '대시보드 로그인 성공', meta: 'IP 211.234.**.45 · Chrome', time: '23:15:22', ago: '5분 전', date: '2026-07-10' },
-        { id: 2, userId: 'park', action: '발주 처리', category: 'orders', type: 'info', detail: '에이블리 채널 발주 12건 일괄 승인', meta: 'ORD-BATCH-0710-12', time: '23:08:14', ago: '12분 전', date: '2026-07-10' },
+        { id: 2, userId: 'park', action: '원천 처리 안내', category: 'orders', type: 'info', detail: '에이블리 발주 대기 12건 — 사방넷/채널에서 처리 안내', meta: 'ORD-BATCH-0710-12', time: '23:08:14', ago: '12분 전', date: '2026-07-10' },
         { id: 3, userId: 'lee', action: 'CRM 캠페인', category: 'crm', type: 'info', detail: '여름 시즌 오프 알림톡 캠페인 수정', meta: '타겟 8,420명 · 예약 발송', time: '22:54:03', ago: '26분 전', date: '2026-07-10' },
-        { id: 4, userId: 'choi', action: '재고 조정', category: 'inventory', type: 'warning', detail: '코스메 히트 세럼 안전재고 50→60 상향', meta: 'SKU-COS-001', time: '22:41:55', ago: '39분 전', date: '2026-07-10' },
+        { id: 4, userId: 'choi', action: '안전재고 경보값', category: 'inventory', type: 'info', detail: '코스메 히트 세럼 Omnify 경보 기준 50→60 (원천 재고 수량 변경 없음)', meta: 'SKU-COS-001', time: '22:41:55', ago: '39분 전', date: '2026-07-10' },
         { id: 5, userId: 'kim', action: '리포트 다운로드', category: 'report', type: 'info', detail: '7월 1주차 옴니채널 매출 PDF 생성', meta: '파일 2.4MB', time: '22:30:00', ago: '51분 전', date: '2026-07-10' },
         { id: 6, userId: 'park', action: '수동 동기화', category: 'sync', type: 'success', detail: '전 채널 주문 수동 동기화 실행', meta: '1,248건 수집 완료', time: '21:15:33', ago: '2시간 전', date: '2026-07-10' },
         { id: 7, userId: 'lee', action: '광고 예산 변경', category: 'marketing', type: 'warning', detail: 'Meta Ads 일 예산 ₩50만 → ₩65만 증액', meta: 'ROAS 3.2x 기준', time: '18:22:10', ago: '5시간 전', date: '2026-07-10' },
         { id: 8, userId: 'choi', action: '고객 응대', category: 'cs', type: 'info', detail: '스마트스토어 문의 3건 처리 완료', meta: '평균 응답 4분', time: '17:05:44', ago: '6시간 전', date: '2026-07-10' },
-        { id: 9, userId: 'kim', action: 'API 설정', category: 'system', type: 'danger', detail: '에이블리 OAuth 토큰 수동 갱신 시도', meta: '자동 갱신 워크플로우 예약', time: '15:30:00', ago: '8시간 전', date: '2026-07-10' },
+        { id: 9, userId: 'kim', action: 'API 설정', category: 'system', type: 'danger', detail: '에이블리 OAuth 토큰 수동 갱신 시도', meta: '자동 토큰 갱신 예약', time: '15:30:00', ago: '8시간 전', date: '2026-07-10' },
         { id: 10, userId: 'park', action: '로그인', category: 'auth', type: 'success', detail: '대시보드 로그인 성공', meta: 'IP 175.223.**.12 · Safari', time: '09:02:18', ago: '14시간 전', date: '2026-07-10' },
         { id: 11, userId: 'lee', action: '로그인', category: 'auth', type: 'success', detail: '대시보드 로그인 성공', meta: 'IP 121.132.**.88 · Chrome', time: '08:45:00', ago: '14시간 전', date: '2026-07-10' },
         { id: 12, userId: 'kim', action: '브리핑 설정', category: 'system', type: 'info', detail: '데일리 카카오 브리핑 항목 2개 추가', meta: 'AI 예상 매출 · ROAS 알림', time: '07-09 16:20', ago: '어제', date: '2026-07-09' },
@@ -108,10 +109,9 @@ const App = {
         { label: '데일리 브리핑', target: 'view-briefing', icon: '💬' },
         { label: '주문 · 발주', target: 'view-orders', icon: '📋' },
         { label: '통합 재고', target: 'view-inventory', icon: '📦' },
-        { label: '프로모션 · CRM', target: 'view-crm', icon: '🎯' },
+        { label: '프로모션 기획 · 성과', target: 'view-crm', icon: '🎯' },
         { label: 'AI 수익성 분석', target: 'view-profit', icon: '📈' },
         { label: 'API 연동 상태', target: 'view-api', icon: '🔗' },
-        { label: '워크플로우', target: 'view-workflow', icon: '⚡' },
         { label: '활동 이력', target: 'view-activity', icon: '🛡️' },
         { label: '설정', target: 'view-settings', icon: '⚙️' },
         { label: '자료실', target: 'view-archive', icon: '📁' },
@@ -154,7 +154,7 @@ const App = {
             icon: '📦',
             items: [
                 { target: 'view-orders', title: '주문 · 발주', group: '일상 운영', icon: 'orders', badge: { text: '3', class: 'bg-warning/20 text-warning w-5 h-5 rounded-full' } },
-                { target: 'view-inventory', title: '통합 재고', subtitle: 'WMS', group: '일상 운영', icon: 'inventory', badge: { text: '2', class: 'bg-danger/20 text-danger w-5 h-5 rounded-full' } },
+                { target: 'view-inventory', title: '통합 재고', subtitle: '조회', group: '일상 운영', icon: 'inventory', badge: { text: '2', class: 'bg-danger/20 text-danger w-5 h-5 rounded-full' } },
                 { target: 'view-comms', title: '커뮤니케이션', group: '일상 운영', icon: 'briefing', badge: { text: '3', class: 'bg-accent/20 text-purple-300 w-5 h-5 rounded-full' } },
             ]
         },
@@ -162,22 +162,22 @@ const App = {
             label: '성장 · 마케팅',
             icon: '📈',
             items: [
-                { target: 'view-crm', title: '프로모션 · CRM', group: '성장 · 마케팅', icon: 'crm' },
+                { target: 'view-crm', title: '프로모션 기획 · 성과', group: '성장 · 마케팅', icon: 'crm' },
                 { target: 'view-profit', title: 'AI 수익성 분석', group: '성장 · 마케팅', icon: 'profit' },
             ]
         },
         {
-            label: '인프라 · 자동화',
+            label: '인프라 · 연동',
             icon: '⚙️',
             items: [
-                { target: 'view-api', title: 'API 연동 상태', group: '인프라 · 자동화', icon: 'api' },
-                { target: 'view-workflow', title: '워크플로우', subtitle: 'n8n', group: '인프라 · 자동화', icon: 'workflow' },
+                { target: 'view-api', title: 'API 연동 상태', group: '인프라 · 연동', icon: 'api' },
             ]
         },
         {
             label: '관리',
             icon: '🛡️',
             items: [
+                { target: 'view-archive', title: 'Google Drive 자료실', group: '관리', icon: 'workflow', badge: { text: 'Drive', class: 'bg-[#4285f4]/20 text-blue-300' } },
                 { target: 'view-activity', title: '활동 이력', group: '관리', icon: 'workflow', badge: { text: '7', class: 'bg-primary/20 text-blue-400 w-5 h-5 rounded-full' } },
                 { target: 'view-settings', title: '설정', group: '관리', icon: 'workflow' },
             ]
@@ -307,7 +307,10 @@ function updateDemoHeader() {
     if (!sub) return;
     var t = App.demoLastRefresh || new Date();
     var hm = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0') + ':' + String(t.getSeconds()).padStart(2, '0');
-    sub.innerHTML = '<span class="demo-pill">목업 데이터</span>' + App.globalDateRange.label + ' · 데모 시연 · 갱신 <span id="last-sync">' + hm + '</span>';
+    var meta = (typeof TIER_META !== 'undefined' && TIER_META[App.tier]) ? TIER_META[App.tier] : null;
+    var pill = meta ? meta.demoBadge : '목업 데이터';
+    var mid = meta ? (App.tier === 'starter' ? '스타터 · 매일 브리핑' : App.tier === 'growth' ? '그로스 · 매일 브리핑' : '엔터프라이즈') : '데모 시연';
+    sub.innerHTML = '<span class="demo-pill">' + pill + '</span>' + mid + ' · ' + App.globalDateRange.label + ' · 갱신 <span id="last-sync">' + hm + '</span>';
 }
 
 function updateNavBadges() {
@@ -391,29 +394,11 @@ function bindChartPeriodTabs() {
 function processOrder(id) {
     var order = App.orders.find(function(o) { return o.id === id; });
     if (!order) return;
-    var p = App.mockPipeline;
-    if (order.status === 'pending') {
-        order.status = 'processing';
-        if (p.pending > 0) p.pending--;
-        p.processing++;
-        showToast('발주 처리를 시작했습니다. (데모)', 'success');
-    } else if (order.status === 'processing') {
-        order.status = 'shipped';
-        if (p.processing > 0) p.processing--;
-        p.shipped++;
-        showToast('출고 완료 처리했습니다. (데모)', 'success');
-    } else {
-        showToast('이미 출고 완료된 주문입니다.', 'info');
+    if (typeof blockInventoryWrite === 'function') {
+        blockInventoryWrite('발주·출고 확정');
         return;
     }
-    App.demoLastRefresh = new Date();
-    addActivityLog({ userId: 'kim', action: '발주 처리', category: 'orders', type: 'success', detail: order.id + ' — ' + order.product, meta: '데모 상태 변경' });
-    refreshDemoUI();
-    if (App.currentView === 'view-orders') {
-        switchView('view-orders');
-    } else if (App.currentView === 'view-dashboard') {
-        switchView('view-dashboard');
-    }
+    showToast('발주·출고는 사방넷 또는 채널 어드민에서 처리하세요. Omnify는 상태 조회만 제공합니다.', 'warning');
 }
 
 function syncOrdersDemo() {
@@ -471,6 +456,97 @@ var BRIEFING_ITEM_DEFS = [
     { id: 'roas', label: '광고 ROAS 하락 채널 알림', preview: function(m) { return '📉 쿠팡 ROAS 주의 · 평균 ROAS <strong>' + m.avgRoas + 'x</strong>'; } },
 ];
 App.briefingConfig = {};
+var BRIEFING_RECIPIENTS_KEY = 'sample_briefing_recipients_v1';
+var BRIEFING_RECIPIENT_POOL = [
+    { id: 'r1', name: '김지현', role: '대표', phone: '010-****-1201' },
+    { id: 'r2', name: '박서연', role: '물류', phone: '010-****-2240' },
+    { id: 'r3', name: '이준호', role: '마케팅', phone: '010-****-3388' },
+    { id: 'r4', name: '최유진', role: 'CS', phone: '010-****-4412' },
+    { id: 'r5', name: '정민수', role: 'MD', phone: '010-****-5520' },
+    { id: 'r6', name: '한소희', role: '재무', phone: '010-****-6633' }
+];
+App.briefingRecipientIds = [];
+
+function getBriefingRecipientLimitSafe() {
+    if (App.tenantMeta && App.tenantMeta.briefingRecipients) return Number(App.tenantMeta.briefingRecipients) || 1;
+    if (typeof getBriefingRecipientLimit === 'function') return getBriefingRecipientLimit(App.tier);
+    var map = { starter: 1, growth: 3, enterprise: 5 };
+    return map[App.tier] || 1;
+}
+
+function loadBriefingRecipients() {
+    var lim = getBriefingRecipientLimitSafe();
+    var pool = (window.__OMNIFY_BRIEFING_POOL__ && window.__OMNIFY_BRIEFING_POOL__.length)
+        ? window.__OMNIFY_BRIEFING_POOL__
+        : BRIEFING_RECIPIENT_POOL;
+    try {
+        var key = (typeof tenantStorageKey === 'function' ? tenantStorageKey(BRIEFING_RECIPIENTS_KEY) : BRIEFING_RECIPIENTS_KEY) + '_' + App.tier;
+        var raw = localStorage.getItem(key);
+        var ids = raw ? JSON.parse(raw) : null;
+        if (!Array.isArray(ids) || !ids.length) {
+            ids = pool.slice(0, lim).map(function(r) { return r.id; });
+        }
+        App.briefingRecipientIds = ids.filter(function(id) {
+            return pool.some(function(r) { return r.id === id; });
+        }).slice(0, lim);
+        if (!App.briefingRecipientIds.length) {
+            App.briefingRecipientIds = pool.slice(0, lim).map(function(r) { return r.id; });
+        }
+    } catch (e) {
+        App.briefingRecipientIds = pool.slice(0, lim).map(function(r) { return r.id; });
+    }
+}
+
+function persistBriefingRecipients() {
+    try {
+        var key = (typeof tenantStorageKey === 'function' ? tenantStorageKey(BRIEFING_RECIPIENTS_KEY) : BRIEFING_RECIPIENTS_KEY) + '_' + App.tier;
+        localStorage.setItem(key, JSON.stringify(App.briefingRecipientIds));
+    } catch (e) { /* ignore */ }
+}
+
+function toggleBriefingRecipient(id) {
+    var lim = getBriefingRecipientLimitSafe();
+    var idx = App.briefingRecipientIds.indexOf(id);
+    if (idx >= 0) {
+        if (App.briefingRecipientIds.length <= 1) {
+            showToast('브리핑 수신자는 최소 1명 필요합니다.', 'warning');
+            return;
+        }
+        App.briefingRecipientIds.splice(idx, 1);
+    } else {
+        if (App.briefingRecipientIds.length >= lim) {
+            showToast('이 플랜 알림톡 수신은 ' + lim + '명까지입니다. 추가 수신은 별도 문의하세요.', 'warning');
+            return;
+        }
+        App.briefingRecipientIds.push(id);
+    }
+    persistBriefingRecipients();
+    renderBriefingRecipientsPanel();
+}
+
+function renderBriefingRecipientsPanel() {
+    var el = document.getElementById('briefing-recipients-list');
+    var meta = document.getElementById('briefing-recipients-meta');
+    if (!el) return;
+    var lim = getBriefingRecipientLimitSafe();
+    var used = App.briefingRecipientIds.length;
+    if (meta) {
+        meta.innerHTML = '플랜 기본 <strong class="text-gray-300">' + lim + '명</strong> · 선택 <strong class="text-primary">' + used + '</strong>/' + lim +
+            ' <span class="text-gray-600">· 1인 1통 · 매일 08:30 · 추가 시 별도 문의</span>';
+    }
+    el.innerHTML = ((window.__OMNIFY_BRIEFING_POOL__ && window.__OMNIFY_BRIEFING_POOL__.length)
+        ? window.__OMNIFY_BRIEFING_POOL__
+        : BRIEFING_RECIPIENT_POOL).map(function(r) {
+        var on = App.briefingRecipientIds.indexOf(r.id) >= 0;
+        var locked = !on && used >= lim;
+        return '<button type="button" class="w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors ' +
+            (on ? 'bg-primary/10 border-primary/40' : locked ? 'bg-surface/40 border-border opacity-50 cursor-not-allowed' : 'bg-surface border-border hover:border-primary/30') +
+            '" ' + (locked ? 'disabled' : 'onclick="toggleBriefingRecipient(\'' + r.id + '\')"') + '>' +
+            '<span><span class="text-sm font-semibold text-gray-200">' + r.name + '</span>' +
+            '<span class="text-[10px] text-gray-500 ml-2">' + r.role + ' · ' + r.phone + '</span></span>' +
+            '<span class="text-[10px] font-bold ' + (on ? 'text-primary' : 'text-gray-600') + '">' + (on ? '수신 ON' : (locked ? '한도' : 'OFF')) + '</span></button>';
+    }).join('');
+}
 
 function loadGlobalDateRange() {
     try {
@@ -568,7 +644,8 @@ function getCurrentUser() {
 }
 
 function setCurrentUser(userId) {
-    if (!App.teamMembers.find(function(m) { return m.id === userId; })) return;
+    var m = App.teamMembers.find(function(x) { return x.id === userId; });
+    if (!m || m.active === false) return;
     App.currentUserId = userId;
     try { localStorage.setItem(CURRENT_USER_KEY, userId); } catch (e) { /* ignore */ }
     updateCurrentUserUI();
@@ -591,11 +668,15 @@ function updateCurrentUserUI() {
 function renderUserSwitchMenu() {
     var menu = document.getElementById('user-switch-menu');
     if (!menu) return;
-    menu.innerHTML = App.teamMembers.map(function(m) {
+    var activeMembers = App.teamMembers.filter(function(m) { return m.active !== false; });
+    menu.innerHTML = activeMembers.map(function(m) {
         return '<button type="button" class="user-switch-item ' + (m.id === App.currentUserId ? 'active' : '') + '" onclick="setCurrentUser(\'' + m.id + '\')">' +
             '<span class="w-6 h-6 rounded-full bg-gradient-to-br ' + m.color + ' flex items-center justify-center text-[9px] font-bold text-white">' + m.avatar + '</span>' +
-            '<span>' + m.name + ' <span class="text-gray-500">(' + m.role + ')</span></span></button>';
-    }).join('');
+            '<span>' + m.name + ' <span class="text-gray-500">(' + m.role + (m.seatType === 'viewer' ? '·뷰어' : '') + ')</span></span></button>';
+    }).join('') +
+    '<div class="border-t border-border mt-1 pt-1 px-2 pb-1">' +
+        '<button type="button" onclick="navigateTo(\'view-settings\'); setSettingsTab(\'team\')" class="w-full text-left text-[10px] text-primary font-semibold py-2 hover:underline">팀 · 좌석 관리 →</button>' +
+    '</div>';
 }
 
 function toggleUserSwitchMenu(e) {
@@ -609,18 +690,25 @@ function getBriefingConfigDefaults() {
     BRIEFING_ITEM_DEFS.forEach(function(item) {
         cfg[item.id] = item.id !== 'forecast';
     });
+    if (App.tenantCustom && App.tenantCustom.briefing && App.tenantCustom.briefing.items) {
+        Object.assign(cfg, App.tenantCustom.briefing.items);
+    }
     return cfg;
 }
 
 function loadBriefingConfig() {
     try {
-        var raw = localStorage.getItem(BRIEFING_CONFIG_KEY);
+        var key = typeof tenantStorageKey === 'function' ? tenantStorageKey(BRIEFING_CONFIG_KEY) : BRIEFING_CONFIG_KEY;
+        var raw = localStorage.getItem(key);
         App.briefingConfig = raw ? Object.assign(getBriefingConfigDefaults(), JSON.parse(raw)) : getBriefingConfigDefaults();
     } catch (e) { App.briefingConfig = getBriefingConfigDefaults(); }
 }
 
 function persistBriefingConfig() {
-    try { localStorage.setItem(BRIEFING_CONFIG_KEY, JSON.stringify(App.briefingConfig)); } catch (e) { /* ignore */ }
+    try {
+        var key = typeof tenantStorageKey === 'function' ? tenantStorageKey(BRIEFING_CONFIG_KEY) : BRIEFING_CONFIG_KEY;
+        localStorage.setItem(key, JSON.stringify(App.briefingConfig));
+    } catch (e) { /* ignore */ }
 }
 
 function toggleBriefingItem(id) {
@@ -631,7 +719,7 @@ function toggleBriefingItem(id) {
 }
 
 function drillDownKpi(type) {
-    if (App.isStandard && drillDownKpiStandard(type)) return;
+    if (App.isStarter && typeof drillDownKpiStarter === 'function' && drillDownKpiStarter(type)) return;
     App.pendingDrillDown = { type: type };
     if (type === 'revenue') {
         dataHubFilter.period = App.globalDateRange.dataHubPeriod || 'daily';
@@ -717,8 +805,10 @@ function renderBriefingPreview() {
 }
 
 function initBriefingView() {
+    loadBriefingRecipients();
     renderBriefingConfigPanel();
     renderBriefingPreview();
+    renderBriefingRecipientsPanel();
 }
 
 function sortDataHub(field) {
@@ -775,13 +865,8 @@ function insertMention(userId) {
     mentionState.open = false;
 }
 
-/* ── CRM Campaign Builder ── */
-var CRM_STORAGE_KEY = 'sample_crm_campaigns_v1';
-var crmData = null;
-var crmActiveTab = 'builder';
-var crmActiveCampaignId = null;
-var crmAudienceFilter = { purchase: 0, amount: 0, category: 0 };
-var crmWizardState = { step: 1, editId: null };
+/* ── 프로모션 기획 · 성과 (실행은 외부 도구) ── */
+var crmActiveTab = 'calendar';
 var PROMO_STORAGE_KEY = 'sample_promo_plans_v1';
 var promoPlans = null;
 var promoCalendarMode = 'week';
@@ -789,90 +874,28 @@ var promoCalendarCursor = new Date(2026, 6, 10);
 var promoActivePlanId = null;
 var promoModalState = { editId: null, defaultDate: null, fromCalendar: false };
 
-var CRM_AUDIENCE_OPTIONS = {
-    purchase: ['최근 3개월 미구매', '최근 1개월 구매', '6개월 이상 미구매'],
-    amount: ['금액 제한 없음', '100,000원 이상', '300,000원 이상', 'VIP 500,000원 이상'],
-    category: ['전체 카테고리', '스킨케어', '메이크업', '선케어'],
-};
-var CRM_PURCHASE_BASE = [8420, 3180, 5240];
-var CRM_AMOUNT_MULT = [1, 0.62, 0.34, 0.11];
-var CRM_CATEGORY_MULT = [1, 0.74, 0.48, 0.41];
-
-var CRM_TEMPLATES = [
-    { id: 'season', label: '시즌 세일', title: '#{고객명}님 여름 시즌 특별 혜택 🌞', body: '여름 시즌을 맞아 스킨케어 전용 <strong>{discount}% 시크릿 쿠폰</strong>을 발급해 드렸습니다. 7월 12일까지 사용 가능!', cta: '쿠폰 확인하기', discount: 20 },
-    { id: 'winback', label: '이탈 복귀', title: '#{고객명}님, 다시 만나요 💙', body: '오랜만이에요! 복귀 고객 전용 <strong>{discount}% 할인 쿠폰</strong>과 무료배송 혜택을 준비했습니다.', cta: '혜택 받기', discount: 15 },
-    { id: 'vip', label: 'VIP 전용', title: 'VIP #{고객명}님 프리미엄 혜택 ✨', body: 'VIP 고객님께만 드리는 <strong>신제품 선체험 + {discount}% 추가 할인</strong> 쿠폰입니다.', cta: 'VIP 혜택 보기', discount: 25 },
-    { id: 'restock', label: '재입고 알림', title: '#{고객명}님, 찜한 상품 재입고 📦', body: '관심 상품이 재입고되었습니다. <strong>48시간 한정 {discount}% 할인</strong>으로 만나보세요.', cta: '상품 보러가기', discount: 10 },
-];
-
-function getCrmCampaignsDefaults() {
-    return [
-        { id: 'c-demo-1', name: '여름 시즌 오프 알림톡', type: 'alimtalk', status: 'running', templateId: 'season',
-          audience: { purchase: 0, amount: 0, category: 1 }, targetCount: 6230,
-          message: { title: '#{고객명}님 여름 시즌 특별 혜택 🌞', body: '스킨케어 전용 20% 시크릿 쿠폰', cta: '쿠폰 확인하기', discount: 20 },
-          schedule: { mode: 'range', startDate: '2026-07-10', endDate: '2026-07-12' },
-          stats: { sent: 8420, opened: 5894, clicked: 1044, converted: 1044, revenue: 42800000 },
-          abTest: {
-              enabled: true, splitA: 50, splitB: 50, winner: null,
-              variantA: { label: 'A · 20% 쿠폰', message: { title: '#{고객명}님 여름 시즌 특별 혜택 🌞', body: '스킨케어 전용 20% 시크릿 쿠폰', cta: '쿠폰 확인하기', discount: 20 }, stats: { sent: 4210, opened: 2947, clicked: 505, converted: 489, revenue: 20100000 } },
-              variantB: { label: 'B · 25% 쿠폰', message: { title: '#{고객명}님 VIP 여름 혜택 🔥', body: '한정 25% 추가 할인 쿠폰 발급!', cta: '쿠폰 받기', discount: 25 }, stats: { sent: 4210, opened: 3158, clicked: 539, converted: 555, revenue: 22700000 } },
-          },
-          createdBy: 'lee', createdAt: '2026-07-08 14:30' },
-        { id: 'c-demo-2', name: '이탈 위험 고객 복귀 쿠폰', type: 'alimtalk', status: 'scheduled', templateId: 'winback',
-          audience: { purchase: 2, amount: 1, category: 0 }, targetCount: 1240,
-          message: { title: '#{고객명}님, 다시 만나요 💙', body: '복귀 고객 15% 할인 + 무료배송', cta: '혜택 받기', discount: 15 },
-          schedule: { mode: 'later', startDate: '2026-07-15', endDate: '2026-07-22' },
-          stats: { sent: 0, opened: 0, clicked: 0, converted: 0, revenue: 0 },
-          abTest: { enabled: false, splitA: 50, splitB: 50, winner: null, variantA: null, variantB: null },
-          createdBy: 'lee', createdAt: '2026-07-09 11:00' },
-    ];
+function getPromoStatsSummary() {
+    if (!promoPlans) loadPromoPlans();
+    var active = promoPlans.filter(function(p) { return p.status === 'active'; }).length;
+    var planning = promoPlans.filter(function(p) { return p.status === 'planning'; }).length;
+    var completed = promoPlans.filter(function(p) { return p.status === 'completed'; }).length;
+    var totalTarget = promoPlans.reduce(function(s, p) { return s + (p.kpi.targetRevenue || 0); }, 0);
+    var totalActual = promoPlans.reduce(function(s, p) { return s + (p.kpi.actualRevenue || 0); }, 0);
+    var avgPct = totalTarget ? Math.round((totalActual / totalTarget) * 100) : 0;
+    return { active: active, planning: planning, completed: completed, avgPct: avgPct };
 }
 
-function normalizeCrmCampaign(c) {
-    if (!c.abTest) c.abTest = { enabled: false, splitA: 50, splitB: 50, winner: null, variantA: null, variantB: null };
-    if (c.abTest.enabled && !c.abTest.variantA) {
-        c.abTest.variantA = { label: 'A (대조)', message: Object.assign({}, c.message), stats: Object.assign({}, c.stats) };
-        c.abTest.variantB = { label: 'B (테스트)', message: Object.assign({}, c.message), stats: { sent: 0, opened: 0, clicked: 0, converted: 0, revenue: 0 } };
+function dgRefresh() {
+    if (typeof DashboardGuide !== 'undefined' && DashboardGuide.refresh) {
+        DashboardGuide.refresh(App.currentView);
     }
-    return c;
-}
-
-function loadCrmCampaigns() {
-    try {
-        var raw = localStorage.getItem(CRM_STORAGE_KEY);
-        crmData = raw ? JSON.parse(raw) : getCrmCampaignsDefaults();
-        crmData = crmData.map(normalizeCrmCampaign);
-    } catch (e) { crmData = getCrmCampaignsDefaults().map(normalizeCrmCampaign); }
-}
-
-function persistCrmCampaigns() {
-    try { localStorage.setItem(CRM_STORAGE_KEY, JSON.stringify(crmData)); } catch (e) { /* ignore */ }
-}
-
-function calculateCrmAudience(filter) {
-    filter = filter || crmAudienceFilter;
-    var base = CRM_PURCHASE_BASE[filter.purchase] || 8420;
-    var mult = (CRM_AMOUNT_MULT[filter.amount] || 1) * (CRM_CATEGORY_MULT[filter.category] || 1);
-    return Math.max(120, Math.round(base * mult));
-}
-
-function getCrmStatusLabel(status) {
-    var map = { running: ['실행 중', 'bg-success/20 text-success'], scheduled: ['예약', 'bg-primary/20 text-blue-400'], draft: ['초안', 'bg-gray-700 text-gray-400'], paused: ['일시중지', 'bg-warning/20 text-warning'], completed: ['완료', 'bg-gray-600 text-gray-400'] };
-    return map[status] || ['알 수 없음', 'bg-gray-700 text-gray-400'];
-}
-
-function getCrmStatsSummary() {
-    var running = crmData.filter(function(c) { return c.status === 'running'; }).length;
-    var scheduled = crmData.filter(function(c) { return c.status === 'scheduled'; }).length;
-    var totalSent = crmData.reduce(function(s, c) { return s + (c.stats.sent || 0); }, 0);
-    var totalConv = crmData.reduce(function(s, c) { return s + (c.stats.converted || 0); }, 0);
-    var avgRate = totalSent ? ((totalConv / totalSent) * 100).toFixed(1) : '0.0';
-    return { running: running, scheduled: scheduled, totalSent: totalSent, avgRate: avgRate };
 }
 
 function initCrmView() {
+    loadPromoPlans();
     renderCrmStats();
     switchCrmTab(crmActiveTab, true);
+    dgRefresh();
 }
 
 function switchCrmTab(tab, skipPersist) {
@@ -880,506 +903,32 @@ function switchCrmTab(tab, skipPersist) {
     document.querySelectorAll('.crm-tab-btn').forEach(function(btn) {
         btn.classList.toggle('active', btn.dataset.tab === tab);
     });
-    ['builder', 'calendar', 'kpi'].forEach(function(t) {
+    ['calendar', 'kpi'].forEach(function(t) {
         var panel = document.getElementById('crm-panel-' + t);
         if (panel) panel.classList.toggle('hidden', t !== tab);
     });
-    if (tab === 'builder') {
-        renderCrmAudiencePanel();
-        renderCrmLivePreview();
-        renderCrmCampaignList();
-        renderCrmCampaignDetail(crmActiveCampaignId);
-    } else if (tab === 'calendar') {
+    if (tab === 'calendar') {
         renderPromoCalendar();
     } else if (tab === 'kpi') {
         renderPromoKpiPanel();
     }
+    dgRefresh();
 }
 
 function renderCrmStats() {
     var el = document.getElementById('crm-stats');
     if (!el) return;
-    var s = getCrmStatsSummary();
+    var s = getPromoStatsSummary();
     el.innerHTML = [
-        ['활성 캠페인', s.running + '건', '실행 중'],
-        ['예약 대기', s.scheduled + '건', '발송 예정'],
-        ['누적 발송', fmtCount(s.totalSent) + '건', '전체 캠페인'],
-        ['평균 전환율', s.avgRate + '%', '클릭→구매'],
+        ['진행 중', s.active + '건', '외부 실행·성과 추적'],
+        ['기획 중', s.planning + '건', '캘린더 등록'],
+        ['완료', s.completed + '건', '회고·실적 입력'],
+        ['평균 달성률', s.avgPct + '%', '목표 매출 대비'],
     ].map(function(k) {
         return '<div class="glass rounded-xl p-4"><p class="text-[10px] text-gray-500">' + k[0] + '</p><p class="text-xl font-extrabold">' + k[1] + '</p><p class="text-[10px] text-gray-600">' + k[2] + '</p></div>';
     }).join('');
 }
 
-function renderCrmAudiencePanel() {
-    var countEl = document.getElementById('crm-audience-count');
-    var barEl = document.getElementById('crm-audience-bar');
-    var segEl = document.getElementById('crm-audience-segments');
-    var count = calculateCrmAudience();
-    if (countEl) countEl.textContent = fmtCount(count) + '명';
-    if (barEl) barEl.style.width = Math.min(100, Math.round(count / 8420 * 100)) + '%';
-    if (segEl) {
-        var pct = Math.round(count / 124783 * 100 * 10) / 10;
-        segEl.innerHTML = [
-            ['전체 CRM DB', '124,783명', '100%'],
-            ['현재 필터 매칭', fmtCount(count) + '명', pct + '%'],
-            ['SMS 발송 가능', fmtCount(Math.round(count * 0.97)) + '명', '97%'],
-            ['알림톡 수신 동의', fmtCount(Math.round(count * 0.89)) + '명', '89%'],
-        ].map(function(row) {
-            return '<div class="crm-funnel-step"><span class="text-gray-400">' + row[0] + '</span><span><strong class="text-white">' + row[1] + '</strong> <span class="text-gray-600">' + row[2] + '</span></span></div>';
-        }).join('');
-    }
-}
-
-function renderCrmLivePreview(msg) {
-    var el = document.getElementById('crm-live-preview');
-    if (!el) return;
-    var m = msg || (crmActiveCampaignId ? (crmData.find(function(c) { return c.id === crmActiveCampaignId; }) || {}).message : null);
-    if (!m && crmData.length) m = crmData[0].message;
-    if (!m) {
-        var tpl = CRM_TEMPLATES[0];
-        m = { title: tpl.title.replace('#{고객명}', '지현'), body: tpl.body.replace('{discount}', tpl.discount), cta: tpl.cta, discount: tpl.discount };
-    }
-    var title = (m.title || '').replace('#{고객명}', '지현');
-    var body = (m.body || '').replace('{discount}', m.discount || 20);
-    el.innerHTML = '<div class="bg-[#fae100] rounded-2xl p-3 shadow-xl w-full max-w-[260px] mx-auto">' +
-        '<div class="bg-white rounded-xl p-4">' +
-        '<p class="text-[10px] text-gray-400 mb-1">' + App.brandName + ' 알림톡</p>' +
-        '<p class="text-sm font-bold text-gray-900 mb-2">' + title + '</p>' +
-        '<p class="text-xs text-gray-600 leading-relaxed mb-3">' + body + '</p>' +
-        '<button class="w-full bg-gray-100 text-gray-800 text-xs font-bold py-2 rounded-lg">' + (m.cta || '확인하기') + '</button>' +
-        '</div></div>';
-}
-
-function renderCrmCampaignList() {
-    var el = document.getElementById('crm-campaign-list');
-    if (!el) return;
-    el.innerHTML = crmData.map(function(c) {
-        var st = getCrmStatusLabel(c.status);
-        var selected = crmActiveCampaignId === c.id ? ' selected' : '';
-        return '<div class="crm-campaign-card p-3 rounded-lg bg-surface border border-border' + selected + '" onclick="selectCrmCampaign(\'' + c.id + '\')">' +
-            '<div class="flex items-start justify-between gap-2 mb-1">' +
-            '<span class="text-[10px] font-bold px-2 py-0.5 rounded ' + st[1] + '">' + st[0] + '</span>' +
-            (c.abTest && c.abTest.enabled ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold">A/B</span>' : '') +
-            (c.status === 'running' ? '<span class="text-[9px] text-success pulse-live">● LIVE</span>' : '') +
-            '</div>' +
-            '<p class="text-sm font-bold">' + c.name + '</p>' +
-            '<p class="text-[10px] text-gray-500 mt-0.5">' + c.schedule.startDate + (c.schedule.endDate ? ' ~ ' + c.schedule.endDate : '') + ' · 타겟 ' + fmtCount(c.targetCount) + '명</p>' +
-            (c.stats.sent ? '<p class="text-xs text-gray-400 mt-1">발송 ' + fmtCount(c.stats.sent) + ' · 전환 ' + (c.stats.sent ? ((c.stats.converted / c.stats.sent) * 100).toFixed(1) : 0) + '% · ' + App.formatWon(c.stats.revenue) + '</p>' : '<p class="text-xs text-gray-500 mt-1">발송 예정</p>') +
-            '</div>';
-    }).join('') || '<p class="text-sm text-gray-500 text-center py-6">캠페인이 없습니다. + 새 캠페인으로 시작하세요.</p>';
-}
-
-function renderCrmAbTestPanel(c) {
-    if (!c.abTest || !c.abTest.enabled || !c.abTest.variantA) return '';
-    var ab = c.abTest;
-    var variants = [['A', ab.variantA], ['B', ab.variantB]];
-    var bestConv = 0;
-    variants.forEach(function(v) {
-        var rate = v[1].stats.sent ? v[1].stats.converted / v[1].stats.sent : 0;
-        if (rate > bestConv) bestConv = rate;
-    });
-    return '<div class="mt-4 pt-4 border-t border-border">' +
-        '<div class="flex items-center justify-between mb-3">' +
-        '<h5 class="text-xs font-bold text-purple-300">A/B 테스트 성과</h5>' +
-        '<span class="text-[10px] text-gray-500">분배 ' + ab.splitA + '% / ' + ab.splitB + '%</span></div>' +
-        '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">' +
-        variants.map(function(v) {
-            var key = v[0], va = v[1];
-            var sent = va.stats.sent || 0;
-            var openRate = sent ? ((va.stats.opened / sent) * 100).toFixed(1) : '0.0';
-            var convRate = sent ? ((va.stats.converted / sent) * 100).toFixed(1) : '0.0';
-            var isWinner = ab.winner === key;
-            var isLeading = !ab.winner && sent && (va.stats.converted / sent) >= bestConv && bestConv > 0;
-            var cls = 'ab-variant-card' + (isWinner ? ' winner' : isLeading ? ' leading' : '');
-            return '<div class="' + cls + '">' +
-                '<div class="flex items-center justify-between mb-2">' +
-                '<span class="text-xs font-bold">' + va.label + '</span>' +
-                (isWinner ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-success/20 text-success font-bold">승자</span>' : '') +
-                (isLeading ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-primary/20 text-blue-300 font-bold">우세</span>' : '') +
-                '</div>' +
-                '<p class="text-[10px] text-gray-500 mb-2 truncate">' + (va.message.title || '').replace('#{고객명}', '고객') + ' · ' + (va.message.discount || 0) + '%</p>' +
-                '<div class="grid grid-cols-2 gap-1.5 text-center">' +
-                [['발송', fmtCount(sent)], ['오픈율', openRate + '%'], ['전환율', convRate + '%'], ['매출', va.stats.revenue ? formatDataHubWon(va.stats.revenue) : '—']].map(function(k) {
-                    return '<div class="p-1.5 rounded bg-dark/50"><p class="text-[8px] text-gray-500">' + k[0] + '</p><p class="text-[11px] font-bold">' + k[1] + '</p></div>';
-                }).join('') + '</div>' +
-                (!ab.winner && sent ? '<button onclick="declareAbTestWinner(\'' + c.id + '\',\'' + key + '\')" class="mt-2 w-full text-[10px] py-1.5 rounded border border-border hover:border-success/40 text-gray-400 hover:text-success transition-colors">' + key + '안을 승자로 선정</button>' : '') +
-                '</div>';
-        }).join('') + '</div></div>';
-}
-
-function renderCrmCampaignDetail(id) {
-    var el = document.getElementById('crm-campaign-detail');
-    if (!el) return;
-    var c = crmData.find(function(x) { return x.id === id; });
-    if (!c) { el.innerHTML = '<p class="text-xs text-gray-500 text-center py-8">캠페인을 선택하면 상세 성과와 액션이 표시됩니다.</p>'; return; }
-    var st = getCrmStatusLabel(c.status);
-    var convRate = c.stats.sent ? ((c.stats.converted / c.stats.sent) * 100).toFixed(1) : '—';
-    var openRate = c.stats.sent ? ((c.stats.opened / c.stats.sent) * 100).toFixed(1) : '—';
-    el.innerHTML = '<div class="flex items-start justify-between gap-3 mb-4">' +
-        '<div><span class="text-[10px] font-bold px-2 py-0.5 rounded ' + st[1] + '">' + st[0] + '</span>' +
-        (c.abTest && c.abTest.enabled ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 ml-1">A/B 테스트</span>' : '') +
-        '<h4 class="font-bold text-sm mt-2">' + c.name + '</h4>' +
-        '<p class="text-[10px] text-gray-500">생성: ' + c.createdAt + ' · ' + (getMember(c.createdBy).name || '') +
-        (c.duplicatedFrom ? ' · <span class="text-gray-600">복제됨</span>' : '') + '</p></div></div>' +
-        '<div class="grid grid-cols-2 gap-2 mb-4">' +
-        [['발송', fmtCount(c.stats.sent)], ['오픈율', openRate + '%'], ['전환', convRate + '%'], ['매출', c.stats.revenue ? formatDataHubWon(c.stats.revenue) : '—']].map(function(k) {
-            return '<div class="p-2.5 rounded-lg bg-dark/50 text-center"><p class="text-[9px] text-gray-500">' + k[0] + '</p><p class="text-sm font-bold">' + k[1] + '</p></div>';
-        }).join('') + '</div>' +
-        renderCrmAbTestPanel(c) +
-        '<div class="flex flex-wrap gap-2' + (c.abTest && c.abTest.enabled ? ' mt-4' : '') + '">' +
-        (c.status === 'running' ? '<button onclick="pauseCrmCampaign(\'' + c.id + '\')" class="text-xs px-3 py-1.5 rounded-lg border border-warning/40 text-warning hover:bg-warning/10">일시 중지</button>' : '') +
-        (c.status === 'paused' || c.status === 'scheduled' || c.status === 'draft' ? '<button onclick="launchCrmCampaign(\'' + c.id + '\')" class="text-xs px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-blue-600">발송 시작</button>' : '') +
-        (c.status === 'scheduled' || c.status === 'draft' ? '<button onclick="editCrmCampaign(\'' + c.id + '\')" class="text-xs px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">수정</button>' : '') +
-        '<button onclick="duplicateCrmCampaign(\'' + c.id + '\')" class="text-xs px-3 py-1.5 rounded-lg border border-border hover:border-purple-400/40 text-purple-300">복제</button>' +
-        '<button onclick="exportCrmAudience(\'' + c.id + '\')" class="text-xs px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">명단 CSV</button>' +
-        '<button onclick="testSendCrmCampaign(\'' + c.id + '\')" class="text-xs px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">테스트 발송</button>' +
-        '</div>';
-}
-
-function selectCrmCampaign(id) {
-    crmActiveCampaignId = id;
-    var c = crmData.find(function(x) { return x.id === id; });
-    renderCrmCampaignList();
-    renderCrmCampaignDetail(id);
-    if (c) renderCrmLivePreview(c.message);
-}
-
-function onCrmFilterChange(field, value) {
-    crmAudienceFilter[field] = parseInt(value, 10);
-    renderCrmAudiencePanel();
-}
-
-function extractCrmAudience() {
-    var count = calculateCrmAudience();
-    showToast(fmtCount(count) + '명 타겟 명단을 추출했습니다. (데모)', 'success');
-    addActivityLog({ userId: App.currentUserId, action: 'CRM 명단 추출', category: 'crm', type: 'info', detail: '타겟 ' + fmtCount(count) + '명 추출', meta: CRM_AUDIENCE_OPTIONS.purchase[crmAudienceFilter.purchase] });
-}
-
-function exportCrmAudience(campaignId) {
-    var c = campaignId ? crmData.find(function(x) { return x.id === campaignId; }) : null;
-    var count = c ? c.targetCount : calculateCrmAudience();
-    var rows = [];
-    for (var i = 0; i < Math.min(count, 50); i++) {
-        rows.push(['CUST-' + String(10000 + i), '고객' + (i + 1), '010-****-' + String(1000 + i), CRM_AUDIENCE_OPTIONS.category[c ? c.audience.category : crmAudienceFilter.category]].join(','));
-    }
-    var blob = new Blob(['\uFEFF고객ID,이름,연락처,관심카테고리\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'crm_audience_' + (c ? c.id : 'preview') + '.csv';
-    a.click();
-    showToast('타겟 명단 CSV (샘플 ' + rows.length + '건) 다운로드', 'success');
-}
-
-function openCrmWizard(editId) {
-    crmWizardState = {
-        step: 1, editId: editId || null,
-        name: '', type: 'alimtalk', templateId: 'season',
-        audience: { purchase: crmAudienceFilter.purchase, amount: crmAudienceFilter.amount, category: crmAudienceFilter.category },
-        title: CRM_TEMPLATES[0].title, body: CRM_TEMPLATES[0].body, cta: CRM_TEMPLATES[0].cta, discount: 20,
-        scheduleMode: 'later', startDate: getDefaultCommsDueDate(), endDate: '', launchMode: 'scheduled',
-        abTestEnabled: false, splitA: 50,
-        variantBTitle: '', variantBBody: '', variantBDiscount: 25, variantBCta: '쿠폰 받기',
-    };
-    if (editId) {
-        var c = crmData.find(function(x) { return x.id === editId; });
-        if (c) {
-            Object.assign(crmWizardState, {
-                name: c.name, type: c.type, templateId: c.templateId || 'season',
-                audience: Object.assign({}, c.audience),
-                title: c.message.title, body: c.message.body, cta: c.message.cta, discount: c.message.discount,
-                scheduleMode: c.schedule.mode, startDate: c.schedule.startDate, endDate: c.schedule.endDate,
-                launchMode: c.status === 'running' ? 'now' : 'scheduled',
-                abTestEnabled: !!(c.abTest && c.abTest.enabled),
-                splitA: c.abTest ? c.abTest.splitA : 50,
-            });
-            if (c.abTest && c.abTest.variantB) {
-                crmWizardState.variantBTitle = c.abTest.variantB.message.title;
-                crmWizardState.variantBBody = c.abTest.variantB.message.body;
-                crmWizardState.variantBDiscount = c.abTest.variantB.message.discount;
-                crmWizardState.variantBCta = c.abTest.variantB.message.cta;
-            }
-        }
-    }
-    document.getElementById('crm-modal').classList.add('open');
-    renderCrmWizardStep();
-}
-
-function closeCrmWizard() {
-    document.getElementById('crm-modal').classList.remove('open');
-}
-
-function crmWizardBack() {
-    if (crmWizardState.step > 1) { crmWizardState.step--; renderCrmWizardStep(); }
-}
-
-function crmWizardNext() {
-    if (crmWizardState.step === 1 && !crmWizardState.name.trim()) {
-        showToast('캠페인 이름을 입력해주세요.', 'warning'); return;
-    }
-    if (crmWizardState.step < 4) { crmWizardState.step++; renderCrmWizardStep(); }
-    else submitCrmCampaign();
-}
-
-function renderCrmWizardStep() {
-    var step = crmWizardState.step;
-    document.querySelectorAll('.crm-wizard-step').forEach(function(el) {
-        var n = parseInt(el.dataset.step, 10);
-        el.classList.toggle('active', n === step);
-        el.classList.toggle('done', n < step);
-    });
-    document.getElementById('crm-wizard-back').classList.toggle('hidden', step === 1);
-    document.getElementById('crm-wizard-next').textContent = step === 4 ? (crmWizardState.editId ? '저장' : '캠페인 생성') : '다음 →';
-
-    var body = document.getElementById('crm-wizard-body');
-    if (step === 1) {
-        body.innerHTML = '<div class="space-y-4">' +
-            '<div><label class="settings-label">캠페인 이름 <span class="text-danger">*</span></label>' +
-            '<input id="crm-wiz-name" class="settings-input" maxlength="60" placeholder="예: 7월 VIP 재구매 캠페인" value="' + (crmWizardState.name || '') + '" oninput="crmWizardState.name=this.value"></div>' +
-            '<div><label class="settings-label">발송 채널</label><div class="flex gap-2">' +
-            [['alimtalk','💬 알림톡'],['sms','📱 SMS'],['email','📧 이메일']].map(function(ch) {
-                return '<button type="button" onclick="crmWizardState.type=\'' + ch[0] + '\';renderCrmWizardStep()" class="flex-1 text-xs py-2.5 rounded-lg border ' + (crmWizardState.type === ch[0] ? 'border-primary/50 bg-primary/15 text-blue-300' : 'border-border bg-surface') + '">' + ch[1] + '</button>';
-            }).join('') + '</div></div>' +
-            '<div><label class="settings-label">캠페인 목표</label><select class="settings-input" onchange="crmWizardState.goal=this.value"><option>매출 증대 (쿠폰)</option><option>재구매 유도</option><option>신제품 홍보</option><option>이탈 고객 복귀</option></select></div></div>';
-    } else if (step === 2) {
-        body.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-            '<div class="space-y-3">' +
-            Object.keys(CRM_AUDIENCE_OPTIONS).map(function(key, idx) {
-                var labels = ['구매 이력', '누적 금액', '관심 카테고리'];
-                return '<div><label class="settings-label">' + labels[idx] + '</label><select class="settings-input" onchange="crmWizardState.audience.' + key + '=parseInt(this.value,10);renderCrmWizardAudiencePreview()">' +
-                    CRM_AUDIENCE_OPTIONS[key].map(function(opt, i) {
-                        return '<option value="' + i + '" ' + (crmWizardState.audience[key] === i ? 'selected' : '') + '>' + opt + '</option>';
-                    }).join('') + '</select></div>';
-            }).join('') +
-            '</div>' +
-            '<div class="glass rounded-xl p-4 border border-primary/20">' +
-            '<p class="text-xs font-bold text-primary mb-2">예상 타겟</p>' +
-            '<p class="text-3xl font-extrabold mb-2" id="crm-wiz-audience-count">' + fmtCount(calculateCrmAudience(crmWizardState.audience)) + '<span class="text-sm font-normal text-gray-500">명</span></p>' +
-            '<div class="crm-audience-bar mb-2"><div class="crm-audience-bar-fill" id="crm-wiz-audience-bar" style="width:' + Math.min(100, Math.round(calculateCrmAudience(crmWizardState.audience) / 8420 * 100)) + '%"></div></div>' +
-            '<p class="text-[10px] text-gray-500">CRM DB 124,783명 중 매칭 · 알림톡 수신 가능 약 89%</p></div></div>';
-    } else if (step === 3) {
-        body.innerHTML = '<div class="space-y-4">' +
-            '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-            '<div class="space-y-3">' +
-            '<div><label class="settings-label">템플릿</label><div class="flex flex-wrap gap-1.5">' +
-            CRM_TEMPLATES.map(function(t) {
-                return '<button type="button" onclick="applyCrmTemplate(\'' + t.id + '\')" class="crm-template-btn text-[10px] px-2.5 py-1 rounded-md border border-border bg-surface ' + (crmWizardState.templateId === t.id ? 'active' : '') + '">' + t.label + '</button>';
-            }).join('') + '</div></div>' +
-            '<p class="text-[10px] font-bold text-primary">A안 (대조군)</p>' +
-            '<div><label class="settings-label">제목</label><input class="settings-input" value="' + (crmWizardState.title || '').replace(/"/g, '&quot;') + '" oninput="crmWizardState.title=this.value;renderCrmWizardMessagePreview()"></div>' +
-            '<div><label class="settings-label">할인율 (%)</label><input type="number" class="settings-input" min="5" max="50" value="' + crmWizardState.discount + '" oninput="crmWizardState.discount=parseInt(this.value,10)||20;renderCrmWizardMessagePreview()"></div>' +
-            '<div><label class="settings-label">본문</label><textarea class="settings-input resize-none" rows="3" oninput="crmWizardState.body=this.value;renderCrmWizardMessagePreview()">' + (crmWizardState.body || '') + '</textarea></div>' +
-            '<div><label class="settings-label">CTA 버튼</label><input class="settings-input" value="' + (crmWizardState.cta || '') + '" oninput="crmWizardState.cta=this.value;renderCrmWizardMessagePreview()"></div></div>' +
-            '<div id="crm-wiz-preview" class="flex items-center justify-center"></div></div>' +
-            '<div class="glass rounded-xl p-4 border border-purple-500/25">' +
-            '<label class="flex items-center gap-2 cursor-pointer mb-3">' +
-            '<input type="checkbox" ' + (crmWizardState.abTestEnabled ? 'checked' : '') + ' onchange="crmWizardState.abTestEnabled=this.checked;renderCrmWizardStep()" class="rounded">' +
-            '<span class="text-xs font-bold text-purple-300">A/B 테스트 활성화</span></label>' +
-            (crmWizardState.abTestEnabled ?
-                '<div class="space-y-3">' +
-                '<div><label class="settings-label">A안 트래픽 비율: <strong class="text-white">' + crmWizardState.splitA + '%</strong> / B안 ' + (100 - crmWizardState.splitA) + '%</label>' +
-                '<input type="range" min="10" max="90" step="5" value="' + crmWizardState.splitA + '" class="w-full" oninput="crmWizardState.splitA=parseInt(this.value,10);renderCrmWizardStep()"></div>' +
-                '<p class="text-[10px] font-bold text-purple-300">B안 (테스트군)</p>' +
-                '<div><label class="settings-label">B안 제목</label><input class="settings-input" value="' + (crmWizardState.variantBTitle || crmWizardState.title || '').replace(/"/g, '&quot;') + '" oninput="crmWizardState.variantBTitle=this.value"></div>' +
-                '<div><label class="settings-label">B안 할인율 (%)</label><input type="number" class="settings-input" min="5" max="50" value="' + (crmWizardState.variantBDiscount || 25) + '" oninput="crmWizardState.variantBDiscount=parseInt(this.value,10)||25"></div>' +
-                '<div><label class="settings-label">B안 본문</label><textarea class="settings-input resize-none" rows="2" oninput="crmWizardState.variantBBody=this.value">' + (crmWizardState.variantBBody || crmWizardState.body || '') + '</textarea></div>' +
-                '<div><label class="settings-label">B안 CTA</label><input class="settings-input" value="' + (crmWizardState.variantBCta || '쿠폰 받기') + '" oninput="crmWizardState.variantBCta=this.value"></div>' +
-                '</div>' : '<p class="text-[10px] text-gray-500">체크 시 두 가지 메시지 변형을 동시에 발송하여 성과를 비교합니다.</p>') +
-            '</div></div>';
-        renderCrmWizardMessagePreview();
-    } else if (step === 4) {
-        var target = calculateCrmAudience(crmWizardState.audience);
-        body.innerHTML = '<div class="space-y-4">' +
-            '<div><label class="settings-label">발송 일정</label><div class="flex gap-2 mb-3">' +
-            [['scheduled','📅 예약 발송'],['now','⚡ 즉시 발송']].map(function(m) {
-                return '<button type="button" onclick="crmWizardState.launchMode=\'' + m[0] + '\';renderCrmWizardStep()" class="flex-1 text-xs py-2 rounded-lg border ' + (crmWizardState.launchMode === m[0] ? 'border-primary/50 bg-primary/15 text-blue-300' : 'border-border bg-surface') + '">' + m[1] + '</button>';
-            }).join('') + '</div>' +
-            '<div class="settings-row"><div><label class="settings-label">시작일</label><input type="date" class="settings-input" value="' + crmWizardState.startDate + '" onchange="crmWizardState.startDate=this.value"></div>' +
-            '<div><label class="settings-label">종료일</label><input type="date" class="settings-input" value="' + crmWizardState.endDate + '" onchange="crmWizardState.endDate=this.value"></div></div></div>' +
-            '<div class="glass rounded-xl p-4 border border-success/20 bg-success/5">' +
-            '<p class="text-xs font-bold text-success mb-2">✓ 검토 요약</p>' +
-            '<ul class="text-xs text-gray-300 space-y-1.5">' +
-            '<li><span class="text-gray-500">캠페인:</span> <strong class="text-white">' + (crmWizardState.name || '(미입력)') + '</strong></li>' +
-            '<li><span class="text-gray-500">채널:</span> ' + crmWizardState.type + ' · 타겟 <strong class="text-white">' + fmtCount(target) + '명</strong></li>' +
-            '<li><span class="text-gray-500">혜택:</span> ' + crmWizardState.discount + '% 할인 · ' + crmWizardState.launchMode + '</li>' +
-            (crmWizardState.abTestEnabled ? '<li><span class="text-gray-500">A/B:</span> <strong class="text-purple-300">' + crmWizardState.splitA + '% / ' + (100 - crmWizardState.splitA) + '%</strong> · B안 ' + (crmWizardState.variantBDiscount || 25) + '%</li>' : '') +
-            '</ul></div></div>';
-    }
-}
-
-function renderCrmWizardAudiencePreview() {
-    var count = calculateCrmAudience(crmWizardState.audience);
-    var el = document.getElementById('crm-wiz-audience-count');
-    var bar = document.getElementById('crm-wiz-audience-bar');
-    if (el) el.innerHTML = fmtCount(count) + '<span class="text-sm font-normal text-gray-500">명</span>';
-    if (bar) bar.style.width = Math.min(100, Math.round(count / 8420 * 100)) + '%';
-}
-
-function applyCrmTemplate(id) {
-    var t = CRM_TEMPLATES.find(function(x) { return x.id === id; });
-    if (!t) return;
-    crmWizardState.templateId = id;
-    crmWizardState.title = t.title;
-    crmWizardState.body = t.body;
-    crmWizardState.cta = t.cta;
-    crmWizardState.discount = t.discount;
-    renderCrmWizardStep();
-}
-
-function renderCrmWizardMessagePreview() {
-    var el = document.getElementById('crm-wiz-preview');
-    if (!el) return;
-    var m = { title: crmWizardState.title, body: crmWizardState.body, cta: crmWizardState.cta, discount: crmWizardState.discount };
-    var title = (m.title || '').replace('#{고객명}', '지현');
-    var body = (m.body || '').replace('{discount}', m.discount || 20);
-    el.innerHTML = '<div class="bg-[#fae100] rounded-2xl p-3 shadow-xl w-full max-w-[260px] mx-auto">' +
-        '<div class="bg-white rounded-xl p-4">' +
-        '<p class="text-[10px] text-gray-400 mb-1">' + App.brandName + ' 알림톡</p>' +
-        '<p class="text-sm font-bold text-gray-900 mb-2">' + title + '</p>' +
-        '<p class="text-xs text-gray-600 leading-relaxed mb-3">' + body + '</p>' +
-        '<button class="w-full bg-gray-100 text-gray-800 text-xs font-bold py-2 rounded-lg">' + (m.cta || '확인하기') + '</button>' +
-        '</div></div>';
-}
-
-function submitCrmCampaign() {
-    if (!crmWizardState.name.trim()) { showToast('캠페인 이름을 입력해주세요.', 'warning'); crmWizardState.step = 1; renderCrmWizardStep(); return; }
-    var now = new Date();
-    var createdAt = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-    var target = calculateCrmAudience(crmWizardState.audience);
-    var status = crmWizardState.launchMode === 'now' ? 'running' : 'scheduled';
-    var payload = {
-        name: crmWizardState.name.trim(), type: crmWizardState.type, status: status, templateId: crmWizardState.templateId,
-        audience: Object.assign({}, crmWizardState.audience), targetCount: target,
-        message: { title: crmWizardState.title, body: crmWizardState.body, cta: crmWizardState.cta, discount: crmWizardState.discount },
-        schedule: { mode: crmWizardState.launchMode, startDate: crmWizardState.startDate, endDate: crmWizardState.endDate },
-        stats: status === 'running' ? { sent: Math.round(target * 0.15), opened: Math.round(target * 0.11), clicked: Math.round(target * 0.02), converted: Math.round(target * 0.012), revenue: Math.round(target * 0.012 * 35000) } : { sent: 0, opened: 0, clicked: 0, converted: 0, revenue: 0 },
-        createdBy: App.currentUserId, createdAt: createdAt,
-        abTest: { enabled: false, splitA: 50, splitB: 50, winner: null, variantA: null, variantB: null },
-    };
-    if (crmWizardState.abTestEnabled) {
-        var splitA = crmWizardState.splitA || 50;
-        var splitB = 100 - splitA;
-        var msgA = { title: crmWizardState.title, body: crmWizardState.body, cta: crmWizardState.cta, discount: crmWizardState.discount };
-        var msgB = { title: crmWizardState.variantBTitle || crmWizardState.title, body: crmWizardState.variantBBody || crmWizardState.body, cta: crmWizardState.variantBCta || '쿠폰 받기', discount: crmWizardState.variantBDiscount || 25 };
-        var sentA = status === 'running' ? Math.round(target * 0.15 * splitA / 100) : 0;
-        var sentB = status === 'running' ? Math.round(target * 0.15 * splitB / 100) : 0;
-        payload.abTest = {
-            enabled: true, splitA: splitA, splitB: splitB, winner: null,
-            variantA: { label: 'A · ' + msgA.discount + '% 쿠폰', message: msgA, stats: { sent: sentA, opened: Math.round(sentA * 0.7), clicked: Math.round(sentA * 0.12), converted: Math.round(sentA * 0.08), revenue: Math.round(sentA * 0.08 * 41000) } },
-            variantB: { label: 'B · ' + msgB.discount + '% 쿠폰', message: msgB, stats: { sent: sentB, opened: Math.round(sentB * 0.75), clicked: Math.round(sentB * 0.14), converted: Math.round(sentB * 0.09), revenue: Math.round(sentB * 0.09 * 42000) } },
-        };
-        if (status === 'running') {
-            payload.stats = {
-                sent: payload.abTest.variantA.stats.sent + payload.abTest.variantB.stats.sent,
-                opened: payload.abTest.variantA.stats.opened + payload.abTest.variantB.stats.opened,
-                clicked: payload.abTest.variantA.stats.clicked + payload.abTest.variantB.stats.clicked,
-                converted: payload.abTest.variantA.stats.converted + payload.abTest.variantB.stats.converted,
-                revenue: payload.abTest.variantA.stats.revenue + payload.abTest.variantB.stats.revenue,
-            };
-        }
-    }
-    if (crmWizardState.editId) {
-        var idx = crmData.findIndex(function(c) { return c.id === crmWizardState.editId; });
-        if (idx >= 0) {
-            payload.id = crmWizardState.editId;
-            payload.createdAt = crmData[idx].createdAt;
-            payload.createdBy = crmData[idx].createdBy;
-            payload.duplicatedFrom = crmData[idx].duplicatedFrom || null;
-            if (!crmWizardState.abTestEnabled && crmData[idx].abTest) payload.abTest = crmData[idx].abTest;
-            if (crmWizardState.abTestEnabled && crmData[idx].abTest && crmData[idx].abTest.enabled && status !== 'running') {
-                payload.abTest.variantA.stats = crmData[idx].abTest.variantA ? crmData[idx].abTest.variantA.stats : payload.abTest.variantA.stats;
-                payload.abTest.variantB.stats = crmData[idx].abTest.variantB ? crmData[idx].abTest.variantB.stats : payload.abTest.variantB.stats;
-            }
-            crmData[idx] = payload;
-        }
-    } else {
-        payload.id = 'c-' + Date.now();
-        crmData.unshift(payload);
-    }
-    persistCrmCampaigns();
-    closeCrmWizard();
-    crmActiveCampaignId = payload.id;
-    crmAudienceFilter = Object.assign({}, payload.audience);
-    if (App.currentView === 'view-crm') initCrmView();
-    addActivityLog({ userId: App.currentUserId, action: 'CRM 캠페인', category: 'crm', type: 'success', detail: payload.name + ' ' + (status === 'running' ? '즉시 발송' : '예약'), meta: '타겟 ' + fmtCount(target) + '명' });
-    showToast('캠페인「' + payload.name + '」이 생성되었습니다. (데모)', 'success');
-}
-
-function pauseCrmCampaign(id) {
-    var c = crmData.find(function(x) { return x.id === id; });
-    if (c) { c.status = 'paused'; persistCrmCampaigns(); initCrmView(); showToast('캠페인을 일시 중지했습니다.', 'warning'); }
-}
-
-function launchCrmCampaign(id) {
-    var c = crmData.find(function(x) { return x.id === id; });
-    if (!c) return;
-    c.status = 'running';
-    if (!c.stats.sent) {
-        if (c.abTest && c.abTest.enabled && c.abTest.variantA) {
-            var splitA = c.abTest.splitA || 50;
-            var sentA = Math.round(c.targetCount * 0.2 * splitA / 100);
-            var sentB = Math.round(c.targetCount * 0.2 * (100 - splitA) / 100);
-            c.abTest.variantA.stats = { sent: sentA, opened: Math.round(sentA * 0.7), clicked: Math.round(sentA * 0.12), converted: Math.round(sentA * 0.08), revenue: Math.round(sentA * 0.08 * 41000) };
-            c.abTest.variantB.stats = { sent: sentB, opened: Math.round(sentB * 0.75), clicked: Math.round(sentB * 0.14), converted: Math.round(sentB * 0.09), revenue: Math.round(sentB * 0.09 * 42000) };
-            c.stats = {
-                sent: c.abTest.variantA.stats.sent + c.abTest.variantB.stats.sent,
-                opened: c.abTest.variantA.stats.opened + c.abTest.variantB.stats.opened,
-                clicked: c.abTest.variantA.stats.clicked + c.abTest.variantB.stats.clicked,
-                converted: c.abTest.variantA.stats.converted + c.abTest.variantB.stats.converted,
-                revenue: c.abTest.variantA.stats.revenue + c.abTest.variantB.stats.revenue,
-            };
-        } else {
-            c.stats = { sent: Math.round(c.targetCount * 0.2), opened: Math.round(c.targetCount * 0.14), clicked: Math.round(c.targetCount * 0.025), converted: Math.round(c.targetCount * 0.015), revenue: Math.round(c.targetCount * 0.015 * 38000) };
-        }
-    }
-    persistCrmCampaigns();
-    initCrmView();
-    showToast('캠페인 발송을 시작했습니다. (데모)', 'success');
-}
-
-function editCrmCampaign(id) { openCrmWizard(id); }
-
-function testSendCrmCampaign(id) {
-    var c = crmData.find(function(x) { return x.id === id; });
-    showToast('테스트 알림톡을 ' + (getCurrentUser().name) + '님에게 발송했습니다. (데모)', 'success');
-    if (c) renderCrmLivePreview(c.message);
-}
-
-function duplicateCrmCampaign(id) {
-    var c = crmData.find(function(x) { return x.id === id; });
-    if (!c) return;
-    var copy = JSON.parse(JSON.stringify(c));
-    copy.id = 'c-' + Date.now();
-    copy.name = c.name.replace(/ \(복제\)$/, '') + ' (복제)';
-    copy.status = 'draft';
-    copy.stats = { sent: 0, opened: 0, clicked: 0, converted: 0, revenue: 0 };
-    copy.duplicatedFrom = c.id;
-    copy.createdBy = App.currentUserId;
-    var now = new Date();
-    copy.createdAt = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-    if (copy.abTest && copy.abTest.enabled) {
-        copy.abTest.winner = null;
-        if (copy.abTest.variantA) copy.abTest.variantA.stats = { sent: 0, opened: 0, clicked: 0, converted: 0, revenue: 0 };
-        if (copy.abTest.variantB) copy.abTest.variantB.stats = { sent: 0, opened: 0, clicked: 0, converted: 0, revenue: 0 };
-    }
-    crmData.unshift(copy);
-    persistCrmCampaigns();
-    crmActiveCampaignId = copy.id;
-    initCrmView();
-    addActivityLog({ userId: App.currentUserId, action: 'CRM 캠페인 복제', category: 'crm', type: 'info', detail: copy.name, meta: '원본: ' + c.name });
-    showToast('캠페인「' + copy.name + '」이 복제되었습니다. (초안)', 'success');
-}
-
-function declareAbTestWinner(campaignId, variant) {
-    var c = crmData.find(function(x) { return x.id === campaignId; });
-    if (!c || !c.abTest || !c.abTest.enabled) return;
-    c.abTest.winner = variant;
-    persistCrmCampaigns();
-    renderCrmCampaignDetail(campaignId);
-    showToast('A/B 테스트 승자: ' + variant + '안이 선정되었습니다.', 'success');
-    addActivityLog({ userId: App.currentUserId, action: 'A/B 테스트 승자 선정', category: 'crm', type: 'success', detail: c.name + ' · ' + variant + '안', meta: '전환율 기준' });
-}
-
-/* ── Promotion Calendar & KPI ── */
 var PROMO_TYPE_OPTIONS = [
     { id: 'season_sale', label: '시즌 세일', css: 'type-season' },
     { id: 'flash_sale', label: '플래시 세일', css: 'type-flash' },
@@ -1408,30 +957,47 @@ function getPromoPlansDefaults() {
     return [
         { id: 'pp-demo-1', title: '7월 여름 시즌 프로모션', type: 'season_sale', status: 'active',
           startDate: '2026-07-10', endDate: '2026-07-15', owner: 'lee', budget: 8000000,
-          channels: ['cafe24', 'smartstore', 'alimtalk'], memo: '스킨케어 카테고리 집중 · VIP 동시 쿠폰 · A/B 테스트 연동',
-          campaignIds: ['c-demo-1'],
+          channels: ['cafe24', 'smartstore', 'alimtalk'],
+          memo: '스킨케어 카테고리 집중 · VIP 동시 쿠폰',
+          executionTool: '솔라피 · 카카오 비즈메시지 (외부 실행)',
+          abTest: { enabled: true, variantALabel: 'A안 · 20% 쿠폰', variantBLabel: 'B안 · 25% 쿠폰', winner: 'B',
+            variantA: { sent: 4210, converted: 489, revenue: 20100000 },
+            variantB: { sent: 4210, converted: 555, revenue: 22700000 } },
           kpi: { targetSent: 10000, targetOpenRate: 45, targetConversion: 3.0, targetRoas: 3.5, targetRevenue: 150000000,
                  actualSent: 8420, actualOpened: 5894, actualConverted: 1044, actualRevenue: 42800000, actualRoas: 2.9, inputAt: '2026-07-10' } },
         { id: 'pp-demo-2', title: '이탈 고객 복귀 캠페인', type: 'crm_push', status: 'planning',
           startDate: '2026-07-15', endDate: '2026-07-22', owner: 'lee', budget: 3000000,
           channels: ['alimtalk'], memo: '6개월 이상 미구매 고객 대상 15% 할인 쿠폰',
-          campaignIds: ['c-demo-2'],
+          executionTool: '카카오 비즈메시지 콘솔',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
           kpi: { targetSent: 1500, targetOpenRate: 40, targetConversion: 2.5, targetRoas: 3.0, targetRevenue: 45000000,
                  actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
         { id: 'pp-demo-3', title: '7월 플래시 세일 (주말)', type: 'flash_sale', status: 'planning',
           startDate: '2026-07-19', endDate: '2026-07-20', owner: 'kim', budget: 2000000,
           channels: ['cafe24', 'coupang'], memo: '48시간 한정 30% 할인 · 인기 SKU 12종',
-          campaignIds: [],
+          executionTool: 'Cafe24 · 쿠팡 프로모션 센터',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
           kpi: { targetSent: 0, targetOpenRate: 0, targetConversion: 4.0, targetRoas: 4.0, targetRevenue: 80000000,
                  actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
     ];
 }
 
+function normalizePromoPlan(p) {
+    if (!p.executionTool) p.executionTool = '';
+    if (!p.abTest) {
+        p.abTest = { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } };
+    }
+    return p;
+}
+
 function loadPromoPlans() {
     try {
         var raw = localStorage.getItem(PROMO_STORAGE_KEY);
-        promoPlans = raw ? JSON.parse(raw) : getPromoPlansDefaults();
-    } catch (e) { promoPlans = getPromoPlansDefaults(); }
+        promoPlans = (raw ? JSON.parse(raw) : getPromoPlansDefaults()).map(normalizePromoPlan);
+    } catch (e) { promoPlans = getPromoPlansDefaults().map(normalizePromoPlan); }
 }
 
 function persistPromoPlans() {
@@ -1461,6 +1027,26 @@ function getPromoKpiBarClass(pct) {
     if (pct >= 90) return 'good';
     if (pct >= 60) return 'warn';
     return 'bad';
+}
+
+function renderPromoAbCompareHtml(p) {
+    if (!p.abTest || !p.abTest.enabled) return '';
+    var ab = p.abTest;
+    var va = ab.variantA || {};
+    var vb = ab.variantB || {};
+    function convPct(v) { return v.sent ? ((v.converted / v.sent) * 100).toFixed(1) : '0.0'; }
+    return '<div class="mt-4 pt-4 border-t border-border">' +
+        '<p class="text-xs font-bold text-purple-300 mb-2">A/B 기획 · 외부 실행 결과 비교</p>' +
+        '<p class="text-[10px] text-gray-500 mb-3">발송은 외부 도구에서 진행하고, 실적만 여기에 기록합니다.</p>' +
+        '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
+        [['A', ab.variantALabel || 'A안', va, ab.winner === 'A'], ['B', ab.variantBLabel || 'B안', vb, ab.winner === 'B']].map(function(row) {
+            var key = row[0], label = row[1], v = row[2], isWinner = row[3];
+            return '<div class="p-3 rounded-lg bg-dark/50 border border-border' + (isWinner ? ' border-success/40' : '') + '">' +
+                '<div class="flex justify-between items-center mb-2"><span class="text-xs font-bold">' + label + '</span>' +
+                (isWinner ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-success/20 text-success font-bold">우수</span>' : '') + '</div>' +
+                '<p class="text-[10px] text-gray-400">발송 ' + fmtCount(v.sent || 0) + ' · 전환 ' + convPct(v) + '%</p>' +
+                '<p class="text-xs font-bold mt-1">' + formatDataHubWon(v.revenue || 0) + '</p></div>';
+        }).join('') + '</div></div>';
 }
 
 function getPromoPlansForDate(dateStr) {
@@ -1674,8 +1260,11 @@ function renderPromoPlanSidebar(id) {
         '<div class="space-y-2 text-xs mb-4">' +
         '<div class="flex justify-between"><span class="text-gray-500">담당</span><span>' + (getMember(p.owner).name || '') + '</span></div>' +
         '<div class="flex justify-between"><span class="text-gray-500">예산</span><span>' + App.formatWon(p.budget) + '</span></div>' +
-        '<div class="flex justify-between"><span class="text-gray-500">채널</span><span class="text-right">' + p.channels.join(', ') + '</span></div></div>' +
+        '<div class="flex justify-between"><span class="text-gray-500">채널</span><span class="text-right">' + p.channels.join(', ') + '</span></div>' +
+        (p.executionTool ? '<div class="flex justify-between gap-2"><span class="text-gray-500 shrink-0">실행 도구</span><span class="text-right text-primary">' + p.executionTool + '</span></div>' : '') +
+        '</div>' +
         (p.memo ? '<p class="text-[10px] text-gray-400 mb-4 p-2 rounded bg-dark/50">' + p.memo + '</p>' : '') +
+        renderPromoAbCompareHtml(p) +
         '<p class="text-[10px] font-bold text-gray-400 mb-2">매출 달성률</p>' +
         '<div class="promo-kpi-bar mb-1"><div class="promo-kpi-bar-fill ' + getPromoKpiBarClass(revPct) + '" style="width:' + Math.min(100, revPct) + '%"></div></div>' +
         '<p class="text-xs text-gray-400 mb-3">' + revPct + '% · ' + formatDataHubWon(p.kpi.actualRevenue) + ' / ' + formatDataHubWon(p.kpi.targetRevenue) + '</p>' +
@@ -1806,15 +1395,23 @@ function openPromoPlanModal(editId, defaultDate, options) {
             return '<label class="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-border cursor-pointer hover:border-primary/30"><input type="checkbox" value="' + ch + '" ' + (checked ? 'checked' : '') + ' class="rounded" onchange="renderPromoSchedulePreview()"> ' + ch + '</label>';
         }).join('') + '</div></div>' +
         '<div><label class="settings-label">기획 메모</label><textarea id="promo-form-memo" class="settings-input resize-none" rows="2" placeholder="목표, 타겟, 특이사항">' + (p ? p.memo || '' : '') + '</textarea></div>' +
+        '<div><label class="settings-label">실행 도구 (외부)</label><input id="promo-form-execution" class="settings-input" placeholder="예: 솔라피, 카카오 비즈메시지, Cafe24 CRM" value="' + (p ? (p.executionTool || '').replace(/"/g, '&quot;') : '') + '"></div>' +
+        '<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="promo-form-ab-enabled" class="rounded" ' + (p && p.abTest && p.abTest.enabled ? 'checked' : '') + '><span class="text-xs text-purple-300 font-semibold">A/B 테스트 기획 (결과만 기록)</span></label>' +
+        '<div id="promo-form-ab-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3' + (p && p.abTest && p.abTest.enabled ? '' : ' hidden') + '">' +
+        '<div><label class="settings-label">A안 라벨</label><input id="promo-form-ab-a" class="settings-input" value="' + (p && p.abTest ? (p.abTest.variantALabel || 'A안').replace(/"/g, '&quot;') : 'A안') + '"></div>' +
+        '<div><label class="settings-label">B안 라벨</label><input id="promo-form-ab-b" class="settings-input" value="' + (p && p.abTest ? (p.abTest.variantBLabel || 'B안').replace(/"/g, '&quot;') : 'B안') + '"></div></div>' +
         '<div id="promo-schedule-preview"></div>' +
         '<div class="border-t border-border pt-4"><p class="text-xs font-bold text-primary mb-3">목표 KPI 설정</p>' +
         '<div class="grid grid-cols-2 gap-3">' +
         [['발송 목표', 'targetSent', p ? p.kpi.targetSent : 5000], ['오픈율 목표 (%)', 'targetOpenRate', p ? p.kpi.targetOpenRate : 45], ['전환율 목표 (%)', 'targetConversion', p ? p.kpi.targetConversion : 3], ['ROAS 목표', 'targetRoas', p ? p.kpi.targetRoas : 3.5], ['매출 목표 (원)', 'targetRevenue', p ? p.kpi.targetRevenue : 100000000]].map(function(k) {
             return '<div><label class="settings-label">' + k[0] + '</label><input type="number" id="promo-kpi-' + k[1] + '" class="settings-input" step="any" value="' + k[2] + '"></div>';
         }).join('') + '</div></div>' +
-        (crmData && crmData.length ? '<div><label class="settings-label">연결 CRM 캠페인</label><select id="promo-form-campaign" class="settings-input"><option value="">없음</option>' +
-        crmData.map(function(c) { return '<option value="' + c.id + '" ' + (p && p.campaignIds && p.campaignIds.indexOf(c.id) >= 0 ? 'selected' : '') + '>' + c.name + '</option>'; }).join('') + '</select></div>' : '') +
         '</div>';
+    var abToggle = document.getElementById('promo-form-ab-enabled');
+    var abFields = document.getElementById('promo-form-ab-fields');
+    if (abToggle && abFields) {
+        abToggle.onchange = function() { abFields.classList.toggle('hidden', !abToggle.checked); };
+    }
     document.getElementById('promo-modal').classList.add('open');
     renderPromoSchedulePreview();
     setTimeout(function() {
@@ -1837,8 +1434,7 @@ function savePromoPlan() {
     var channels = [];
     document.querySelectorAll('#promo-form-channels input:checked').forEach(function(cb) { channels.push(cb.value); });
     if (!channels.length) { showToast('최소 1개 채널을 선택해주세요.', 'warning'); return; }
-    var campaignSel = document.getElementById('promo-form-campaign');
-    var campaignIds = campaignSel && campaignSel.value ? [campaignSel.value] : [];
+    var abEnabled = document.getElementById('promo-form-ab-enabled') && document.getElementById('promo-form-ab-enabled').checked;
     var payload = {
         title: title.trim(),
         type: document.getElementById('promo-form-type').value,
@@ -1849,7 +1445,15 @@ function savePromoPlan() {
         budget: parseInt(document.getElementById('promo-form-budget').value, 10) || 0,
         channels: channels,
         memo: document.getElementById('promo-form-memo').value,
-        campaignIds: campaignIds,
+        executionTool: (document.getElementById('promo-form-execution') || {}).value || '',
+        abTest: {
+            enabled: abEnabled,
+            variantALabel: (document.getElementById('promo-form-ab-a') || {}).value || 'A안',
+            variantBLabel: (document.getElementById('promo-form-ab-b') || {}).value || 'B안',
+            winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 },
+            variantB: { sent: 0, converted: 0, revenue: 0 },
+        },
         kpi: {
             targetSent: parseFloat(document.getElementById('promo-kpi-targetSent').value) || 0,
             targetOpenRate: parseFloat(document.getElementById('promo-kpi-targetOpenRate').value) || 0,
@@ -1870,6 +1474,11 @@ function savePromoPlan() {
             payload.kpi.actualRevenue = promoPlans[idx].kpi.actualRevenue;
             payload.kpi.actualRoas = promoPlans[idx].kpi.actualRoas;
             payload.kpi.inputAt = promoPlans[idx].kpi.inputAt;
+            if (promoPlans[idx].abTest) {
+                payload.abTest.variantA = promoPlans[idx].abTest.variantA || payload.abTest.variantA;
+                payload.abTest.variantB = promoPlans[idx].abTest.variantB || payload.abTest.variantB;
+                payload.abTest.winner = promoPlans[idx].abTest.winner;
+            }
             promoPlans[idx] = payload;
         }
     } else {
@@ -1929,7 +1538,8 @@ function renderPromoKpiPanel() {
             '<div><div class="flex items-center gap-2 mb-1"><span class="text-[10px] font-bold px-2 py-0.5 rounded ' + st[1] + '">' + st[0] + '</span>' +
             '<span class="text-[10px] text-gray-500">' + p.startDate + ' ~ ' + p.endDate + '</span></div>' +
             '<h4 class="font-bold text-base">' + p.title + '</h4>' +
-            '<p class="text-[10px] text-gray-500 mt-0.5">' + (getMember(p.owner).name || '') + ' · 예산 ' + App.formatWon(p.budget) + ' · ' + p.channels.join(', ') + '</p></div>' +
+            '<p class="text-[10px] text-gray-500 mt-0.5">' + (getMember(p.owner).name || '') + ' · 예산 ' + App.formatWon(p.budget) + ' · ' + p.channels.join(', ') + '</p>' +
+            (p.executionTool ? '<p class="text-[10px] text-primary mt-1">실행: ' + p.executionTool + '</p>' : '') + '</div>' +
             '<div class="flex gap-2"><button onclick="openPromoPlanModal(\'' + p.id + '\')" class="text-xs px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">기획 수정</button>' +
             '<button onclick="selectPromoPlan(\'' + p.id + '\')" class="text-xs px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">선택</button></div></div>' +
             '<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">' +
@@ -1938,7 +1548,7 @@ function renderPromoKpiPanel() {
             [['발송', fmtCount(p.kpi.targetSent), '건'], ['오픈율', p.kpi.targetOpenRate, '%'], ['전환율', p.kpi.targetConversion, '%'], ['ROAS', p.kpi.targetRoas, 'x'], ['매출', formatDataHubWon(p.kpi.targetRevenue), '']].map(function(k) {
                 return '<div class="flex justify-between p-2 rounded bg-dark/40"><span class="text-gray-500">' + k[0] + ' 목표</span><span class="font-bold">' + k[1] + k[2] + '</span></div>';
             }).join('') + '</div></div>' +
-            '<div><p class="text-xs font-bold text-primary mb-3">결과값 입력</p>' +
+            '<div><p class="text-xs font-bold text-primary mb-3">결과값 입력 <span class="text-[10px] font-normal text-gray-500">(외부 실행 후)</span></p>' +
             '<div class="grid grid-cols-2 gap-2 mb-3">' +
             [['actualSent', '발송', p.kpi.actualSent], ['actualOpened', '오픈', p.kpi.actualOpened], ['actualConverted', '전환', p.kpi.actualConverted], ['actualRevenue', '매출(원)', p.kpi.actualRevenue], ['actualRoas', 'ROAS', p.kpi.actualRoas]].map(function(k) {
                 return '<div><label class="text-[10px] text-gray-500">' + k[1] + '</label><input type="number" id="promo-result-' + p.id + '-' + k[0] + '" class="settings-input text-sm" step="any" value="' + k[2] + '" onchange="updatePromoResultField(\'' + p.id + '\',\'' + k[0] + '\',this.value)"></div>';
@@ -1947,7 +1557,8 @@ function renderPromoKpiPanel() {
             (p.kpi.inputAt ? '<p class="text-[10px] text-gray-600 mb-2">마지막 입력: ' + p.kpi.inputAt + '</p>' : '') +
             '<p class="text-[10px] font-bold text-gray-400 mb-1">매출 달성률</p>' +
             '<div class="promo-kpi-bar mb-1"><div class="promo-kpi-bar-fill ' + getPromoKpiBarClass(revPct) + '" style="width:' + Math.min(100, revPct) + '%"></div></div>' +
-            '<p class="text-xs text-gray-400">' + revPct + '% 달성 · 전환 ' + convPct + '%</p></div></div></div>';
+            '<p class="text-xs text-gray-400">' + revPct + '% 달성 · 전환 ' + convPct + '%</p></div></div>' +
+            renderPromoAbCompareHtml(p) + '</div>';
     }).join('') || '<p class="text-sm text-gray-500 text-center py-12">프로모션 KPI 데이터가 없습니다. 캘린더에서 일정을 등록하세요.</p>';
 }
 
@@ -2069,8 +1680,8 @@ App.views['view-dashboard'] = () => {
         </div>
     </div>
 
-    <!-- Channel Status + Pipeline + CRM -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+    <!-- Channel Status + Pipeline -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
         <div class="glass rounded-xl p-4">
             <div class="chart-card-header mb-3">
                 <h2 class="font-bold text-sm">채널 API 상태</h2>
@@ -2086,43 +1697,23 @@ App.views['view-dashboard'] = () => {
                     <span class="status-dot ${c.status}"></span>
                 </div>`).join('')}
             </div>
-            <button onclick="navigateTo('view-api')" class="mt-3 text-xs text-primary font-semibold hover:underline">API 관리 →</button>
+            <button onclick="navigateTo('view-api')" class="mt-3 text-xs text-primary font-semibold hover:underline">API · 동기화 이력 →</button>
         </div>
 
         <div class="glass rounded-xl p-4">
             <div class="chart-card-header mb-2">
                 <div class="chart-card-title">
-                    <h2>라이브 데이터 파이프라인</h2>
+                    <h2>데이터 파이프라인</h2>
                 </div>
-                <span class="text-[10px] font-mono bg-warning/10 text-warning px-2 py-0.5 rounded border border-warning/20 shrink-0">데모</span>
+                <span class="text-[10px] font-mono bg-warning/10 text-warning px-2 py-0.5 rounded border border-warning/20 shrink-0">자동 동기화</span>
             </div>
+            <p class="text-[10px] text-gray-500 mb-3">채널 웹훅·동기화 → 정규화 → Firebase 적재 → 매일 알림톡 브리핑</p>
             <div class="flex items-center gap-1 overflow-x-auto py-2 text-center">
                 ${['Cron','API Sync','Parse','Firebase','카톡'].map((n,i) => `
                 ${i>0?'<div class="w-6 h-0.5 bg-gray-700 relative shrink-0'+(i===1?' flow-line':'')+'"></div>':''}
                 <div class="shrink-0 flex flex-col items-center gap-1">
                     <div class="w-10 h-10 rounded-lg ${i===1?'bg-primary/20 border-2 border-primary pulse-live':'bg-surface border border-border'} flex items-center justify-center text-[9px] font-bold ${i===1?'text-primary':'text-gray-400'}">${n}</div>
                 </div>`).join('')}
-            </div>
-        </div>
-
-        <div class="glass rounded-xl p-4 chart-card">
-            <div class="chart-card-header">
-                <div class="chart-card-title">
-                    <h2>CRM 세그먼트</h2>
-                    <span class="chart-unit-badge">124K · 재구매 42%</span>
-                </div>
-            </div>
-            <div class="chart-canvas-wrap short relative">
-                <canvas id="crmChart"></canvas>
-                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span class="text-lg font-bold">42%</span>
-                    <span class="text-[9px] text-gray-500">재구매율</span>
-                </div>
-            </div>
-            <div class="flex justify-center gap-3 mt-1 text-[10px] text-gray-400">
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:#3b82f6"></span>신규 45%</span>
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:#8b5cf6"></span>충성 35%</span>
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:#10b981"></span>이탈 20%</span>
             </div>
         </div>
     </div>
@@ -2163,7 +1754,8 @@ App.views['view-datahub'] = () => `
                 <h2 class="text-xl font-bold">누적 데이터 DB</h2>
                 <span class="text-[10px] font-mono bg-primary/15 text-blue-400 px-2 py-0.5 rounded border border-primary/25">SOURCE DB</span>
             </div>
-            <p class="text-sm text-gray-400">Firebase 적재 원천 데이터 · 일/주/월/연 누적 지표 분석 및보내기</p>
+            <p class="text-sm text-gray-400">Firebase 적재 원천 데이터 · 일/주/월/연 누적 지표 분석 및 내보내기</p>
+            <p class="text-[10px] text-gray-600 mt-1">집계 Export는 횟수 제한 없음 · 원시 대용량·PDF 고빈도·연속 요청만 보호 차단</p>
         </div>
         <div class="flex flex-wrap gap-2">
             <button onclick="exportDataHub('csv')" class="text-xs font-semibold px-3 py-2 rounded-lg bg-surface border border-border hover:border-primary/40 transition-colors flex items-center gap-1.5">
@@ -2178,6 +1770,7 @@ App.views['view-datahub'] = () => `
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Excel
             </button>
+            <button type="button" onclick="demoBlockRawExport()" class="text-[10px] font-semibold px-2.5 py-2 rounded-lg border border-warning/30 text-warning/90 hover:bg-warning/10" title="원시 덤프 차단 데모">원시 덤프?</button>
         </div>
     </div>
 
@@ -2191,6 +1784,9 @@ App.views['view-datahub'] = () => `
         <div><span class="text-gray-500">저장소</span> <span class="font-mono text-gray-300 ml-1">${App.dataHubMeta.storage}</span></div>
         <div><span class="text-gray-500">총 레코드</span> <span class="font-mono font-bold text-white ml-1">${App.dataHubMeta.totalRows.toLocaleString()}</span></div>
         <div><span class="text-gray-500">보존 기간</span> <span class="font-mono text-gray-300 ml-1">${App.dataHubMeta.retention}</span></div>
+        ${App.dataHubMeta.exportPolicy
+            ? '<div><span class="text-gray-500">Export</span> <span class="font-mono text-gray-300 ml-1">' + App.dataHubMeta.exportPolicy + '</span></div>'
+            : '<div><span class="text-gray-500">Export</span> <span class="font-mono text-success ml-1">집계 무제한 · 보호 규칙 적용</span></div>'}
         <div class="ml-auto"><span class="text-gray-500">마지막 적재</span> <span class="font-mono text-gray-300 ml-1">${App.dataHubMeta.lastIngest}</span></div>
     </div>
 
@@ -2278,16 +1874,23 @@ App.views['view-datahub'] = () => `
     </div>
 </div>`;
 
-App.views['view-briefing'] = () => `
+App.views['view-briefing'] = () => {
+    var lim = typeof getBriefingRecipientLimitSafe === 'function' ? getBriefingRecipientLimitSafe() : 1;
+    var tierLabel = App.tier === 'starter' ? 'Starter' : App.tier === 'growth' ? 'Growth' : 'Enterprise';
+    return `
 <div id="view-briefing" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
             <h2 class="text-xl font-bold">데일리 카카오 브리핑</h2>
-            <p class="text-sm text-gray-400 mt-1">매일 08:30 자동 발송 · 구성 항목은 localStorage 저장 <span class="demo-pill">데모</span></p>
+            <p class="text-sm text-gray-400 mt-1">매일 08:30 · <strong class="text-gray-300">1인 1통</strong> · ${tierLabel} 수신 <strong class="text-primary">${lim}명</strong> 기본 <span class="demo-pill">데모</span></p>
         </div>
         <div class="flex gap-2">
-            <button onclick="showToast('테스트 브리핑을 발송했습니다. (데모)', 'success')" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors">테스트 발송</button>
+            <button onclick="showToast('테스트 브리핑을 선택 수신자에게 발송했습니다. (데모)', 'success')" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors">테스트 발송</button>
         </div>
+    </div>
+
+    <div class="glass rounded-xl p-4 border border-primary/20 bg-primary/5">
+        <p class="text-sm text-gray-200"><span class="font-bold text-primary">알림톡 수신 한도</span> — 스타터 1 · 그로스 3 · 엔터 5명 기본 제공. 추가는 별도 문의. 수신자는 작업 좌석·뷰어에 포함되지 않습니다.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -2308,12 +1911,17 @@ App.views['view-briefing'] = () => `
                             <button class="w-full mt-4 bg-[#fae100] text-gray-900 text-xs font-bold py-2.5 rounded-lg" onclick="navigateTo('view-dashboard')">대시보드 바로가기</button>
                         </div>
                     </div>
-                    <p class="text-[10px] text-gray-600 text-right mt-1">오전 8:30</p>
+                    <p class="text-[10px] text-gray-600 text-right mt-1">오전 8:30 · 수신 ${lim}명 한도</p>
                 </div>
             </div>
         </div>
 
         <div class="space-y-5">
+            <div class="glass rounded-xl p-5">
+                <h3 class="font-bold text-sm mb-1">알림톡 수신자</h3>
+                <p class="text-[11px] text-gray-500 mb-3" id="briefing-recipients-meta"></p>
+                <div class="space-y-2" id="briefing-recipients-list"></div>
+            </div>
             <div class="glass rounded-xl p-5">
                 <h3 class="font-bold text-sm mb-4">브리핑 구성 항목 <span class="text-[10px] text-gray-500 font-normal">클릭하여 ON/OFF</span></h3>
                 <div class="space-y-3" id="briefing-config-list"></div>
@@ -2324,13 +1932,14 @@ App.views['view-briefing'] = () => `
                     ${['07.10 (금) 08:30','07.09 (목) 08:30','07.08 (수) 08:30','07.07 (화) 08:30'].map((d,i) => `
                     <div class="flex justify-between items-center p-2.5 rounded-lg hover:bg-surface">
                         <span class="text-gray-300">${d}</span>
-                        <span class="text-[10px] ${i===0?'text-success':'text-gray-500'} font-bold">${i===0?'오늘':'발송 완료 ✓'}</span>
+                        <span class="text-[10px] ${i===0?'text-success':'text-gray-500'} font-bold">${i===0?'오늘 · '+lim+'통':'발송 완료 ✓'}</span>
                     </div>`).join('')}
                 </div>
             </div>
         </div>
     </div>
 </div>`;
+};
 
 App.views['view-orders'] = () => {
     var m = getMockMetrics();
@@ -2339,13 +1948,17 @@ App.views['view-orders'] = () => {
 <div id="view-orders" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-            <h2 class="text-xl font-bold">옴니채널 주문 · 발주 파이프라인</h2>
-            <p class="text-sm text-gray-400 mt-1">전 채널 주문 수집 · WMS 자동 발주 연동 <span class="demo-pill">데모</span></p>
+            <h2 class="text-xl font-bold">옴니채널 주문 · 발주 현황</h2>
+            <p class="text-sm text-gray-400 mt-1">전 채널 주문 상태 미러 · 발주·출고 실행은 사방넷/채널 <span class="demo-pill">데모</span></p>
         </div>
         <button onclick="syncOrdersDemo()" class="text-sm font-semibold px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 flex items-center gap-2 transition-colors">
             <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             수동 동기화
         </button>
+    </div>
+
+    <div class="glass rounded-xl p-4 border border-warning/25 bg-warning/5" id="orders-policy-banner">
+        <p class="text-sm text-gray-200"><span class="font-bold text-warning">상태 조회 · 동기화만 제공합니다.</span> 「원천에서 처리」는 사방넷 또는 채널 어드민 안내이며, Omnify가 발주·출고를 확정하지 않습니다. (이지·셀메이트 미연동)</p>
     </div>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="orders-pipeline-kpi">
@@ -2401,14 +2014,23 @@ App.views['view-orders'] = () => {
 
 App.views['view-inventory'] = () => {
     var m = getMockMetrics();
+    var pol = (typeof INVENTORY_POLICY !== 'undefined' && INVENTORY_POLICY) ? INVENTORY_POLICY : null;
     return `
 <div id="view-inventory" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-            <h2 class="text-xl font-bold">통합 WMS 재고 관제</h2>
-            <p class="text-sm text-gray-400 mt-1">채널별 재고 할당 · 안전 재고 모니터링 · 자동 발주 제안 <span class="demo-pill">데모</span></p>
+            <h2 class="text-xl font-bold">${pol ? pol.title : '통합 재고 (조회)'}</h2>
+            <p class="text-sm text-gray-400 mt-1">${pol ? pol.subtitle : '사방넷 실재고 + 채널 재고 조회'} <span class="demo-pill">데모</span></p>
         </div>
-        <button onclick="showToast('발주 제안서를 생성했습니다. (데모)', 'success')" class="text-sm font-semibold px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white transition-colors">발주 제안서 생성</button>
+        <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="openInventorySourceHint()" class="text-xs font-semibold px-3 py-2 rounded-lg border border-border hover:border-primary/40 transition-colors">원천 시스템 안내</button>
+            <button type="button" onclick="blockInventoryWrite('재고 수량 수정')" class="text-xs font-semibold px-3 py-2 rounded-lg border border-warning/40 text-warning/90 hover:bg-warning/10">재고 수정 (봉쇄)</button>
+        </div>
+    </div>
+
+    <div class="glass rounded-xl p-4 border border-warning/25 bg-warning/5" id="inventory-policy-banner">
+        <p class="text-sm text-gray-200"><span class="font-bold text-warning">${pol ? pol.bannerLead : 'Omnify는 재고 Source of Truth가 아닙니다.'}</span> ${pol ? pol.bannerBody : ''}</p>
+        <p class="text-[11px] text-gray-500 mt-1.5">제공: 사방넷 실재고 조회 · 채널 재고 조회 · 경보 · 브리핑 · 바로가기 &nbsp;|&nbsp; 제외: 이지어드민·셀메이트 &nbsp;|&nbsp; 봉쇄: 수량 쓰기 · 출고 확정 &nbsp;|&nbsp; Ent.: 사방넷만 협의 커스텀</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -2433,12 +2055,12 @@ App.views['view-inventory'] = () => {
                     <tr>
                         <th class="px-5 py-3 text-left font-medium">SKU</th>
                         <th class="px-5 py-3 text-left font-medium">상품명</th>
-                        <th class="px-5 py-3 text-center font-medium">총 가용</th>
+                        <th class="px-5 py-3 text-center font-medium">사방넷(실재고)</th>
                         <th class="px-5 py-3 text-center font-medium">Cafe24</th>
                         <th class="px-5 py-3 text-center font-medium">스마트스토어</th>
                         <th class="px-5 py-3 text-center font-medium">쿠팡</th>
                         <th class="px-5 py-3 text-center font-medium">에이블리</th>
-                        <th class="px-5 py-3 text-center font-medium">안전재고</th>
+                        <th class="px-5 py-3 text-center font-medium">안전재고*</th>
                         <th class="px-5 py-3 text-center font-medium">상태</th>
                     </tr>
                 </thead>
@@ -2458,6 +2080,7 @@ App.views['view-inventory'] = () => {
                 </tbody>
             </table>
         </div>
+        <p class="text-[10px] text-gray-600 px-5 py-3 border-t border-border">* 안전재고 = Omnify 경보 기준값. 「사방넷(실재고)」는 미러 조회 · 채널 열은 노출 재고. 이지·셀메이트 미연동. 이 화면은 조회 전용입니다.</p>
     </div>
 </div>`;
 };
@@ -2466,76 +2089,25 @@ App.views['view-crm'] = () => `
 <div id="view-crm" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-            <h2 class="text-xl font-bold">프로모션 · CRM 캠페인 빌더</h2>
-            <p class="text-sm text-gray-400 mt-1">A/B 테스트 · 캠페인 복제 · 프로모션 캘린더 · KPI 기획/성과 <span class="demo-pill">데모</span></p>
+            <h2 class="text-xl font-bold">프로모션 기획 · 성과</h2>
+            <p class="text-sm text-gray-400 mt-1">캘린더 일정 · 목표 KPI · 외부 실행 후 실적 기록 <span class="demo-pill">데모</span></p>
         </div>
-        <div class="flex gap-2">
-            <button onclick="exportCrmAudience(null)" class="text-xs font-semibold px-3 py-2 rounded-lg bg-surface border border-border hover:border-primary/40 transition-colors">명단 CSV</button>
-            <button onclick="openPromoPlanModal()" class="text-xs font-semibold px-3 py-2 rounded-lg bg-surface border border-border hover:border-primary/40 transition-colors">+ 프로모션</button>
-            <button onclick="openCrmWizard()" class="text-sm font-bold px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors">+ 새 캠페인</button>
-        </div>
+        <button onclick="openPromoPlanModal()" class="text-sm font-bold px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors">+ 프로모션</button>
+    </div>
+
+    <div class="glass rounded-xl p-4 border border-primary/20 bg-primary/5" id="crm-execution-banner">
+        <p class="text-sm text-gray-300"><span class="font-bold text-primary">실행은 외부 도구</span>에서 진행합니다. Omnify에서는 프로모션 일정·목표 KPI를 기획하고, 발송·전환 실적을 수동으로 기록합니다.</p>
+        <p class="text-[11px] text-gray-500 mt-1">알림톡·SMS·마켓 프로모션은 솔라피, 카카오 비즈메시지, 각 채널 어드민 등에서 실행하세요.</p>
     </div>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" id="crm-stats"></div>
 
     <div class="flex gap-1 border-b border-border">
-        <button class="crm-tab-btn active" data-tab="builder" onclick="switchCrmTab('builder')">캠페인 빌더</button>
-        <button class="crm-tab-btn" data-tab="calendar" onclick="switchCrmTab('calendar')">프로모션 캘린더</button>
+        <button class="crm-tab-btn active" data-tab="calendar" onclick="switchCrmTab('calendar')">프로모션 캘린더</button>
         <button class="crm-tab-btn" data-tab="kpi" onclick="switchCrmTab('kpi')">기획 · KPI</button>
     </div>
 
-    <div id="crm-panel-builder">
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 min-h-[560px]">
-        <!-- Audience Builder -->
-        <div class="glass rounded-xl p-5 xl:col-span-4 flex flex-col">
-            <h3 class="font-bold text-sm mb-1">타겟 오디언스 빌더</h3>
-            <p class="text-[10px] text-gray-500 mb-4">필터 변경 시 타겟 수 실시간 재계산</p>
-            <div class="space-y-3 flex-1">
-                ${Object.keys(CRM_AUDIENCE_OPTIONS).map(function(key, idx) {
-                    var labels = ['구매 이력', '누적 금액', '관심 카테고리'];
-                    return '<div class="p-3 rounded-lg bg-surface border border-border">' +
-                        '<label class="text-xs text-gray-500 mb-1.5 block">' + labels[idx] + '</label>' +
-                        '<select class="w-full bg-dark border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-primary" onchange="onCrmFilterChange(\'' + key + '\', this.value)">' +
-                        CRM_AUDIENCE_OPTIONS[key].map(function(opt, i) {
-                            return '<option value="' + i + '" ' + (crmAudienceFilter[key] === i ? 'selected' : '') + '>' + opt + '</option>';
-                        }).join('') + '</select></div>';
-                }).join('')}
-            </div>
-            <div class="mt-4 pt-4 border-t border-border">
-                <div class="flex justify-between items-end mb-2">
-                    <p class="text-sm text-gray-400">예상 타겟</p>
-                    <p class="text-2xl font-extrabold text-white" id="crm-audience-count">—</p>
-                </div>
-                <div class="crm-audience-bar mb-3"><div class="crm-audience-bar-fill" id="crm-audience-bar" style="width:0%"></div></div>
-                <div id="crm-audience-segments" class="mb-4"></div>
-                <button onclick="extractCrmAudience()" class="w-full text-sm font-semibold px-4 py-2.5 rounded-lg bg-surface border border-border hover:border-primary transition-colors">명단 추출</button>
-            </div>
-        </div>
-
-        <!-- Preview + Campaign list + Detail -->
-        <div class="xl:col-span-8 space-y-5 flex flex-col">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 flex-1">
-                <div class="glass rounded-xl p-5">
-                    <h3 class="font-bold text-sm mb-4">알림톡 라이브 프리뷰</h3>
-                    <div id="crm-live-preview" class="min-h-[220px] flex items-center justify-center"></div>
-                </div>
-                <div class="glass rounded-xl p-5 flex flex-col">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-bold text-sm">캠페인 목록</h3>
-                        <span class="text-[10px] text-gray-500">${crmData ? crmData.length : 0}건</span>
-                    </div>
-                    <div class="space-y-2 flex-1 overflow-y-auto max-h-[280px] pr-1" id="crm-campaign-list"></div>
-                </div>
-            </div>
-            <div class="glass rounded-xl p-5">
-                <h3 class="font-bold text-sm mb-3">캠페인 상세 · A/B · 액션</h3>
-                <div id="crm-campaign-detail"></div>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <div id="crm-panel-calendar" class="hidden space-y-5">
+    <div id="crm-panel-calendar" class="space-y-5">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 promo-cal-toolbar">
             <div class="flex gap-1 p-1 rounded-lg bg-surface border border-border w-full sm:w-auto">
                 <button class="promo-cal-mode-btn flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-md font-semibold active" data-mode="week" onclick="setPromoCalendarMode('week')">주간</button>
@@ -2613,7 +2185,7 @@ App.views['view-profit'] = () => {
 App.views['view-api'] = () => `
 <div id="view-api" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
-        <div><h2 class="text-xl font-bold">API 연동 상태 모니터링</h2><p class="text-sm text-gray-400 mt-1">토큰 만료 사전 갱신 · 무중단 모니터링</p></div>
+        <div><h2 class="text-xl font-bold">API 연동 · 동기화</h2><p class="text-sm text-gray-400 mt-1">채널 API 상태 · 자동 동기화 · 이력 모니터링</p></div>
         <div class="flex items-center gap-2 px-3 py-1.5 bg-success/10 border border-success/20 rounded-lg">
             <span class="status-dot live pulse-live"></span><span class="text-xs font-semibold text-success">3개 정상 · 1개 주의</span>
         </div>
@@ -2629,28 +2201,45 @@ App.views['view-api'] = () => `
                 <div class="p-3 rounded-lg bg-surface"><p class="text-[10px] text-gray-500">토큰 만료</p><p class="font-semibold ${c.status==='warn'?'text-warning':''}">${c.tokenExpiry}</p></div>
                 <div class="p-3 rounded-lg bg-surface"><p class="text-[10px] text-gray-500">마지막 동기화</p><p class="font-semibold">${c.lastSync}</p></div>
             </div>
-            ${c.status==='warn'?'<div class="mt-3 p-3 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning">⚡ 자동 갱신 예약됨</div>':''}
+            ${c.status==='warn'?'<div class="mt-3 p-3 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning">⚡ 토큰 자동 갱신 예약됨</div>':''}
         </div>`).join('')}
     </div>
-</div>`;
-
-App.views['view-workflow'] = () => `
-<div id="view-workflow" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
-    <div><h2 class="text-xl font-bold">자동화 워크플로우 엔진</h2><p class="text-sm text-gray-400 mt-1">n8n 기반 백그라운드 파이프라인</p></div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        ${[['활성 워크플로우','5'],['이번 달 실행','4,441'],['절감 공수','~42h']].map(([l,v])=>`
-        <div class="glass rounded-xl p-5 text-center"><p class="text-xs text-gray-400">${l}</p><p class="text-3xl font-extrabold my-1">${v}</p></div>`).join('')}
-    </div>
-    <div class="space-y-3">
-        ${App.workflows.map(w => `
-        <div class="glass rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 ${w.status==='active'?'border-l-success':'border-l-gray-600'}">
-            <div><h3 class="font-bold ${w.status!=='active'?'text-gray-500':''}">${w.name}</h3><p class="text-xs text-gray-500">${w.desc}</p></div>
-            <div class="flex gap-6 text-xs text-center">
-                <div><p class="text-gray-500">실행</p><p class="font-bold font-mono">${w.runs.toLocaleString()}</p></div>
-                <div><p class="text-gray-500">성공률</p><p class="font-bold text-success">${w.success}%</p></div>
-                <div><p class="text-gray-500">마지막</p><p class="font-bold">${w.lastRun}</p></div>
+    <div class="glass rounded-xl overflow-hidden" id="api-sync-history">
+        <div class="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+                <h3 class="font-bold text-sm">동기화 · 알림 이력</h3>
+                <p class="text-[10px] text-gray-500 mt-0.5">최근 24시간 · 15~30분 주기 자동 동기화</p>
             </div>
-        </div>`).join('')}
+            <button onclick="syncOrdersDemo()" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border hover:border-primary/40 transition-colors">수동 동기화</button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="text-gray-500 text-xs border-b border-border bg-surface/40">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-medium">시각</th>
+                        <th class="px-4 py-3 text-left font-medium">채널</th>
+                        <th class="px-4 py-3 text-left font-medium">작업</th>
+                        <th class="px-4 py-3 text-right font-medium">건수</th>
+                        <th class="px-4 py-3 text-right font-medium">소요</th>
+                        <th class="px-4 py-3 text-center font-medium">상태</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    ${App.syncHistory.map(function(row) {
+                        var st = row.status === 'success' ? '<span class="text-[10px] px-2 py-0.5 rounded bg-success/20 text-success font-bold">성공</span>'
+                            : row.status === 'warn' ? '<span class="text-[10px] px-2 py-0.5 rounded bg-warning/20 text-warning font-bold">주의</span>'
+                            : '<span class="text-[10px] px-2 py-0.5 rounded bg-danger/20 text-danger font-bold">실패</span>';
+                        return '<tr class="table-row">' +
+                            '<td class="px-4 py-3 font-mono text-xs text-gray-400">' + row.time + '</td>' +
+                            '<td class="px-4 py-3"><span class="mr-1.5">' + row.icon + '</span>' + row.channel + '</td>' +
+                            '<td class="px-4 py-3 text-gray-300">' + row.job + (row.note ? ' <span class="text-warning text-[10px]">(' + row.note + ')</span>' : '') + '</td>' +
+                            '<td class="px-4 py-3 text-right font-mono">' + row.records.toLocaleString() + '</td>' +
+                            '<td class="px-4 py-3 text-right text-xs text-gray-500">' + row.duration + '</td>' +
+                            '<td class="px-4 py-3 text-center">' + st + '</td></tr>';
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>`;
 
@@ -2726,29 +2315,42 @@ App.views['view-archive'] = () => `
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
             <div class="flex items-center gap-2 mb-1">
-                <h2 class="text-xl font-bold">스마트 자료실</h2>
-                <span class="text-[10px] font-mono bg-accent/15 text-purple-300 px-2 py-0.5 rounded border border-accent/25">CLOUD DRIVE</span>
+                <h2 class="text-xl font-bold">Google Drive 자료실</h2>
+                <span class="text-[10px] font-mono bg-[#4285f4]/15 text-blue-300 px-2 py-0.5 rounded border border-[#4285f4]/25">DRIVE</span>
             </div>
-            <p class="text-sm text-gray-400">업무 파일 저장 · 공유 · 태그 검색 · 즐겨찾기 · 버전 관리</p>
+            <p class="text-sm text-gray-400">고객사 Google Drive 폴더 연동 · 대시보드에서 검색 · 바로가기</p>
         </div>
-        <div class="flex gap-2">
-            <label class="text-xs font-semibold px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white cursor-pointer shadow-lg shadow-primary/20 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                파일 업로드
-                <input type="file" multiple class="hidden" id="archive-file-input" onchange="handleArchiveUpload(this.files)">
-            </label>
+        <button type="button" onclick="showToast('Google Drive에서 폴더를 엽니다. (데모)', 'info')" class="text-xs font-semibold px-4 py-2 rounded-lg border border-[#4285f4]/40 text-blue-300 hover:bg-[#4285f4]/10 transition-colors flex items-center gap-1.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5zm8.43 12L12.58 21H5.74l3.43-5.5h6.97z"/></svg>
+            Drive에서 열기
+        </button>
+    </div>
+
+    <div class="glass rounded-xl p-5 border border-[#4285f4]/25 bg-[#4285f4]/5" id="archive-drive-connect">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <div class="w-11 h-11 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5z"/><path fill="#34A853" d="M16.14 15L12.58 21H5.74l3.43-5.5h6.97z"/><path fill="#FBBC04" d="M7.71 3.5h8.57L22.85 15h-6.71L7.71 3.5z"/></svg>
+                </div>
+                <div>
+                    <p class="font-bold text-sm">Google Drive 연동됨</p>
+                    <p class="text-xs text-gray-400 mt-0.5">계정: marketing@sample.co.kr</p>
+                    <p class="text-xs text-gray-500 mt-1">폴더: <span class="font-mono text-gray-300">/Omnify_자료실</span> · 저장 비용은 고객 Google 계정</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2 shrink-0">
+                <span class="text-[10px] px-2.5 py-1 rounded-full bg-success/20 text-success font-bold">연동 활성</span>
+                <button type="button" onclick="showToast('Drive 폴더 설정 (데모)', 'info')" class="text-[10px] font-semibold px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">폴더 변경</button>
+            </div>
         </div>
     </div>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" id="archive-stats"></div>
 
-    <div class="archive-dropzone p-6 text-center" id="archive-dropzone"
-         ondragover="event.preventDefault();this.classList.add('dragover')"
-         ondragleave="this.classList.remove('dragover')"
-         ondrop="handleArchiveDrop(event)">
-        <svg class="w-10 h-10 mx-auto text-accent/60 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-        <p class="text-sm text-gray-300 font-medium">파일을 여기에 드래그하거나 클릭하여 업로드</p>
-        <p class="text-[10px] text-gray-500 mt-1">PDF · Excel · 이미지 · ZIP · 최대 5MB (목업)</p>
+    <div class="archive-dropzone p-6 text-center opacity-80" id="archive-dropzone">
+        <svg class="w-10 h-10 mx-auto text-[#4285f4]/60 mb-2" viewBox="0 0 24 24" fill="currentColor"><path d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5z"/></svg>
+        <p class="text-sm text-gray-300 font-medium">파일 업로드는 Google Drive에서 진행합니다</p>
+        <p class="text-[10px] text-gray-500 mt-1">Omnify는 연동 폴더를 검색 · 미리보기 · 바로가기합니다 (데모: 로컬 목록)</p>
     </div>
 
     <div class="glass rounded-xl p-4">
@@ -2828,8 +2430,8 @@ function renderOrders(data) {
     const tbody = document.getElementById('orders-tbody');
     if (!tbody) return;
     tbody.innerHTML = data.map(o => {
-        var actionLabel = o.status === 'pending' ? '발주 처리' : o.status === 'processing' ? '출고 완료' : '완료';
-        var actionClass = o.status === 'shipped' ? 'text-gray-500 cursor-default' : 'text-primary hover:underline';
+        var actionLabel = o.status === 'pending' ? '원천에서 처리' : o.status === 'processing' ? '원천에서 출고' : '완료';
+        var actionClass = o.status === 'shipped' ? 'text-gray-500 cursor-default' : 'text-warning hover:underline';
         var actionClick = o.status === 'shipped' ? '' : "processOrder('" + o.id + "')";
         return `
     <tr class="table-row">
@@ -2874,11 +2476,12 @@ function openAdminLink(name, url) {
 }
 
 var SETTINGS_STORAGE_KEY = 'omnisync_settings_v1';
-var settingsActiveTab = 'kpi';
+var TEAM_STORAGE_KEY = 'omnify_team_v1';
+var settingsActiveTab = 'team';
 App.settings = null;
 
 function getSettingsDefaults() {
-    return {
+    var base = {
         kpi: {
             monthlyRevenueTarget: 850000000,
             currentMonthlyRevenue: 637500000,
@@ -2918,6 +2521,16 @@ function getSettingsDefaults() {
             return { sku: i.sku, name: i.name, safety: i.safety, leadTime: 7 };
         }),
     };
+    if (App.tenantMeta && App.tenantMeta.custom && typeof customToSettingsPatch === 'function') {
+        var patch = customToSettingsPatch(App.tenantMeta.custom, App.tenantMeta.channels);
+        base.kpi = Object.assign({}, base.kpi, patch.kpi || {});
+        base.margins = Object.assign({}, base.margins, patch.margins || {});
+        base.inventory = Object.assign({}, base.inventory, patch.inventory || {});
+        if (patch.adBudget) base.adBudget = Object.assign({}, base.adBudget, patch.adBudget);
+        if (patch.channels && patch.channels.length) base.channels = patch.channels;
+        if (patch.adMedia && patch.adMedia.length) base.adMedia = patch.adMedia;
+    }
+    return base;
 }
 
 function getSettings() {
@@ -2926,10 +2539,14 @@ function getSettings() {
 }
 
 function loadSettings() {
+    var key = typeof tenantStorageKey === 'function' ? tenantStorageKey(SETTINGS_STORAGE_KEY) : SETTINGS_STORAGE_KEY;
     try {
-        var raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+        var raw = localStorage.getItem(key);
         if (raw) {
             App.settings = Object.assign(getSettingsDefaults(), JSON.parse(raw));
+            if (typeof applyTenantCustomAfterLoad === 'function' && App.tenantMeta) {
+                /* keep user edits; custom only fills missing seed path via getSettingsDefaults */
+            }
             return;
         }
     } catch (e) { /* ignore */ }
@@ -2938,7 +2555,8 @@ function loadSettings() {
 
 function persistSettings() {
     try {
-        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(App.settings));
+        var key = typeof tenantStorageKey === 'function' ? tenantStorageKey(SETTINGS_STORAGE_KEY) : SETTINGS_STORAGE_KEY;
+        localStorage.setItem(key, JSON.stringify(App.settings));
     } catch (e) {
         showToast('설정 저장에 실패했습니다.', 'danger');
     }
@@ -3014,6 +2632,7 @@ function collectSettingsFromForm() {
 }
 
 var SETTINGS_TABS = [
+    { id: 'team', label: '팀 · 좌석', icon: '👥' },
     { id: 'kpi', label: '목표 KPI', icon: '🎯' },
     { id: 'margins', label: '마진율', icon: '📊' },
     { id: 'adbudget', label: '광고비', icon: '💰' },
@@ -3021,6 +2640,207 @@ var SETTINGS_TABS = [
     { id: 'channels', label: '판매처', icon: '🏪' },
     { id: 'admedia', label: '광고 매체', icon: '📢' },
 ];
+
+function loadTeamMembers() {
+    try {
+        var key = typeof tenantStorageKey === 'function' ? tenantStorageKey(TEAM_STORAGE_KEY) : TEAM_STORAGE_KEY;
+        var raw = localStorage.getItem(key);
+        if (raw) {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length) App.teamMembers = parsed;
+        }
+    } catch (e) { /* ignore */ }
+}
+
+function saveTeamMembers() {
+    try {
+        var key = typeof tenantStorageKey === 'function' ? tenantStorageKey(TEAM_STORAGE_KEY) : TEAM_STORAGE_KEY;
+        localStorage.setItem(key, JSON.stringify(App.teamMembers));
+    } catch (e) { /* ignore */ }
+    if (typeof applyTierMeta === 'function') applyTierMeta();
+    if (typeof updateSeatMeterUI === 'function') updateSeatMeterUI();
+    renderUserSwitchMenu();
+}
+
+function seatTypeLabel(type) {
+    if (type === 'admin') return '관리자';
+    if (type === 'viewer') return '뷰어 (읽기전용)';
+    return '멤버';
+}
+
+function inviteTeamMember() {
+    var name = (document.getElementById('team-invite-name') || {}).value || '';
+    var email = (document.getElementById('team-invite-email') || {}).value || '';
+    var role = (document.getElementById('team-invite-role') || {}).value || '운영팀';
+    var seatType = (document.getElementById('team-invite-seat') || {}).value || 'member';
+    name = name.trim();
+    email = email.trim();
+    if (!name || !email) {
+        showToast('이름과 이메일을 입력하세요.', 'warning');
+        return;
+    }
+    if (typeof canAddTeamSeat === 'function' && !canAddTeamSeat(seatType)) {
+        var lim = typeof getTierLimits === 'function' ? getTierLimits() : { seatAddonLabel: '+5만/인·월' };
+        showToast('좌석 한도에 도달했습니다. 추가 작업 좌석(' + lim.seatAddonLabel + ') 또는 플랜 업그레이드를 문의하세요.', 'warning');
+        return;
+    }
+    var id = 'u' + Date.now().toString(36);
+    var colors = ['from-cyan-500 to-blue-500', 'from-rose-500 to-pink-500', 'from-lime-500 to-green-500'];
+    App.teamMembers.push({
+        id: id,
+        name: name,
+        role: role,
+        email: email,
+        avatar: name.charAt(0),
+        color: colors[App.teamMembers.length % colors.length],
+        seatType: seatType,
+        active: true
+    });
+    saveTeamMembers();
+    addActivityLog({ userId: App.currentUserId, action: '팀원 초대', category: 'auth', type: 'info', detail: name + ' (' + seatTypeLabel(seatType) + ') 초대', meta: email + ' · 데모' });
+    if (settingsActiveTab === 'team') renderSettingsPanel();
+    showToast(name + '님을 초대했습니다. (데모: 즉시 활성)', 'success');
+}
+
+function toggleTeamMemberActive(userId) {
+    var m = App.teamMembers.find(function(x) { return x.id === userId; });
+    if (!m) return;
+    if (!m.active && m.seatType !== 'viewer' && typeof canAddTeamSeat === 'function' && !canAddTeamSeat(m.seatType)) {
+        showToast('활성 좌석 한도에 도달했습니다. 추가 좌석 옵션을 문의하세요.', 'warning');
+        return;
+    }
+    if (!m.active && m.seatType === 'viewer' && typeof canAddTeamSeat === 'function' && !canAddTeamSeat('viewer')) {
+        showToast('무료 뷰어 한도에 도달했습니다. 그로스는 뷰어 2인, 엔터프라이즈는 뷰어 무제한입니다.', 'warning');
+        return;
+    }
+    m.active = !m.active;
+    saveTeamMembers();
+    if (settingsActiveTab === 'team') renderSettingsPanel();
+    showToast(m.name + '님을 ' + (m.active ? '활성화' : '비활성화') + '했습니다.', 'info');
+}
+
+function requestSeatAddon() {
+    var lim = typeof getTierLimits === 'function' ? getTierLimits() : { seatAddonPrice: 50000, seatAddonLabel: '+5만/인·월' };
+    try {
+        var key = 'omnify_seat_addon_' + App.tier;
+        var n = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+        localStorage.setItem(key, String(n));
+    } catch (e) { /* ignore */ }
+    if (typeof applyTierMeta === 'function') applyTierMeta();
+    if (settingsActiveTab === 'team') renderSettingsPanel();
+    showToast('추가 좌석 1개가 반영되었습니다. (데모: ' + lim.seatAddonLabel + ')', 'success');
+}
+
+function getExportGuard() {
+    return (typeof EXPORT_GUARD !== 'undefined' && EXPORT_GUARD) ? EXPORT_GUARD : {
+        maxSyncRows: 50000,
+        softQueueRows: 100000,
+        hardRawDumpRows: 500000,
+        pdfPerDay: 20,
+        exportsPerMinute: 5,
+        exportsPerHour: 40
+    };
+}
+
+function readExportLog() {
+    try {
+        var raw = localStorage.getItem('omnify_export_log_v1');
+        var list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
+}
+
+function writeExportLog(list) {
+    try {
+        var cutoff = Date.now() - 48 * 60 * 60 * 1000;
+        var trimmed = (list || []).filter(function(x) { return x && x.ts >= cutoff; }).slice(-200);
+        localStorage.setItem('omnify_export_log_v1', JSON.stringify(trimmed));
+    } catch (e) { /* ignore */ }
+}
+
+function recordExportEvent(format, rows) {
+    var list = readExportLog();
+    list.push({ ts: Date.now(), format: format, rows: rows || 0 });
+    writeExportLog(list);
+}
+
+function countExportsSince(msAgo, format) {
+    var since = Date.now() - msAgo;
+    return readExportLog().filter(function(x) {
+        if (x.ts < since) return false;
+        if (format && x.format !== format) return false;
+        return true;
+    }).length;
+}
+
+/**
+ * Export abuse guard — monthly quota 없음.
+ * 대용량 원시 덤프 / PDF 고빈도 / 스크래핑성 연속 Export / 서버 큐 필요 건수만 차단·안내.
+ * options.estimatedRawRows: 원천 주문·로그 추정 건수(데모는 dataHubMeta.totalRows 사용)
+ */
+function checkExportGuard(format, aggregationRows, options) {
+    options = options || {};
+    var g = getExportGuard();
+    var rows = aggregationRows || 0;
+    var wantRaw = !!options.rawDump;
+
+    if (wantRaw) {
+        return {
+            ok: false,
+            code: 'RAW_DUMP',
+            message: 'Export 출력 한도를 초과했습니다. 원천 주문·로그(대용량 원시 데이터)는 Omnify에서 다운로드할 수 없습니다. Cafe24·스마트스토어·쿠팡 등 해당 채널 어드민에서 직접 내려받아 주세요.'
+        };
+    }
+
+    if (rows >= g.softQueueRows) {
+        return {
+            ok: false,
+            code: 'QUEUE_REQUIRED',
+            message: '요청 데이터가 ' + rows.toLocaleString() +
+                '건으로 동기 Export 한도를 초과합니다. 대용량 Export는 백그라운드 생성·이메일 링크로만 제공하며, 현재는 기간·채널 필터를 좁히거나 해당 판매 채널에서 직접 다운로드해 주세요.'
+        };
+    }
+
+    if (rows > g.maxSyncRows) {
+        return {
+            ok: false,
+            code: 'SYNC_ROW_LIMIT',
+            message: '한 번에 내보낼 수 있는 집계 행은 최대 ' + g.maxSyncRows.toLocaleString() +
+                '건입니다. 기간·채널 필터를 좁힌 뒤 다시 시도하거나, 원천 데이터는 판매 채널에서 다운로드하세요.'
+        };
+    }
+
+    if (format === 'pdf') {
+        var pdfToday = countExportsSince(24 * 60 * 60 * 1000, 'pdf');
+        if (pdfToday >= g.pdfPerDay) {
+            return {
+                ok: false,
+                code: 'PDF_RATE',
+                message: 'PDF Export는 하루 ' + g.pdfPerDay + '회로 제한됩니다. 화면 캡처 렌더는 서버·브라우저 부하가 큽니다. CSV·Excel로 대신 받거나 내일 다시 시도해 주세요.'
+            };
+        }
+    }
+
+    var perMin = countExportsSince(60 * 1000);
+    if (perMin >= g.exportsPerMinute) {
+        return {
+            ok: false,
+            code: 'BURST',
+            message: '짧은 시간에 Export가 너무 많이 요청되었습니다(' + g.exportsPerMinute + '회/분). 자동화·스크래핑으로 의심되어 잠시 차단합니다. 1분 후 다시 시도해 주세요.'
+        };
+    }
+
+    var perHour = countExportsSince(60 * 60 * 1000);
+    if (perHour >= g.exportsPerHour) {
+        return {
+            ok: false,
+            code: 'HOURLY_ABUSE',
+            message: '시간당 Export 보호 한도(' + g.exportsPerHour + '회)에 도달했습니다. 정상 업무용 Export는 제한이 없으며, 연속·자동화 요청만 차단됩니다.'
+        };
+    }
+
+    return { ok: true };
+}
 
 function setSettingsTab(tab) {
     collectSettingsFromForm();
@@ -3047,6 +2867,69 @@ function renderSettingsPanel() {
     if (!el) return;
     var s = getSettings();
     var html = '';
+    var lim = typeof getTierLimits === 'function' ? getTierLimits() : { seatsIncluded: 2, seatAddonLabel: '+5만/인·월', dataRetentionLabel: '12개월', freeViewers: 0 };
+    var quota = typeof getSeatQuota === 'function' ? getSeatQuota() : lim.seatsIncluded;
+    var used = typeof countBillableSeats === 'function' ? countBillableSeats() : 0;
+    var viewers = typeof countActiveViewers === 'function' ? countActiveViewers() : 0;
+    var addon = typeof getSeatAddonCount === 'function' ? getSeatAddonCount() : 0;
+
+    if (settingsActiveTab === 'team') {
+        html = '<h3 class="font-bold text-sm mb-1">팀 · 작업 좌석 관리</h3>' +
+            '<p class="text-xs text-gray-500 mb-4">작업 좌석 = <strong class="text-gray-400">로그인·편집이 가능한 활성 계정</strong> 수입니다. 동시 접속 인원이 아닙니다. 뷰어(읽기 전용)와 카카오 알림톡 수신자(스타터 1 · 그로스 3 · 엔터 5명 기본)는 작업 좌석에 포함되지 않습니다.</p>' +
+            '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">' +
+                '<div class="p-4 rounded-xl bg-surface border border-border">' +
+                    '<p class="text-[10px] text-gray-500 mb-1">작업 좌석 (Named)</p>' +
+                    '<p class="text-2xl font-extrabold">' + used + '<span class="text-sm text-gray-500 font-normal"> / ' + quota + '</span></p>' +
+                    '<p class="text-[10px] text-gray-600 mt-1">기본 ' + lim.seatsIncluded + '인' + (addon ? ' + 추가 ' + addon + '인' : '') + '</p>' +
+                '</div>' +
+                '<div class="p-4 rounded-xl bg-surface border border-border">' +
+                    '<p class="text-[10px] text-gray-500 mb-1">뷰어 (읽기 전용 · 무료)</p>' +
+                    '<p class="text-2xl font-extrabold">' + viewers + '<span class="text-sm text-gray-500 font-normal"> / ' + (typeof formatViewerQuota === 'function' ? formatViewerQuota(lim) : lim.freeViewers) + '</span></p>' +
+                    '<p class="text-[10px] text-gray-600 mt-1">' + (typeof isViewerUnlimited === 'function' && isViewerUnlimited() ? '엔터프라이즈 · 무제한 혜택' : (!canInviteViewer(lim) ? '스타터 · 뷰어 미포함' : '작업 좌석 미차감')) + '</p>' +
+                '</div>' +
+                '<div class="p-4 rounded-xl bg-surface border border-border">' +
+                    '<p class="text-[10px] text-gray-500 mb-1">DataHub 보존</p>' +
+                    '<p class="text-lg font-extrabold leading-tight">' + lim.dataRetentionLabel + '</p>' +
+                    '<p class="text-[10px] text-gray-600 mt-1">Export 월 한도 없음 · 대용량·고빈도만 보호</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="flex flex-wrap gap-2 mb-5">' +
+                '<button type="button" onclick="requestSeatAddon()" class="text-xs font-semibold px-3 py-2 rounded-lg border border-primary/40 text-primary hover:bg-primary/10">+ 추가 작업 좌석 (데모)</button>' +
+                '<a href="index.html#pricing" target="_blank" rel="noopener" class="text-xs font-semibold px-3 py-2 rounded-lg border border-border hover:border-violet-500/40 text-gray-300">플랜 · 옵션 안내 ↗</a>' +
+            '</div>' +
+            '<h4 class="font-semibold text-xs text-gray-400 mb-2">팀원 목록</h4>' +
+            '<div class="space-y-2 mb-5">' +
+            App.teamMembers.map(function(m) {
+                var seatBadge = m.seatType === 'viewer'
+                    ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-surface border border-border text-gray-400">뷰어</span>'
+                    : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-blue-300 border border-primary/25">' + seatTypeLabel(m.seatType) + '</span>';
+                return '<div class="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-surface border border-border ' + (m.active === false ? 'opacity-60' : '') + '">' +
+                    '<span class="w-9 h-9 rounded-full bg-gradient-to-br ' + m.color + ' flex items-center justify-center text-xs font-bold text-white shrink-0">' + m.avatar + '</span>' +
+                    '<div class="flex-1 min-w-[140px]"><p class="text-sm font-semibold">' + m.name + ' ' + seatBadge + '</p>' +
+                    '<p class="text-[10px] text-gray-500">' + m.role + ' · ' + (m.email || '') + '</p></div>' +
+                    '<span class="text-[10px] ' + (m.active !== false ? 'text-success' : 'text-gray-500') + ' font-bold">' + (m.active !== false ? '활성' : '비활성') + '</span>' +
+                    '<button type="button" onclick="toggleTeamMemberActive(\'' + m.id + '\')" class="text-[10px] font-semibold px-2.5 py-1 rounded-lg border border-border hover:border-primary/40">' + (m.active !== false ? '비활성화' : '활성화') + '</button>' +
+                '</div>';
+            }).join('') +
+            '</div>' +
+            '<h4 class="font-semibold text-xs text-gray-400 mb-2">팀원 초대</h4>' +
+            '<div class="p-4 rounded-xl border border-dashed border-border space-y-3">' +
+                '<div class="settings-row">' +
+                    '<div><label class="settings-label">이름</label><input id="team-invite-name" type="text" class="settings-input" placeholder="홍길동"></div>' +
+                    '<div><label class="settings-label">이메일</label><input id="team-invite-email" type="email" class="settings-input" placeholder="name@company.co.kr"></div>' +
+                '</div>' +
+                '<div class="settings-row">' +
+                    '<div><label class="settings-label">역할</label><input id="team-invite-role" type="text" class="settings-input" value="운영팀"></div>' +
+                    '<div><label class="settings-label">계정 유형</label><select id="team-invite-seat" class="settings-input">' +
+                        '<option value="member">멤버 — 작업 좌석 1</option>' +
+                        '<option value="admin">관리자 — 작업 좌석 1</option>' +
+                        (typeof canInviteViewer === 'function' && canInviteViewer(lim) ? '<option value="viewer">뷰어 — 읽기전용 (무료·작업좌석 미차감)</option>' : '') +
+                    '</select></div>' +
+                '</div>' +
+                '<button type="button" onclick="inviteTeamMember()" class="text-xs font-semibold px-4 py-2 rounded-lg bg-primary text-white">초대 보내기</button>' +
+                '<p class="text-[10px] text-gray-600">작업 좌석 초과 시 ' + lim.seatAddonLabel + ' · 뷰어: 스타터 0 / 그로스 2 / 엔터 무제한 · 쓰지 않는 계정은 비활성 시 좌석 반환</p>' +
+            '</div>';
+    }
 
     if (settingsActiveTab === 'kpi') {
         html = '<h3 class="font-bold text-sm mb-4">목표 KPI 설정</h3><div class="space-y-4">' +
@@ -3268,7 +3151,7 @@ function getArchiveDefaults() {
         { id: 'f1', name: '2026_하반기_사업계획서.pdf', category: 'report', ext: 'pdf', size: 2457600, tags: ['전략', '2026'], pinned: true, uploadedBy: 'kim', uploadedAt: '2026-07-01', downloads: 12, version: 'v2.1', mockContent: '(주)SAMPLE 2026 하반기 사업계획서\n\n1. 옴니채널 매출 목표: 8.5억\n2. 신규 채널: 지그재그 검토\n3. 마진율 목표: 32%' },
         { id: 'f2', name: '7월_옴니채널_매출리포트.xlsx', category: 'report', ext: 'xlsx', size: 1843200, tags: ['매출', '7월'], pinned: true, uploadedBy: 'park', uploadedAt: '2026-07-08', downloads: 28, version: 'v1.0', mockContent: 'Date,Channel,Revenue,Orders\n2026-07-01,Cafe24,3200000,428\n2026-07-01,Smartstore,2800000,312' },
         { id: 'f3', name: '상품촬영_가이드라인.pdf', category: 'marketing', ext: 'pdf', size: 5242880, tags: ['촬영', '브랜드'], pinned: false, uploadedBy: 'lee', uploadedAt: '2026-06-15', downloads: 8, version: 'v3.0', mockContent: '상품 촬영 가이드라인\n- 배경: 화이트/뉴트럴\n- 해상도: 2000x2000 이상' },
-        { id: 'f4', name: '재고실사_체크리스트.xlsx', category: 'inventory', ext: 'xlsx', size: 512000, tags: ['재고', 'WMS'], pinned: false, uploadedBy: 'park', uploadedAt: '2026-07-05', downloads: 15, version: 'v1.2', mockContent: 'SKU,Name,Expected,Actual,Diff\nSKU-COS-001,히트세럼,24,24,0' },
+        { id: 'f4', name: '재고실사_체크리스트.xlsx', category: 'inventory', ext: 'xlsx', size: 512000, tags: ['재고', '사방넷'], pinned: false, uploadedBy: 'park', uploadedAt: '2026-07-05', downloads: 15, version: 'v1.2', mockContent: 'SKU,Name,Expected,Actual,Diff\nSKU-COS-001,히트세럼,24,24,0' },
         { id: 'f5', name: 'Cafe24_API_연동매뉴얼.pdf', category: 'manual', ext: 'pdf', size: 3145728, tags: ['API', 'Cafe24'], pinned: false, uploadedBy: 'kim', uploadedAt: '2026-05-20', downloads: 6, version: 'v1.5', mockContent: 'Cafe24 Enterprise API 연동 매뉴얼\nOAuth 2.0 인증 절차...' },
         { id: 'f6', name: '여름시즌_알림톡_템플릿.zip', category: 'marketing', ext: 'zip', size: 8388608, tags: ['CRM', '알림톡'], pinned: false, uploadedBy: 'lee', uploadedAt: '2026-06-28', downloads: 4, version: 'v1.0', mockContent: 'PK\x03\x04 여름시즌 알림톡 템플릿 패키지 (목업)' },
     ];
@@ -3288,7 +3171,7 @@ function getCommsDefaults() {
             { id: 't4', type: 'request', from: 'kim', to: 'lee', dept: '마케팅', title: '쿠팡 채널 ROAS 개선안 검토', body: '쿠팡 마진율 4.2%p 하락. Meta 광고 예산 재배분안 검토 후 수요일 회의 전 공유 부탁합니다.', status: 'progress', priority: 'high', due: '2026-07-12', createdAt: '2026-07-10 14:00', unread: true, replies: [
                 { id: 'r4', userId: 'lee', text: '데이터 분석 중입니다. Meta 15% 감액 + 네이버 10% 증액안 초안 작성 중.', time: '2026-07-10 15:30' },
             ]},
-            { id: 't5', type: 'check', from: 'choi', to: 'park', dept: '운영팀', title: '에이블리 API 토큰 갱신 확인', body: '에이블리 OAuth 토큰 7일 후 만료 예정. 자동 갱신 워크플로우 동작 확인 부탁드립니다.', status: 'hold', priority: 'normal', due: '2026-07-15', createdAt: '2026-07-10 08:00', unread: false, replies: [] },
+            { id: 't5', type: 'check', from: 'choi', to: 'park', dept: '운영팀', title: '에이블리 API 토큰 갱신 확인', body: '에이블리 OAuth 토큰 7일 후 만료 예정. 자동 토큰 갱신 동작 확인 부탁드립니다.', status: 'hold', priority: 'normal', due: '2026-07-15', createdAt: '2026-07-10 08:00', unread: false, replies: [] },
         ],
         agenda: [
             { id: 'a1', date: '2026-07-10', dept: '운영팀', title: '에이블리 송장 일괄 처리', owner: 'park', done: false },
@@ -3372,6 +3255,7 @@ function initArchiveView() {
         btn.classList.toggle('bg-surface', btn.dataset.asort === archiveFilter.sort);
         btn.classList.toggle('border-primary/40', btn.dataset.asort === archiveFilter.sort);
     });
+    dgRefresh();
 }
 
 function renderArchiveStats() {
@@ -3529,6 +3413,7 @@ function initCommsView() {
     renderCommsAgenda();
     renderCommsThreads();
     if (commsActiveThreadId) renderCommsDetail(commsActiveThreadId);
+    dgRefresh();
 }
 
 function renderCommsStats() {
@@ -4040,6 +3925,7 @@ function initDataHub() {
     if (titleEl) titleEl.textContent = periodNames[dataHubFilter.period] + ' 매출 추이';
     if (pieEl) pieEl.textContent = periodNames[dataHubFilter.period];
     if (descEl) descEl.textContent = App.globalDateRange.label + ' · ' + periodNames[dataHubFilter.period] + ' · ' + (dataHubFilter.channel === 'all' ? '전 채널' : App.dataHubChannels.find(function(c) { return c.id === dataHubFilter.channel; }).name) + ' 누적 스냅샷';
+    dgRefresh();
 }
 
 function setDataHubPeriod(period) {
@@ -4060,6 +3946,21 @@ function filterDataHubTable(q) {
 function exportDataHub(format) {
     var labels = { csv: 'CSV', pdf: 'PDF', xlsx: 'Excel' };
     var rows = dataHubRowsCache.length ? dataHubRowsCache : generateDataHubRows(dataHubFilter.period, dataHubFilter.channel);
+    var guard = checkExportGuard(format, rows.length, {
+        rawDump: false
+    });
+    if (!guard.ok) {
+        showToast(guard.message, 'warning');
+        addActivityLog({
+            userId: App.currentUserId,
+            action: 'Export 차단',
+            category: 'report',
+            type: 'warning',
+            detail: guard.code + ' · ' + (labels[format] || format),
+            meta: '보호 규칙'
+        });
+        return;
+    }
     if (format === 'csv' || format === 'xlsx') {
         var header = '기간,채널,매출,주문,객단가,마진율,신규고객,반품률,MoM,YoY,전기대비\n';
         var body = rows.map(function(r) {
@@ -4071,7 +3972,8 @@ function exportDataHub(format) {
         a.href = URL.createObjectURL(blob);
         a.download = 'omni_datahub_' + dataHubFilter.period + '_' + dataHubFilter.channel + '.' + (format === 'xlsx' ? 'xlsx' : 'csv');
         a.click();
-        showToast(labels[format] + ' 파일을 다운로드했습니다. (' + rows.length + '건)', 'success');
+        recordExportEvent(format, rows.length);
+        showToast(labels[format] + ' 파일을 다운로드했습니다. (' + rows.length + '건 · 집계)', 'success');
         return;
     }
     if (format === 'pdf') {
@@ -4088,11 +3990,21 @@ function exportDataHub(format) {
             var h = canvas.height * w / canvas.width;
             pdf.addImage(img, 'PNG', 0, 0, w, Math.min(h, 210));
             pdf.save('omni_datahub_' + dataHubFilter.period + '.pdf');
+            recordExportEvent('pdf', rows.length);
             showToast('PDF 리포트를 다운로드했습니다. (데모)', 'success');
         }).catch(function() {
             showToast('PDF 생성에 실패했습니다.', 'warning');
         });
     }
+}
+
+/** 데모용: 대용량 원시 덤프 차단 알럿 확인 */
+function demoBlockRawExport() {
+    var guard = checkExportGuard('csv', 0, {
+        rawDump: true,
+        estimatedRawRows: (App.dataHubMeta && App.dataHubMeta.totalRows) || 1247832
+    });
+    showToast(guard.message || '원시 덤프는 차단됩니다.', 'warning');
 }
 
 function getMember(userId) {
@@ -4306,15 +4218,6 @@ function initCharts() {
         }));
     }
 
-    var crm = document.getElementById('crmChart');
-    if (crm) {
-        App.charts.push(new Chart(crm, {
-            type: 'doughnut',
-            data: { labels: ['신규','충성','이탈'], datasets: [{ data: [45,35,20], backgroundColor: ['rgba(59,130,246,0.8)','rgba(139,92,246,0.8)','rgba(16,185,129,0.8)'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
-        }));
-    }
-
     var profit = document.getElementById('profitChart');
     if (profit) {
         var pf = getProfitChartData();
@@ -4445,6 +4348,7 @@ function switchView(targetId) {
         initCharts();
         bindChartPeriodTabs();
     });
+    if (typeof DashboardGuide !== 'undefined') DashboardGuide.onViewChange(targetId);
 }
 function initNavigation() {
     document.querySelectorAll('.nav-item').forEach(function(item) {
@@ -4476,7 +4380,8 @@ function initKeyboard() {
         if (e.key === 'Escape') {
             closeCommandPalette();
             closeCommsModal();
-            closeCrmWizard();
+            closePromoPlanModal();
+            if (typeof DashboardGuide !== 'undefined') DashboardGuide.close();
             document.getElementById('notif-panel').classList.add('hidden');
         }
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -4495,20 +4400,52 @@ function initKeyboard() {
         }
     });
 }
+function applyTenantChrome(tenant) {
+    if (!tenant) return;
+    var nameEl = document.getElementById('sidebar-company-name');
+    if (nameEl) nameEl.textContent = tenant.companyName;
+    var roleEl = document.getElementById('sidebar-user-role');
+    if (roleEl) roleEl.textContent = tenant.companyName + ' · 대표';
+    var existing = document.getElementById('tenant-build-banner');
+    if (existing) existing.remove();
+    var main = document.getElementById('main-content') || document.querySelector('main');
+    if (!main) return;
+    var bar = document.createElement('div');
+    bar.id = 'tenant-build-banner';
+    bar.className = 'mx-4 mt-3 mb-0 px-4 py-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-100/90 flex flex-wrap gap-x-3 gap-y-1 items-center';
+    var ch = (tenant.channels || []).length;
+    bar.innerHTML = '<span class="font-bold text-emerald-300">구축 초안</span>' +
+        '<span>' + (tenant.companyName || '') + '</span>' +
+        '<span class="text-emerald-200/70">서비스 ' + tenant.serviceTier + (tenant.specialPricing ? ' · 청구 ' + tenant.billingPlan + '(특가)' : '') + '</span>' +
+        '<span class="text-emerald-200/70">채널 ' + ch + ' · 좌석 ' + tenant.seats + ' · 알림톡 ' + tenant.briefingRecipients + '</span>' +
+        '<span class="text-emerald-200/70">WMS ' + (tenant.wms === 'sabangnet' ? '사방넷(읽기)' : '없음') + '</span>' +
+        '<span class="text-emerald-200/70">Drive ' + (tenant.driveEnabled && (tenant.driveFolderUrl || tenant.driveFolderId) ? '연결' : tenant.driveEnabled ? '대기' : 'off') + '</span>' +
+        (tenant.custom ? '<span class="text-emerald-200/70">커스텀 ' + (typeof countCustomCompleteness === 'function' ? countCustomCompleteness(tenant.custom).pct + '%' : 'on') + '</span>' : '') +
+        '<a href="admin.html" class="ml-auto text-emerald-300 font-semibold hover:underline">어드민 →</a>';
+    main.insertBefore(bar, main.firstChild);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    var tenantBoot = window.__OMNIFY_TENANT__ || (typeof resolveTenantFromQuery === 'function' ? resolveTenantFromQuery() : null);
+    if (tenantBoot && typeof applyTenantToDashboardApp === 'function') {
+        applyTenantToDashboardApp(tenantBoot);
+    }
+    loadTeamMembers();
+    if (typeof applyTenantCustomAfterLoad === 'function') applyTenantCustomAfterLoad();
     if (typeof initDashboardTier === 'function') initDashboardTier();
+    if (App.tenantMeta) applyTenantChrome(App.tenantMeta);
     App.demoLastRefresh = new Date();
     loadGlobalDateRange();
     loadNotificationReadState();
     loadCurrentUser();
     loadBriefingConfig();
-    if (!App.isStandard) {
-        loadCrmCampaigns();
-        loadPromoPlans();
-        loadArchive();
+    if (App.tierAtLeast && App.tierAtLeast('growth')) loadPromoPlans();
+    loadArchive();
+    if (App.tierAtLeast && App.tierAtLeast('enterprise')) {
         loadComms();
     }
     loadSettings();
+    if (typeof applyTenantCustomAfterLoad === 'function') applyTenantCustomAfterLoad();
     initDateRangePicker();
     updateCurrentUserUI();
     renderNotifications();
@@ -4516,6 +4453,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initClock();
     initKeyboard();
     refreshDemoUI();
+    if (typeof DashboardGuide !== 'undefined') DashboardGuide.init();
     switchView('view-dashboard');
     updateBreadcrumb('통합 대시보드', null);
     var homeBtn = document.querySelector('[data-target="view-dashboard"]');

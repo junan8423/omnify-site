@@ -1,34 +1,126 @@
-/* Omnify Dashboard — Pro / Standard tier (shared shell, zero duplicate HTML) */
-var STANDARD_ALLOWED_VIEWS = [
-    'view-dashboard',
-    'view-briefing',
-    'view-orders',
-    'view-inventory',
-    'view-api',
-    'view-settings'
-];
+/* Omnify Dashboard — Starter / Growth / Enterprise tier */
+var TIER_ORDER = ['starter', 'growth', 'enterprise'];
 
-var STANDARD_NOTIFICATION_ACTIONS = {
-    'view-inventory': true,
-    'view-api': true,
-    'view-briefing': true,
-    'view-orders': true
+var TIER_ALLOWED_VIEWS = {
+    starter: [
+        'view-dashboard', 'view-briefing', 'view-orders', 'view-inventory', 'view-api', 'view-settings',
+        'view-datahub', 'view-archive'
+    ],
+    growth: [
+        'view-dashboard', 'view-briefing', 'view-orders', 'view-inventory', 'view-api', 'view-settings',
+        'view-datahub', 'view-crm', 'view-archive'
+    ],
+    enterprise: null
 };
+
+var TIER_LIMITS = {
+    starter: {
+        seatsIncluded: 2,
+        seatAddonPrice: 50000,
+        seatAddonLabel: '+5만/인·월',
+        maxChannels: 2,
+        dataRetentionLabel: '최근 12개월',
+        freeViewers: 0,
+        briefingRecipients: 1
+    },
+    growth: {
+        seatsIncluded: 5,
+        seatAddonPrice: 40000,
+        seatAddonLabel: '+4만/인·월',
+        maxChannels: 4,
+        dataRetentionLabel: '최근 24개월',
+        freeViewers: 2,
+        briefingRecipients: 3
+    },
+    enterprise: {
+        seatsIncluded: 10,
+        seatAddonPrice: 30000,
+        seatAddonLabel: '+3만/인·월',
+        maxChannels: 99,
+        dataRetentionLabel: '전체 기간',
+        freeViewers: null,
+        briefingRecipients: 5
+    }
+};
+
+/** Export abuse protection (no monthly quota) */
+var EXPORT_GUARD = {
+    maxSyncRows: 50000,
+    softQueueRows: 100000,
+    hardRawDumpRows: 500000,
+    pdfPerDay: 20,
+    exportsPerMinute: 5,
+    exportsPerHour: 40
+};
+
+var TIER_NOTIFICATION_ACTIONS = {
+    starter: { 'view-inventory': true, 'view-api': true, 'view-briefing': true, 'view-orders': true, 'view-datahub': true },
+    growth: { 'view-inventory': true, 'view-api': true, 'view-briefing': true, 'view-orders': true, 'view-datahub': true, 'view-crm': true },
+    enterprise: null
+};
+
+var TIER_META = {
+    starter: {
+        planLabel: 'Starter Plan',
+        planDesc: 'DataHub · KPI · Drive 자료실',
+        planSub: '좌석 2인 · 채널 2개 · 12개월 보존',
+        demoBadge: 'Starter 데모',
+        headerSub: '<span class="demo-pill">Starter 목업</span>스타터 플랜 · 매일 브리핑 · <span id="last-sync">--:--:--</span>',
+        title: '(주)SAMPLE — Starter 커맨드 센터',
+        pill: 'Starter'
+    },
+    growth: {
+        planLabel: 'Growth Plan',
+        planDesc: '프로모션 · 팀 5인 · Drive',
+        planSub: '작업 좌석 5 · 뷰어 2 · DataHub 24개월',
+        demoBadge: 'Growth 데모',
+        headerSub: '<span class="demo-pill">Growth 목업</span>그로스 플랜 · 매일 브리핑 · <span id="last-sync">--:--:--</span>',
+        title: '(주)SAMPLE — Growth 커맨드 센터',
+        pill: 'Growth'
+    },
+    enterprise: {
+        planLabel: 'Enterprise Plan',
+        planDesc: '팀 10인 · 뷰어 무제한 · AI',
+        planSub: '작업 좌석 10 · 뷰어 무제한 · 커뮤니케이션',
+        demoBadge: 'Enterprise 데모',
+        headerSub: '<span class="demo-pill">Enterprise 목업</span>엔터프라이즈 플랜 · <span id="last-sync">--:--:--</span>',
+        title: '(주)SAMPLE — Enterprise 커맨드 센터',
+        pill: 'Enterprise'
+    }
+};
+
+function normalizeTierId(tier) {
+    if (tier === 'standard') return 'starter';
+    if (tier === 'pro') return 'enterprise';
+    return tier;
+}
 
 function resolveDashboardTier() {
     try {
         var q = new URLSearchParams(window.location.search).get('tier');
-        if (q === 'standard' || q === 'pro') return q;
+        if (q) return normalizeTierId(q);
     } catch (e) { /* ignore */ }
-    if (window.DASHBOARD_TIER === 'standard' || window.DASHBOARD_TIER === 'pro') return window.DASHBOARD_TIER;
-    return 'pro';
+    if (window.DASHBOARD_TIER) return normalizeTierId(window.DASHBOARD_TIER);
+    return 'enterprise';
+}
+
+function tierAtLeast(minTier) {
+    if (!App || !App.tier) return false;
+    return TIER_ORDER.indexOf(App.tier) >= TIER_ORDER.indexOf(minTier);
+}
+
+function getAllowedViewsForTier(tier) {
+    tier = normalizeTierId(tier);
+    if (tier === 'enterprise') return null;
+    return TIER_ALLOWED_VIEWS[tier] || TIER_ALLOWED_VIEWS.starter;
 }
 
 function getNavGroupsForTier() {
-    if (!App.isStandard) return App.navGroups;
+    var allowed = getAllowedViewsForTier(App.tier);
+    if (!allowed) return App.navGroups;
     return App.navGroups.map(function(group) {
         var items = group.items.filter(function(item) {
-            return STANDARD_ALLOWED_VIEWS.indexOf(item.target) >= 0;
+            return allowed.indexOf(item.target) >= 0;
         });
         if (!items.length) return null;
         return { label: group.label, icon: group.icon, items: items };
@@ -36,11 +128,12 @@ function getNavGroupsForTier() {
 }
 
 function isViewAllowedForTier(viewId) {
-    if (!App.isStandard) return true;
-    return STANDARD_ALLOWED_VIEWS.indexOf(viewId) >= 0;
+    var allowed = getAllowedViewsForTier(App.tier);
+    if (!allowed) return true;
+    return allowed.indexOf(viewId) >= 0;
 }
 
-function renderStandardDashboard() {
+function renderStarterDashboard() {
     var m = getMockMetrics();
     var atRisk = App.inventory.filter(function(i) { return i.status !== 'safe'; });
     var recentOrders = App.orders.slice(0, 4);
@@ -55,8 +148,8 @@ function renderStandardDashboard() {
                 <div>
                     <div class="flex items-center gap-2 mb-1 flex-wrap">
                         <h2 class="font-bold text-base">오늘 아침 브리핑</h2>
-                        <span class="text-[10px] bg-success/20 text-success px-2 py-0.5 rounded font-bold">08:30</span>
-                        <span class="demo-pill">Standard</span>
+                        <span class="text-[10px] bg-success/20 text-success px-2 py-0.5 rounded font-bold">매일 08:30</span>
+                        <span class="demo-pill">Starter</span>
                     </div>
                     <p class="text-sm text-gray-400">마진율 <strong class="text-white">${m.marginGlobal}%</strong> · 위험 재고 <strong class="text-danger">${m.atRiskInventory}건</strong> · 미처리 <strong class="text-warning">${fmtCount(m.pendingShipments)}건</strong></p>
                 </div>
@@ -125,7 +218,7 @@ function renderStandardDashboard() {
                         '<span class="status-dot ' + c.status + '"></span></div>';
                 }).join('')}
             </div>
-            <button onclick="navigateTo('view-api')" class="mt-3 text-xs text-primary font-semibold hover:underline">API 상세 →</button>
+            <button onclick="navigateTo('view-api')" class="mt-3 text-xs text-primary font-semibold hover:underline">API · 동기화 이력 →</button>
         </div>
         <div class="glass rounded-xl p-4">
             <div class="flex items-center justify-between mb-3">
@@ -140,80 +233,215 @@ function renderStandardDashboard() {
                         App.statusBadge(o.status) + '</div>';
                 }).join('')}
             </div>
-            <p class="text-[10px] text-gray-600 mt-3 text-center">Standard · 일 1회 배치 동기화 · 핵심 KPI만 제공</p>
+            <p class="text-[10px] text-gray-600 mt-3 text-center">Starter · 자동 동기화 · 매일 브리핑</p>
         </div>
     </div>
 </div>`;
 }
 
-function initDashboardTier() {
-    App.tier = resolveDashboardTier();
-    App.isStandard = App.tier === 'standard';
-    App.standardAllowedViews = STANDARD_ALLOWED_VIEWS;
-    document.body.classList.add('dashboard-tier-' + App.tier);
+function getTierLimits(tier) {
+    tier = normalizeTierId(tier || (App && App.tier) || 'enterprise');
+    return TIER_LIMITS[tier] || TIER_LIMITS.enterprise;
+}
 
+function getSeatAddonCount() {
+    try {
+        var n = parseInt(localStorage.getItem('omnify_seat_addon_' + App.tier) || '0', 10);
+        return isNaN(n) ? 0 : Math.max(0, n);
+    } catch (e) { return 0; }
+}
+
+function getSeatQuota() {
+    var lim = getTierLimits();
+    return lim.seatsIncluded + getSeatAddonCount();
+}
+
+function countBillableSeats(members) {
+    members = members || (App && App.teamMembers) || [];
+    return members.filter(function(m) {
+        return m.active !== false && m.seatType !== 'viewer';
+    }).length;
+}
+
+function countActiveViewers(members) {
+    members = members || (App && App.teamMembers) || [];
+    return members.filter(function(m) {
+        return m.active !== false && m.seatType === 'viewer';
+    }).length;
+}
+
+function isViewerUnlimited(tier) {
+    var lim = getTierLimits(tier);
+    return lim.freeViewers === null || lim.freeViewers === Infinity;
+}
+
+function formatViewerQuota(lim) {
+    lim = lim || getTierLimits();
+    if (lim.freeViewers === null || lim.freeViewers === Infinity) return '무제한';
+    return String(lim.freeViewers);
+}
+
+function canInviteViewer(lim) {
+    lim = lim || getTierLimits();
+    return lim.freeViewers === null || lim.freeViewers === Infinity || lim.freeViewers > 0;
+}
+
+/** 데일리 알림톡(브리핑) 기본 수신 인원 — 플랜별. 추가는 별도 문의 */
+function getBriefingRecipientLimit(tier) {
+    var lim = getTierLimits(tier);
+    var n = lim.briefingRecipients;
+    return (typeof n === 'number' && n > 0) ? n : 1;
+}
+
+function canAddTeamSeat(seatType) {
+    var lim = getTierLimits();
+    if (seatType === 'viewer') {
+        if (isViewerUnlimited()) return true;
+        return countActiveViewers() < (lim.freeViewers || 0);
+    }
+    return countBillableSeats() < getSeatQuota();
+}
+
+function applySeatDemoState() {
+    if (!App || !App.teamMembers) return;
+    try {
+        if (localStorage.getItem('omnify_team_v1')) return;
+    } catch (e) { /* ignore */ }
+    var lim = getTierLimits();
+    var billable = 0;
+    var viewers = 0;
+    var unlimitedViewers = isViewerUnlimited();
+    App.teamMembers.forEach(function(m) {
+        if (m.seatType === 'viewer') {
+            m.active = unlimitedViewers || viewers < (lim.freeViewers || 0);
+            if (m.active) viewers++;
+        } else {
+            m.active = billable < lim.seatsIncluded;
+            if (m.active) billable++;
+        }
+    });
+}
+
+function applyDataHubTierLimits() {
+    if (!App || !App.dataHubMeta) return;
+    var lim = getTierLimits();
+    App.dataHubMeta.retention = lim.dataRetentionLabel;
+    App.dataHubMeta.exportLimit = null;
+    App.dataHubMeta.exportPolicy = '집계 Export 무제한 · 대용량·고빈도만 보호';
+}
+
+function applyTierMeta() {
+    var meta = TIER_META[App.tier] || TIER_META.enterprise;
+    var lim = getTierLimits();
+    var company = (App.tenantMeta && App.tenantMeta.companyName) || null;
+    document.title = company ? (company + ' — 커맨드 센터') : meta.title;
     var planLabel = document.getElementById('plan-badge-label');
     var planDesc = document.getElementById('plan-badge-desc');
     var planSub = document.getElementById('plan-badge-sub');
     var demoBadge = document.getElementById('demo-mode-badge');
     var headerSub = document.getElementById('header-subtitle');
-
-    if (App.isStandard) {
-        document.title = '(주)SAMPLE — Standard 커맨드 센터';
-        if (planLabel) planLabel.textContent = 'Standard Plan';
-        if (planDesc) planDesc.textContent = '핵심 KPI · 주문 · 재고 · 브리핑';
-        if (planSub) planSub.textContent = '일 1회 배치 동기화 · 경량 파이프라인';
-        if (demoBadge) demoBadge.innerHTML = '<span class="status-dot live"></span><span>Standard 데모</span>';
-        if (headerSub) headerSub.innerHTML = '<span class="demo-pill">Standard 목업</span>보급형 데모 · 일 1회 동기화 · <span id="last-sync">--:--:--</span>';
-
-        App.notifications = App.notifications.filter(function(n) {
-            return STANDARD_NOTIFICATION_ACTIONS[n.action];
-        });
-        App.unreadNotifications = Math.min(App.unreadNotifications, App.notifications.length);
-        App.commands = App.commands.filter(function(c) {
-            return !c.target || STANDARD_ALLOWED_VIEWS.indexOf(c.target) >= 0;
-        });
-
-        App.mockPipeline = { collected: App.orders.length, pending: App.orders.filter(function(o) { return o.status === 'pending'; }).length, processing: 0, shipped: App.orders.filter(function(o) { return o.status === 'shipped'; }).length };
-
-        var proDash = App.views['view-dashboard'];
-        App.views['view-dashboard'] = function() {
-            return App.isStandard ? renderStandardDashboard() : proDash();
-        };
-
-        if (typeof renderNav === 'function') {
-            renderNav();
-            if (typeof initNavigation === 'function') initNavigation();
-        }
-        document.querySelectorAll('.tier-pro-only').forEach(function(el) { el.style.display = 'none'; });
-        injectTierDemoSwitcher('standard');
-    } else {
-        if (planLabel) planLabel.textContent = 'Enterprise Plan';
-        if (planDesc) planDesc.textContent = '월 구독 · API 무중단 모니터링';
-        if (planSub) planSub.textContent = '다음 결제일: 2026.08.01';
-        injectTierDemoSwitcher('pro');
-    }
+    if (planLabel) planLabel.textContent = company ? (company + ' · ' + meta.pill) : meta.planLabel;
+    if (planDesc) planDesc.textContent = company ? ('구축 초안 · 서비스 ' + App.tier) : meta.planDesc;
+    var used = countBillableSeats();
+    var quota = (App.tenantMeta && App.tenantMeta.seats) ? App.tenantMeta.seats : getSeatQuota();
+    var viewerLabel = typeof formatViewerQuota === 'function' ? formatViewerQuota(lim) : String(lim.freeViewers || 0);
+    if (planSub) planSub.textContent = '작업좌석 ' + used + '/' + quota + ' · 뷰어 ' + countActiveViewers() + '/' + viewerLabel + ' · ' + lim.seatAddonLabel;
+    if (demoBadge) demoBadge.innerHTML = '<span class="status-dot live"></span><span>' + (company ? 'Tenant 초안' : meta.demoBadge) + '</span>';
+    if (headerSub) headerSub.innerHTML = meta.headerSub;
+    updateSeatMeterUI();
 }
 
-function injectTierDemoSwitcher(current) {
+function updateSeatMeterUI() {
+    var el = document.getElementById('seat-meter');
+    if (!el || !App) return;
+    var lim = getTierLimits();
+    var used = countBillableSeats();
+    var quota = getSeatQuota();
+    var pct = quota ? Math.min(100, Math.round(used / quota * 100)) : 0;
+    var warn = used >= quota;
+    var viewerUsed = countActiveViewers();
+    var viewerQuota = formatViewerQuota(lim);
+    el.innerHTML =
+        '<div class="flex items-center justify-between mb-1.5">' +
+            '<span class="text-[10px] text-gray-500 font-semibold">작업 좌석 (Named)</span>' +
+            '<span class="text-[10px] font-bold ' + (warn ? 'text-warning' : 'text-gray-400') + '">' + used + ' / ' + quota + '</span>' +
+        '</div>' +
+        '<div class="h-1.5 rounded-full bg-surface overflow-hidden mb-1.5">' +
+            '<div class="h-full rounded-full transition-all ' + (warn ? 'bg-warning' : 'bg-primary') + '" style="width:' + pct + '%"></div>' +
+        '</div>' +
+        '<p class="text-[9px] text-gray-600">뷰어 ' + viewerUsed + '/' + viewerQuota + ' · 추가 작업좌석 ' + lim.seatAddonLabel + '</p>' +
+        '<p class="text-[9px] text-gray-600 mt-0.5">동시 접속이 아닌 활성 계정 수</p>';
+}
+
+function filterTierNotifications() {
+    var actions = TIER_NOTIFICATION_ACTIONS[App.tier];
+    if (!actions) return;
+    App.notifications = App.notifications.filter(function(n) {
+        return !n.action || actions[n.action];
+    });
+    App.unreadNotifications = Math.min(App.unreadNotifications, App.notifications.length);
+}
+
+function filterTierCommands() {
+    var allowed = getAllowedViewsForTier(App.tier);
+    if (!allowed) return;
+    App.commands = App.commands.filter(function(c) {
+        return !c.target || allowed.indexOf(c.target) >= 0;
+    });
+}
+
+function initDashboardTier() {
+    App.tier = resolveDashboardTier();
+    App.tierAtLeast = tierAtLeast;
+    App.isStarter = App.tier === 'starter';
+    App.isGrowth = App.tier === 'growth';
+    App.isEnterprise = App.tier === 'enterprise';
+    App.allowedViews = getAllowedViewsForTier(App.tier);
+    document.body.classList.add('dashboard-tier-' + App.tier);
+
+    applyTierMeta();
+    applyDataHubTierLimits();
+    applySeatDemoState();
+    filterTierNotifications();
+    filterTierCommands();
+
+    if (App.isStarter) {
+        App.mockPipeline = { collected: App.orders.length, pending: App.orders.filter(function(o) { return o.status === 'pending'; }).length, processing: 0, shipped: App.orders.filter(function(o) { return o.status === 'shipped'; }).length };
+        var fullDash = App.views['view-dashboard'];
+        App.views['view-dashboard'] = function() {
+            return App.isStarter ? renderStarterDashboard() : fullDash();
+        };
+    }
+
+    if (typeof renderNav === 'function') {
+        renderNav();
+        if (typeof initNavigation === 'function') initNavigation();
+    }
+
+    if (!App.isEnterprise) {
+        document.querySelectorAll('.tier-enterprise-only').forEach(function(el) { el.style.display = 'none'; });
+    }
+    injectTierDemoSwitcher();
+}
+
+function injectTierDemoSwitcher() {
     var aside = document.getElementById('mobile-sidebar');
     if (!aside || document.getElementById('tier-demo-switcher')) return;
     var box = document.createElement('div');
     box.id = 'tier-demo-switcher';
-    box.className = 'mx-3 mb-3 p-2.5 rounded-lg border border-border/60 bg-surface/40 text-center';
-    if (current === 'standard') {
-        box.innerHTML = '<p class="text-[10px] text-gray-500 mb-1.5">전체 기능 데모</p>' +
-            '<a href="demo-dashboard.html" class="text-[11px] font-semibold text-blue-400 hover:text-blue-300">Enterprise 데모 →</a>';
-    } else {
-        box.innerHTML = '<p class="text-[10px] text-gray-500 mb-1.5">보급형 데모</p>' +
-            '<a href="demo-standard.html" class="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300">Standard 데모 →</a>';
-    }
+    box.className = 'mx-3 mb-3 p-2.5 rounded-lg border border-border/60 bg-surface/40';
+    box.innerHTML = '<p class="text-[10px] text-gray-500 mb-2 text-center">플랜별 데모</p>' +
+        '<div class="flex flex-col gap-1.5 text-center">' +
+        '<a href="demo-starter.html" class="text-[11px] font-semibold ' + (App.tier === 'starter' ? 'text-emerald-300' : 'text-gray-400 hover:text-emerald-300') + '">Starter</a>' +
+        '<a href="demo-growth.html" class="text-[11px] font-semibold ' + (App.tier === 'growth' ? 'text-blue-300' : 'text-gray-400 hover:text-blue-300') + '">Growth</a>' +
+        '<a href="demo-enterprise.html" class="text-[11px] font-semibold ' + (App.tier === 'enterprise' ? 'text-violet-300' : 'text-gray-400 hover:text-violet-300') + '">Enterprise</a>' +
+        '</div>';
     var footer = aside.querySelector('.p-4.border-t');
     if (footer) aside.insertBefore(box, footer);
 }
 
-function drillDownKpiStandard(type) {
-    if (!App.isStandard) return false;
+function drillDownKpiStarter(type) {
+    if (!App.isStarter) return false;
     App.pendingDrillDown = { type: type };
     if (type === 'revenue' || type === 'margin') {
         navigateTo('view-briefing');

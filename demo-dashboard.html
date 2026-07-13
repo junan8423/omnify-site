@@ -208,26 +208,6 @@
         .db-sort-btn:hover { color: #93c5fd; }
         .db-sort-btn.active { color: #60a5fa; }
         .briefing-toggle { cursor: pointer; }
-        .crm-modal { display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.72); position: fixed; inset: 0; z-index: 66; }
-        .crm-modal.open { display: flex; }
-        .crm-modal-panel { width: 100%; max-width: 720px; max-height: 92vh; overflow-y: auto; animation: fadeIn 0.2s ease; }
-        .crm-wizard-steps { display: flex; gap: 4px; margin-bottom: 16px; }
-        .crm-wizard-step {
-            flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 10px; font-weight: 600;
-            background: rgba(31,41,55,0.6); color: #6b7280; border: 1px solid transparent; transition: all 0.15s;
-        }
-        .crm-wizard-step.active { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.35); }
-        .crm-wizard-step.done { color: #10b981; border-color: rgba(16,185,129,0.25); }
-        .crm-step-panel { display: none; }
-        .crm-step-panel.active { display: block; }
-        .crm-template-btn.active { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.45); color: #c4b5fd; }
-        .crm-campaign-card { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-        .crm-campaign-card:hover { border-color: rgba(59,130,246,0.35); }
-        .crm-campaign-card.selected { border-color: rgba(59,130,246,0.55); background: rgba(59,130,246,0.08); }
-        .crm-audience-bar { height: 6px; border-radius: 3px; background: rgba(55,65,81,0.6); overflow: hidden; }
-        .crm-audience-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.35s ease; }
-        .crm-funnel-step { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 11px; border-bottom: 1px solid rgba(55,65,81,0.4); }
-        .crm-funnel-step:last-child { border-bottom: none; }
         .crm-tab-btn { padding: 8px 16px; font-size: 12px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
         .crm-tab-btn:hover { color: #d1d5db; }
         .crm-tab-btn.active { color: #93c5fd; border-bottom-color: #3b82f6; }
@@ -651,7 +631,6 @@
             #main-content table td { padding: 0.5rem 0.625rem; white-space: nowrap; }
             .db-table { min-width: 520px; }
             /* Modals */
-            .crm-modal-panel,
             .promo-modal-panel,
             .comms-modal-panel { max-height: 88vh; margin-left: 0.75rem; margin-right: 0.75rem; }
             /* Toast & notifications */
@@ -712,6 +691,270 @@
             .header-quick-btn:hover,
             .kpi-drill:hover { transform: none; }
         }
+        /* ── 사용가이드 · 카드 툴팁 ── */
+        .dg-guide-fab {
+            position: fixed;
+            right: 1.35rem;
+            bottom: 1.35rem;
+            z-index: 9975;
+            width: 3.35rem;
+            height: 3.35rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 1.5px solid rgba(253, 224, 71, 0.65);
+            background: linear-gradient(145deg, rgba(250, 204, 21, 0.88), rgba(245, 158, 11, 0.82));
+            color: #422006;
+            box-shadow:
+                0 10px 32px rgba(250, 204, 21, 0.38),
+                0 4px 12px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+            animation: dg-fab-glow 3s ease-in-out infinite;
+        }
+        .dg-guide-fab::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(250, 204, 21, 0.28);
+            pointer-events: none;
+            animation: dg-fab-ring 2.4s ease-out infinite;
+        }
+        .dg-guide-fab:hover {
+            transform: translateY(-3px) scale(1.06);
+            background: linear-gradient(145deg, rgba(253, 224, 71, 0.96), rgba(251, 191, 36, 0.92));
+            border-color: rgba(254, 240, 138, 0.85);
+            color: #1c1917;
+            box-shadow:
+                0 14px 40px rgba(250, 204, 21, 0.48),
+                0 6px 16px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        }
+        .dg-guide-fab:active { transform: translateY(-1px) scale(1.02); }
+        .dg-guide-fab svg {
+            width: 1.45rem;
+            height: 1.45rem;
+            flex-shrink: 0;
+            filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.25));
+        }
+        @keyframes dg-fab-glow {
+            0%, 100% { box-shadow: 0 10px 32px rgba(250, 204, 21, 0.34), 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+            50% { box-shadow: 0 12px 36px rgba(250, 204, 21, 0.5), 0 4px 14px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+        }
+        @keyframes dg-fab-ring {
+            0% { transform: scale(1); opacity: 0.65; }
+            70% { transform: scale(1.18); opacity: 0; }
+            100% { transform: scale(1.18); opacity: 0; }
+        }
+        body.dg-modal-open .dg-guide-fab { opacity: 0.55; pointer-events: none; transform: scale(0.92); }
+        @media (max-width: 640px) {
+            .dg-guide-fab { right: 1rem; bottom: 1rem; width: 3.1rem; height: 3.1rem; }
+        }
+        .dg-has-guide { position: relative; cursor: help; }
+        .dg-has-guide::after {
+            content: '?';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 18px;
+            height: 18px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 18px;
+            text-align: center;
+            color: #93c5fd;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            opacity: 0;
+            transform: scale(0.85);
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .dg-has-guide:hover::after, .dg-has-guide:focus-within::after { opacity: 1; transform: scale(1); }
+        .nav-item.dg-has-guide::after { top: 6px; right: 6px; }
+        .dg-tooltip {
+            position: fixed;
+            z-index: 9998;
+            max-width: 340px;
+            padding: 0.75rem 0.875rem;
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.97);
+            border: 1px solid rgba(59, 130, 246, 0.45);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(96, 165, 250, 0.1);
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .dg-tooltip.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .dg-tooltip-title { font-size: 0.8125rem; font-weight: 700; color: #f3f4f6; margin-bottom: 0.35rem; }
+        .dg-tooltip-body { font-size: 0.75rem; line-height: 1.55; color: #a8b4c4; }
+        .dg-tooltip-foot { margin-top: 0.5rem; font-size: 0.6875rem; color: #60a5fa; cursor: pointer; }
+        .dg-guide-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9990;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(3, 7, 18, 0.72);
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .dg-guide-modal.open { opacity: 1; pointer-events: auto; }
+        body.dg-modal-open { overflow: hidden; }
+        .dg-guide-panel {
+            width: 100%;
+            max-width: 720px;
+            max-height: min(88vh, 820px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 1rem;
+            border: 1px solid rgba(55, 65, 81, 0.8);
+            background: rgba(11, 17, 32, 0.98);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+            overflow: hidden;
+        }
+        .dg-guide-head {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+            flex-shrink: 0;
+        }
+        .dg-guide-head h2 { font-size: 1.125rem; font-weight: 800; margin-bottom: 0.25rem; }
+        .dg-guide-head p { font-size: 0.75rem; color: #9ca3af; }
+        .dg-guide-search-wrap {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            align-items: center;
+        }
+        .dg-guide-search {
+            flex: 1;
+            padding: 0.625rem 0.875rem 0.625rem 2.25rem;
+            border-radius: 0.625rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(17, 24, 39, 0.9);
+            color: #f9fafb;
+            font-size: 0.875rem;
+            outline: none;
+        }
+        .dg-guide-search:focus { border-color: rgba(59, 130, 246, 0.55); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15); }
+        .dg-search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1rem;
+            height: 1rem;
+            color: #6b7280;
+            pointer-events: none;
+        }
+        .dg-search-field { position: relative; flex: 1; }
+        .dg-guide-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.6875rem;
+            color: #9ca3af;
+        }
+        .dg-guide-view-filter {
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .dg-guide-clear {
+            font-size: 0.6875rem;
+            color: #60a5fa;
+            text-decoration: underline;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .dg-guide-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1.25rem 1.25rem;
+        }
+        .dg-guide-card {
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            border-radius: 0.75rem;
+            background: rgba(17, 24, 39, 0.55);
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+        .dg-guide-card-head { padding: 0.875rem 1rem; border-bottom: 1px solid rgba(31, 41, 55, 0.6); }
+        .dg-guide-menu { font-size: 0.6875rem; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.04em; }
+        .dg-guide-card h4 { font-size: 0.9375rem; font-weight: 700; margin: 0.25rem 0; color: #f3f4f6; }
+        .dg-guide-summary { font-size: 0.75rem; color: #9ca3af; line-height: 1.55; margin-top: 0.25rem; }
+        .dg-go-btn {
+            margin-top: 0.625rem;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            color: #93c5fd;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.35rem 0.625rem;
+            cursor: pointer;
+        }
+        .dg-go-btn:hover { background: rgba(59, 130, 246, 0.22); color: #fff; }
+        .dg-faq-block { padding: 0.5rem 0.75rem 0.75rem; }
+        .dg-faq-item {
+            border-radius: 0.5rem;
+            border: 1px solid rgba(31, 41, 55, 0.7);
+            background: rgba(3, 7, 18, 0.45);
+            margin-bottom: 0.375rem;
+        }
+        .dg-faq-item summary {
+            cursor: pointer;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #e5e7eb;
+            list-style: none;
+        }
+        .dg-faq-item summary::-webkit-details-marker { display: none; }
+        .dg-faq-item p {
+            padding: 0 0.75rem 0.75rem;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: #9ca3af;
+        }
+        .dg-guide-empty {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .dg-guide-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.375rem;
+            border-radius: 0.5rem;
+            color: #9ca3af;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .dg-guide-close:hover { color: #fff; background: rgba(31, 41, 55, 0.8); }
+        .dg-guide-head { position: relative; }
     </style>
 </head>
 <body class="flex h-screen selection:bg-primary selection:text-white">
@@ -727,7 +970,7 @@
                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
             <div>
-                <span class="font-bold text-base tracking-tight">(주)SAMPLE</span>
+                <span id="sidebar-company-name" class="font-bold text-base tracking-tight">(주)SAMPLE</span>
             </div>
         </button>
         <button class="md:hidden p-1 text-gray-400 hover:text-white" onclick="toggleMobileSidebar()">
@@ -743,6 +986,7 @@
         </div>
         <p class="text-xs text-gray-400" id="plan-badge-desc">월 구독 · API 무중단 모니터링</p>
         <p class="text-[10px] text-gray-500 mt-1" id="plan-badge-sub">다음 결제일: 2026.08.01</p>
+        <div class="mt-2.5 pt-2.5 border-t border-primary/15" id="seat-meter"></div>
     </div>
 
     <nav class="p-3 flex-1 overflow-y-auto mt-2" id="nav-container">
@@ -784,7 +1028,7 @@
                 </button>
                 <button data-target="view-inventory" data-title="통합 재고" data-group="일상 운영" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
                     <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    <span class="flex-1">통합 재고 <span class="text-[10px] text-gray-500">(WMS)</span></span>
+                    <span class="flex-1">통합 재고 <span class="text-[10px] text-gray-500">(조회)</span></span>
                     <span class="ml-auto text-[10px] bg-danger/20 text-danger w-5 h-5 rounded-full flex items-center justify-center font-bold" id="nav-badge-inventory">2</span>
                 </button>
                 <button data-target="view-comms" data-title="커뮤니케이션" data-group="일상 운영" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
@@ -799,9 +1043,9 @@
         <div class="nav-group mb-2">
             <div class="nav-group-label"><span class="group-icon">📈</span>성장 · 마케팅</div>
             <div class="space-y-0.5">
-                <button data-target="view-crm" data-title="프로모션 · CRM" data-group="성장 · 마케팅" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                <button data-target="view-crm" data-title="프로모션 기획 · 성과" data-group="성장 · 마케팅" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
                     <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
-                    <span class="flex-1">프로모션 · CRM</span>
+                    <span class="flex-1">프로모션 기획 · 성과</span>
                 </button>
                 <button data-target="view-profit" data-title="AI 수익성 분석" data-group="성장 · 마케팅" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
                     <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -810,17 +1054,13 @@
             </div>
         </div>
 
-        <!-- 인프라 · 자동화 -->
+        <!-- 인프라 · 연동 -->
         <div class="nav-group mb-2">
-            <div class="nav-group-label"><span class="group-icon">⚙️</span>인프라 · 자동화</div>
+            <div class="nav-group-label"><span class="group-icon">⚙️</span>인프라 · 연동</div>
             <div class="space-y-0.5">
-                <button data-target="view-api" data-title="API 연동 상태" data-group="인프라 · 자동화" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
+                <button data-target="view-api" data-title="API 연동 상태" data-group="인프라 · 연동" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
                     <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     <span class="flex-1">API 연동 상태</span>
-                </button>
-                <button data-target="view-workflow" data-title="워크플로우" data-group="인프라 · 자동화" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm">
-                    <svg class="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span class="flex-1">워크플로우 <span class="text-[10px] text-gray-500">(n8n)</span></span>
                 </button>
             </div>
         </div>
@@ -891,7 +1131,7 @@
                 <button class="admin-quicklink ql-coupang" onclick="openAdminLink('쿠팡 Wing','https://wing.coupang.com/')">CP<span class="ql-tip">쿠팡 Wing</span></button>
                 <button class="admin-quicklink ql-ably" onclick="openAdminLink('에이블리 셀러','https://seller.a-bly.com/')">AB<span class="ql-tip">에이블리</span></button>
             </div>
-            <button class="hide-mobile header-quick-btn tier-pro-only" onclick="navigateTo('view-archive')" title="자료실">
+            <button class="hide-mobile header-quick-btn" onclick="navigateTo('view-archive')" title="자료실">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>
                 <span class="hq-badge" id="archive-header-badge">6</span>
                 <span class="ql-tip">자료실</span>
@@ -1046,39 +1286,61 @@
     </div>
 </div>
 
-<div id="crm-modal" class="crm-modal" onclick="if(event.target===this)closeCrmWizard()">
-    <div class="crm-modal-panel glass-strong rounded-2xl shadow-2xl mx-4 border border-border/80" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-border">
-            <div>
-                <h3 class="font-bold text-base">새 캠페인 마법사</h3>
-                <p class="text-[11px] text-gray-500 mt-0.5">타겟 설정 → 메시지 → 일정 → 검토 · <span class="demo-pill">데모</span></p>
-            </div>
-            <button onclick="closeCrmWizard()" class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors">
+<div class="toast-container" id="toast-container"></div>
+
+<!-- 사용가이드 플로팅 버튼 -->
+<button type="button" id="btn-open-guide" class="dg-guide-fab" aria-label="사용가이드 열기" title="사용가이드 (FAQ 검색)">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+    </svg>
+</button>
+
+<!-- 사용가이드 모달 -->
+<div id="dg-guide-modal" class="dg-guide-modal" aria-hidden="true" role="dialog" aria-labelledby="dg-guide-title">
+    <div class="dg-guide-panel">
+        <div class="dg-guide-head">
+            <button type="button" class="dg-guide-close" data-dg-close aria-label="닫기">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-        </div>
-        <div class="px-5 pt-4">
-            <div class="crm-wizard-steps" id="crm-wizard-steps">
-                <div class="crm-wizard-step active" data-step="1">1. 기본 정보</div>
-                <div class="crm-wizard-step" data-step="2">2. 타겟 오디언스</div>
-                <div class="crm-wizard-step" data-step="3">3. 메시지 · 혜택</div>
-                <div class="crm-wizard-step" data-step="4">4. 일정 · 검토</div>
+            <h2 id="dg-guide-title">사용가이드</h2>
+            <p>메뉴·카드별 FAQ를 검색하세요. 카드에 마우스를 올려도 요약 툴팁이 표시됩니다.</p>
+            <div class="dg-guide-search-wrap">
+                <div class="dg-search-field">
+                    <svg class="dg-search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="search" id="dg-guide-search" class="dg-guide-search" placeholder="예: 마진, 재고, 알림톡, API, 발주…" autocomplete="off">
+                </div>
+            </div>
+            <div class="dg-guide-meta">
+                <span id="dg-guide-count">0개 항목</span>
+                <span id="dg-guide-view-filter" class="dg-guide-view-filter hidden"></span>
+                <button type="button" id="dg-guide-clear-filter" class="dg-guide-clear hidden">전체 가이드 보기</button>
             </div>
         </div>
-        <div class="p-5 space-y-4" id="crm-wizard-body"></div>
-        <div class="flex justify-between gap-2 px-5 py-4 border-t border-border bg-surface/30">
-            <button type="button" id="crm-wizard-back" onclick="crmWizardBack()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors hidden">← 이전</button>
-            <div class="flex-1"></div>
-            <button type="button" onclick="closeCrmWizard()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors">취소</button>
-            <button type="button" id="crm-wizard-next" onclick="crmWizardNext()" class="text-xs font-semibold px-5 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors">다음 →</button>
+        <div class="dg-guide-body">
+            <div id="dg-guide-empty" class="dg-guide-empty hidden">검색 결과가 없습니다. 다른 키워드로 시도해 보세요.</div>
+            <div id="dg-guide-list"></div>
         </div>
     </div>
 </div>
 
-<div class="toast-container" id="toast-container"></div>
-
-<script>window.DASHBOARD_TIER = window.DASHBOARD_TIER || 'pro';</script>
-<script src="js/dashboard-app.js?v=20260712-tier"></script>
-<script src="js/dashboard-tier.js?v=20260712-tier"></script>
+<script>
+    window.DASHBOARD_TIER = window.DASHBOARD_TIER || 'enterprise';
+</script>
+<script src="js/tenant-registry.js?v=20260714-admin2"></script>
+<script>
+    (function () {
+        try {
+            var t = typeof resolveTenantFromQuery === 'function' ? resolveTenantFromQuery() : null;
+            if (t) {
+                window.__OMNIFY_TENANT__ = t;
+                window.DASHBOARD_TIER = t.serviceTier || 'enterprise';
+            }
+        } catch (e) { /* ignore */ }
+    })();
+</script>
+<script src="js/inventory-policy.js?v=20260714-inv3"></script>
+<script src="js/dashboard-app.js?v=20260714-admin2"></script>
+<script src="js/dashboard-tier.js?v=20260714-admin2"></script>
+<script src="js/dashboard-guide.js?v=20260714-inv3"></script>
 </body>
 </html>
