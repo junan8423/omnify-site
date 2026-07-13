@@ -4420,8 +4420,7 @@ function applyTenantChrome(tenant) {
         '<span class="text-emerald-200/70">채널 ' + ch + ' · 좌석 ' + tenant.seats + ' · 알림톡 ' + tenant.briefingRecipients + '</span>' +
         '<span class="text-emerald-200/70">WMS ' + (tenant.wms === 'sabangnet' ? '사방넷(읽기)' : '없음') + '</span>' +
         '<span class="text-emerald-200/70">Drive ' + (tenant.driveEnabled && (tenant.driveFolderUrl || tenant.driveFolderId) ? '연결' : tenant.driveEnabled ? '대기' : 'off') + '</span>' +
-        (tenant.custom ? '<span class="text-emerald-200/70">커스텀 ' + (typeof countCustomCompleteness === 'function' ? countCustomCompleteness(tenant.custom).pct + '%' : 'on') + '</span>' : '') +
-        '<a href="admin.html" class="ml-auto text-emerald-300 font-semibold hover:underline">어드민 →</a>';
+        (tenant.custom ? '<span class="text-emerald-200/70">커스텀 ' + (typeof countCustomCompleteness === 'function' ? countCustomCompleteness(tenant.custom).pct + '%' : 'on') + '</span>' : '');
     main.insertBefore(bar, main.firstChild);
 }
 
