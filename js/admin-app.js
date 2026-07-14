@@ -186,6 +186,38 @@
         updateQuoteStatus(tenant, !!(opts.force && tenant.quoteText));
     }
 
+    function exportQuotePdf() {
+        var text = getQuoteEditorText().trim();
+        if (!text) {
+            toast('견적 내용이 비어 있습니다. 저장·생성 후 PDF를 출력하세요.', 'warning');
+            return;
+        }
+        var t = editingId ? getTenantById(editingId) : null;
+        if (!t) {
+            try {
+                var form = readForm();
+                if (form.companyName) {
+                    t = buildTenantDraft(form);
+                    t.id = '(draft)';
+                }
+            } catch (e) { /* ignore */ }
+        }
+        if (!t) {
+            toast('견적서에 넣을 고객사 정보가 없습니다.', 'warning');
+            return;
+        }
+        if (!window.OmnifyQuotePdf || !OmnifyQuotePdf.openQuotePdf) {
+            toast('견적서 PDF 모듈을 불러오지 못했습니다.', 'warning');
+            return;
+        }
+        var result = OmnifyQuotePdf.openQuotePdf(t, text);
+        if (!result || !result.ok) {
+            toast('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해 주세요.', 'warning');
+            return;
+        }
+        toast('인쇄 창에서 「PDF로 저장」을 선택하세요.', 'success');
+    }
+
     function saveQuoteText() {
         if (!editingId) {
             toast('먼저 테넌트를 생성·저장하세요.', 'warning');
@@ -1248,6 +1280,9 @@
         });
         if ($('btn-save-quote')) {
             $('btn-save-quote').addEventListener('click', saveQuoteText);
+        }
+        if ($('btn-quote-pdf')) {
+            $('btn-quote-pdf').addEventListener('click', exportQuotePdf);
         }
         $('btn-refresh-quote').addEventListener('click', function () {
             var t = editingId ? getTenantById(editingId) : null;

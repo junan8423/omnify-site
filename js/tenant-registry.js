@@ -194,6 +194,7 @@ var OPS_CHECKLIST_DEFS = [
 var CONTRACT_CHECKLIST_DEFS = [
     { id: 'quote_sent', label: '견적 공유' },
     { id: 'contract_signed', label: '계약서 서명' },
+    { id: 'tax_invoice', label: '세금계산서 발행 (구축비 입금 확인 전)' },
     { id: 'setup_paid', label: '구축비 입금 확인' },
     { id: 'refund_clause', label: '중도해지·환불 조항 명시' },
     { id: 'aop_terms', label: '일시납(AOP) 조건 합의' },
