@@ -625,6 +625,20 @@ function getPhase1AllowedViews(tenant) {
     return phase1ModulesToViews(mods);
 }
 
+function absolutePreviewUrl(pathOrUrl) {
+    var p = String(pathOrUrl || '').trim();
+    if (!p) return '';
+    if (/^https?:\/\//i.test(p)) return p;
+    var origin = 'https://omnify.kr';
+    if (typeof window !== 'undefined' && window.location && window.location.origin &&
+        window.location.protocol !== 'file:') {
+        origin = window.location.origin;
+    }
+    origin = origin.replace(/\/$/, '');
+    if (p.charAt(0) === '/') return origin + p;
+    return origin + '/' + p;
+}
+
 function buildQuoteText(tenant) {
     if (!tenant) return '';
     var c = tenant.custom || {};
@@ -662,7 +676,7 @@ function buildQuoteText(tenant) {
         lines.push(c.biz.customRequests);
     }
     lines.push('');
-    lines.push('미리보기: ' + ((tenant.infra && tenant.infra.previewPath) || '-'));
+    lines.push('미리보기 URL: ' + (absolutePreviewUrl(tenant.infra && tenant.infra.previewPath) || '-'));
     return lines.join('\n');
 }
 

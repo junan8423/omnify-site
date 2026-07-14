@@ -1,8 +1,10 @@
 /**
- * Omnify 견적서 PDF 양식 — 브라우저 인쇄(다른 이름으로 저장 → PDF)
+ * Omnify 견적서 PDF 양식 — 납입액(원)·부가세·총계 · 대표 직인
  */
 (function (root) {
     'use strict';
+
+    var VAT_RATE = 0.1;
 
     var OMNIFY_SUPPLIER = {
         companyName: 'JK글로벌컴퍼니',
@@ -42,7 +44,38 @@
         return m[p] || (p || '-');
     }
 
-    /** 저장된 견적 텍스트 → 본문 HTML (빈 줄 기준 단락) */
+    /** 만원 → 원 */
+    function manToWon(man) {
+        if (man == null || man === '' || !isFinite(Number(man))) return null;
+        return Math.round(Number(man) * 10000);
+    }
+
+    function formatWon(n) {
+        if (n == null || !isFinite(n)) return '-';
+        return Math.round(n).toLocaleString('ko-KR') + '원';
+    }
+
+    function vatOf(supply) {
+        return Math.round(Number(supply || 0) * VAT_RATE);
+    }
+
+    /** 기본 대표 직인 (원형 스탬프 SVG) */
+    function defaultSealSvg() {
+        var co = OMNIFY_SUPPLIER.companyName;
+        var ceo = OMNIFY_SUPPLIER.ceo;
+        return '<svg class="seal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="88" height="88" aria-label="직인">' +
+            '<circle cx="60" cy="60" r="56" fill="none" stroke="#c62828" stroke-width="3.5"/>' +
+            '<circle cx="60" cy="60" r="48" fill="none" stroke="#c62828" stroke-width="1.5"/>' +
+            '<text x="60" y="40" text-anchor="middle" fill="#c62828" font-size="10.5" font-weight="700" ' +
+            'font-family="Malgun Gothic, Apple SD Gothic Neo, sans-serif">' + esc(co) + '</text>' +
+            '<text x="60" y="68" text-anchor="middle" fill="#c62828" font-size="20" font-weight="800" ' +
+            'font-family="Malgun Gothic, Apple SD Gothic Neo, sans-serif">' + esc(ceo) + '</text>' +
+            '<text x="60" y="92" text-anchor="middle" fill="#c62828" font-size="13" font-weight="700" ' +
+            'font-family="Malgun Gothic, Apple SD Gothic Neo, sans-serif">印</text>' +
+            '</svg>';
+    }
+
+    /** 저장된 견적 텍스트 → 본문 HTML */
     function bodyFromQuoteText(text) {
         var raw = String(text || '').trim();
         if (!raw) return '<p class="muted">견적 내용이 없습니다.</p>';
@@ -63,38 +96,89 @@
         }).join('');
     }
 
-    function feeRows(tenant) {
+    /**
+     * 실제 납입 기준 금액 산출
+     * - 구축비: setupFeeMan → 원
+     * - 유지비: 일시납이면 할인 적용 합계, 아니면 월 1회분
+     */
+    function calcPayableAmounts(tenant) {
         var com = (tenant && tenant.commercial) || {};
-        var rows = [];
-        var setup = com.setupFeeMan;
-        var monthly = com.monthlyFeeMan;
-        if (setup != null && setup !== '') {
-            rows.push({
+        var setupWon = manToWon(com.setupFeeMan);
+        var monthlyMan = Number(com.monthlyFeeMan);
+        var monthlyWon = isFinite(monthlyMan) ? manToWon(monthlyMan) : null;
+
+        var prepaidMonths = 0;
+        if (com.prepaidTerm === '12') prepaidMonths = 12;
+        else if (com.prepaidTerm === '6') prepaidMonths = 6;
+
+        var discountPct = Number(com.discountPct) || 0;
+        var maintWon = null;
+        var maintLabel = '월 유지비';
+        var maintQty = '1개월';
+        var maintNote = '월납';
+
+        if (monthlyWon != null) {
+            if (prepaidMonths > 0) {
+                var list = monthlyWon * prepaidMonths;
+                maintWon = Math.round(list * (100 - discountPct) / 100);
+                maintLabel = '유지비 (' + prepaidMonths + '개월 일시납)';
+                maintQty = prepaidMonths + '개월';
+                maintNote = discountPct ? ('할인 ' + discountPct + '% 반영') : '일시납';
+            } else {
+                maintWon = monthlyWon;
+                maintLabel = '월 유지비 (' + planLabel(tenant.billingPlan) + ')';
+                maintQty = '1개월';
+                maintNote = '월납';
+            }
+        }
+
+        var lines = [];
+        if (setupWon != null) {
+            lines.push({
                 name: '초기 구축비 (Omnify 대시보드 구축)',
                 qty: '1식',
-                amount: Number(setup) + '만원',
+                supply: setupWon,
+                vat: vatOf(setupWon),
                 note: '부가세 별도'
             });
         } else {
-            rows.push({
+            lines.push({
                 name: '초기 구축비',
                 qty: '1식',
-                amount: '별도 견적',
-                note: '협의'
+                supply: null,
+                vat: null,
+                note: '별도 견적'
             });
         }
-        if (monthly != null && monthly !== '') {
-            var term = com.prepaidTerm === '12' ? '12개월 일시납 기준 월액'
-                : com.prepaidTerm === '6' ? '6개월 일시납 기준 월액'
-                : '월 구독';
-            rows.push({
-                name: '월 유지비 (' + planLabel(tenant.billingPlan) + ')',
-                qty: term,
-                amount: Number(monthly) + '만원',
-                note: com.discountPct ? ('일시납 할인 ' + com.discountPct + '%') : '부가세 별도'
+        if (maintWon != null) {
+            lines.push({
+                name: maintLabel,
+                qty: maintQty,
+                supply: maintWon,
+                vat: vatOf(maintWon),
+                note: maintNote
             });
         }
-        return rows;
+
+        var supplySum = 0;
+        var vatSum = 0;
+        var hasAmount = false;
+        lines.forEach(function (l) {
+            if (l.supply != null) {
+                supplySum += l.supply;
+                vatSum += l.vat;
+                hasAmount = true;
+            }
+        });
+
+        return {
+            lines: lines,
+            supplySum: hasAmount ? supplySum : null,
+            vatSum: hasAmount ? vatSum : null,
+            grandTotal: hasAmount ? supplySum + vatSum : null,
+            prepaidMonths: prepaidMonths,
+            monthlyWon: monthlyWon
+        };
     }
 
     function buildQuoteDocumentHtml(tenant, quoteText, opts) {
@@ -107,13 +191,39 @@
         var contact = [tenant.contactName, tenant.contactEmail, tenant.contactPhone]
             .filter(Boolean).join(' · ') || '-';
         var special = tenant.specialPricing || (tenant.billingPlan !== tenant.serviceTier);
-        var rows = feeRows(tenant);
-        var tableHtml = rows.map(function (r, i) {
-            return '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(r.name) + '</td><td class="c">' +
-                esc(r.qty) + '</td><td class="r">' + esc(r.amount) + '</td><td>' + esc(r.note) + '</td></tr>';
+        var pay = calcPayableAmounts(tenant);
+
+        var tableHtml = pay.lines.map(function (r, i) {
+            var supplyTxt = r.supply != null ? formatWon(r.supply) : '별도 견적';
+            var vatTxt = r.vat != null ? formatWon(r.vat) : '-';
+            return '<tr>' +
+                '<td class="c">' + (i + 1) + '</td>' +
+                '<td>' + esc(r.name) + '</td>' +
+                '<td class="c">' + esc(r.qty) + '</td>' +
+                '<td class="r">' + esc(supplyTxt) + '</td>' +
+                '<td class="r">' + esc(vatTxt) + '</td>' +
+                '<td>' + esc(r.note) + '</td>' +
+                '</tr>';
         }).join('');
 
+        var totalBlock = '';
+        if (pay.supplySum != null) {
+            totalBlock =
+                '<table class="totals">' +
+                '<tr><th>공급가액 합계</th><td class="r">' + esc(formatWon(pay.supplySum)) + '</td></tr>' +
+                '<tr><th>부가세 (10%)</th><td class="r">' + esc(formatWon(pay.vatSum)) + '</td></tr>' +
+                '<tr class="grand"><th>납입 총액 (부가세 포함)</th><td class="r">' + esc(formatWon(pay.grandTotal)) + '</td></tr>' +
+                '</table>' +
+                '<p class="pay-note">납입 내역 요약 — ' +
+                pay.lines.filter(function (l) { return l.supply != null; }).map(function (l) {
+                    return esc(l.name.replace(/\s*\(.*/, '')) + ' ' + formatWon(l.supply) + ' / 부가세 ' + formatWon(l.vat);
+                }).join('  ·  ') +
+                '  ·  총계 ' + formatWon(pay.supplySum) + ' / 부가세 ' + formatWon(pay.vatSum) +
+                ' / <strong>' + formatWon(pay.grandTotal) + '</strong></p>';
+        }
+
         var body = bodyFromQuoteText(quoteText || tenant.quoteText || '');
+        var seal = defaultSealSvg();
 
         return '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
             '<title>Omnify 견적서_' + esc(customer) + '_' + ymd + '</title>' +
@@ -138,10 +248,16 @@
             '.box dl{margin:0;display:grid;grid-template-columns:72px 1fr;gap:3px 8px}' +
             '.box dt{color:#666;font-weight:600}' +
             '.box dd{margin:0;font-weight:600}' +
-            'table.items{width:100%;border-collapse:collapse;margin:0 0 12px}' +
+            'table.items{width:100%;border-collapse:collapse;margin:0 0 8px}' +
             'table.items th,table.items td{border:1px solid #333;padding:6px 7px;vertical-align:top}' +
             'table.items th{background:#f3f4f6;font-size:10px;font-weight:700}' +
-            'table.items .c{text-align:center} table.items .r{text-align:right;white-space:nowrap}' +
+            'table.items .c{text-align:center} table.items .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}' +
+            'table.totals{width:100%;border-collapse:collapse;margin:0 0 10px;max-width:100%}' +
+            'table.totals th,table.totals td{border:1px solid #222;padding:7px 10px;font-size:12px}' +
+            'table.totals th{text-align:left;background:#f9fafb;width:55%;font-weight:700}' +
+            'table.totals .r{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}' +
+            'table.totals tr.grand th,table.totals tr.grand td{background:#111;color:#fff;font-size:13px}' +
+            '.pay-note{margin:0 0 12px;font-size:10px;color:#333;line-height:1.5;word-break:keep-all}' +
             '.badge{display:inline-block;border:1px solid #111;padding:1px 6px;font-size:10px;margin-left:4px}' +
             '.sec{margin:0 0 10px}' +
             '.sec h3{margin:0 0 4px;font-size:12px;border-left:3px solid #111;padding-left:6px}' +
@@ -149,10 +265,13 @@
             '.sec li{margin:2px 0;word-break:keep-all}' +
             '.muted{color:#666}' +
             '.foot{margin-top:16px;border-top:1px solid #ccc;padding-top:10px;display:grid;' +
-            'grid-template-columns:1.2fr .8fr;gap:12px}' +
-            '.sign{text-align:center;padding-top:8px}' +
-            '.sign .co{font-size:13px;font-weight:800;margin-bottom:28px}' +
-            '.sign .line{border-bottom:1px solid #111;width:70%;margin:0 auto 4px}' +
+            'grid-template-columns:1.15fr .85fr;gap:12px;align-items:end}' +
+            '.sign{text-align:center;padding-top:4px;position:relative}' +
+            '.sign .co{font-size:13px;font-weight:800;margin-bottom:6px}' +
+            '.sign-block{position:relative;display:inline-block;min-width:160px;padding:8px 8px 4px}' +
+            '.sign .line{border-bottom:1px solid #111;width:100%;margin:36px auto 4px}' +
+            '.sign .who{font-size:11px}' +
+            '.seal{position:absolute;right:4px;top:0;opacity:.92;pointer-events:none}' +
             '.note{font-size:10px;color:#444;margin:0}' +
             '@media print{.toolbar{display:none!important} body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}' +
             '</style></head><body><div class="sheet">' +
@@ -180,18 +299,26 @@
             '<dt>서비스</dt><dd>' + esc(planLabel(tenant.serviceTier)) + '</dd>' +
             '<dt>좌석/수신</dt><dd>작업 ' + esc(tenant.seats != null ? tenant.seats : '-') +
             ' · 알림톡 ' + esc(tenant.briefingRecipients != null ? tenant.briefingRecipients : '-') + '</dd>' +
+            '<dt>미리보기</dt><dd style="word-break:break-all;font-weight:600">' +
+            esc((typeof absolutePreviewUrl === 'function'
+                ? absolutePreviewUrl(tenant.infra && tenant.infra.previewPath)
+                : (tenant.infra && tenant.infra.previewPath)) || '-') + '</dd>' +
             '</dl></div></div>' +
             '<table class="items"><thead><tr>' +
-            '<th style="width:36px">No</th><th>품목</th><th style="width:88px">수량/기간</th>' +
-            '<th style="width:88px">금액</th><th style="width:90px">비고</th>' +
+            '<th style="width:32px">No</th><th>품목</th><th style="width:72px">수량/기간</th>' +
+            '<th style="width:100px">공급가액</th><th style="width:88px">부가세</th><th style="width:72px">비고</th>' +
             '</tr></thead><tbody>' + tableHtml + '</tbody></table>' +
+            totalBlock +
             '<div class="sec"><h3>견적 상세</h3></div>' + body +
             '<div class="foot">' +
-            '<div><p class="note">※ 상기 금액은 부가가치세 별도입니다.<br>' +
+            '<div><p class="note">※ 공급가액 기준 부가가치세 10%가 별도 가산되며, 납입 총액은 부가세 포함 금액입니다.<br>' +
             '※ 본 견적의 유효기간은 발행일로부터 30일입니다.<br>' +
             '※ 중도 해지 시 할인 전 정상가(월 이용료) 기준 사용분 차감 후 잔액 환불 · 초기 구축비는 비환불.</p></div>' +
             '<div class="sign"><div class="co">' + esc(OMNIFY_SUPPLIER.companyName) + '</div>' +
-            '<div class="line"></div><div>대표 ' + esc(OMNIFY_SUPPLIER.ceo) + ' (인)</div></div>' +
+            '<div class="sign-block">' + seal +
+            '<div class="line"></div>' +
+            '<div class="who">대표 ' + esc(OMNIFY_SUPPLIER.ceo) + ' (인)</div>' +
+            '</div></div>' +
             '</div></div>' +
             '<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},250)});<\/script>' +
             '</body></html>';
@@ -212,6 +339,9 @@
 
     root.OmnifyQuotePdf = {
         SUPPLIER: OMNIFY_SUPPLIER,
+        VAT_RATE: VAT_RATE,
+        calcPayableAmounts: calcPayableAmounts,
+        formatWon: formatWon,
         buildQuoteDocumentHtml: buildQuoteDocumentHtml,
         openQuotePdf: openQuotePdf,
         quoteNo: quoteNo
