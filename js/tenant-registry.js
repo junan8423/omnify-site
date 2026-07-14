@@ -522,6 +522,68 @@ function calcPrepaidTotals(commercial) {
     };
 }
 
+/**
+ * 견적 정가 기준 티어
+ * - 특가(청구≠서비스) → 서비스 티어 카탈로그가 정가
+ * - 그 외 → 청구 플랜 카탈로그
+ */
+function quoteListTierInfo(tenant) {
+    var billing = tenant.billingPlan || 'growth';
+    var service = tenant.serviceTier || billing;
+    var special = !!tenant.specialPricing || billing !== service;
+    return {
+        special: special,
+        listTier: special ? service : billing,
+        billing: billing,
+        service: service
+    };
+}
+
+function formatManAmount(n) {
+    if (n == null || !isFinite(n)) return null;
+    var r = Math.round(n * 10) / 10;
+    return (r % 1 === 0 ? String(Math.round(r)) : String(r)) + '만원';
+}
+
+/**
+ * 정가 대비 청구가 낮거나 특가일 때 혜택 강조
+ * listMan null = 카탈로그상 별도 견적 / chargeMan null = 청구도 별도
+ */
+function formatQuoteFeeBenefitLine(label, listMan, chargeMan, meta) {
+    meta = meta || {};
+    var listLabel = meta.listTier ? '(' + meta.listTier + ')' : '';
+    var isSpecial = !!meta.special;
+    var hasList = listMan != null && isFinite(listMan);
+    var hasCharge = chargeMan != null && isFinite(chargeMan);
+
+    if (!hasList && !hasCharge) {
+        return label + ': 별도 견적' + (listLabel ? ' ' + listLabel : '');
+    }
+    if (!hasList && hasCharge) {
+        if (isSpecial) {
+            return label + ': 정가 별도 견적' + listLabel + ' → 특가 ' + formatManAmount(chargeMan) + ' ★혜택';
+        }
+        return label + ': ' + formatManAmount(chargeMan);
+    }
+    if (hasList && !hasCharge) {
+        return label + ': 별도 견적 (정가 참고 ' + formatManAmount(listMan) + listLabel + ')';
+    }
+
+    var save = Math.round((listMan - chargeMan) * 10) / 10;
+    var showBenefit = isSpecial || save > 0;
+    if (!showBenefit) {
+        return label + ': ' + formatManAmount(chargeMan);
+    }
+    if (save <= 0) {
+        return label + ': 정가 ' + formatManAmount(listMan) + listLabel + ' → 청구 ' + formatManAmount(chargeMan) +
+            (isSpecial ? ' (특가 적용)' : '');
+    }
+    var pct = listMan > 0 ? Math.round((save / listMan) * 100) : 0;
+    return label + ': 정가 ' + formatManAmount(listMan) + listLabel +
+        ' → 특가 ' + formatManAmount(chargeMan) +
+        ' (▲할인 ' + formatManAmount(save) + ' · ' + pct + '% ↓) ★혜택';
+}
+
 function defaultChecklistState(defs) {
     var o = {};
     (defs || []).forEach(function (d) { o[d.id] = false; });
@@ -565,19 +627,25 @@ function buildQuoteText(tenant) {
     var c = tenant.custom || {};
     var com = tenant.commercial || defaultCommercial(tenant);
     var prepaid = calcPrepaidTotals(com);
+    var qt = quoteListTierInfo(tenant);
+    var listMonthly = PLAN_MONTHLY_MAN[qt.listTier];
+    var listSetup = PLAN_SETUP_MAN[qt.listTier];
+    var feeMeta = { special: qt.special, listTier: qt.listTier };
+    var chargeMonthly = com.monthlyFeeMan != null ? Number(com.monthlyFeeMan) : null;
+    var chargeSetup = com.setupFeeMan;
+
     var lines = [];
     lines.push('[Omnify 견적 요약]');
     lines.push('고객사: ' + (tenant.companyName || '-'));
-    lines.push('청구 플랜: ' + tenant.billingPlan + (tenant.specialPricing ? ' (특가 · 서비스 ' + tenant.serviceTier + ')' : ''));
-    lines.push('서비스 티어: ' + tenant.serviceTier);
+    lines.push('청구 플랜: ' + qt.billing + (qt.special ? ' (특가 · 서비스 ' + qt.service + ')' : ''));
+    lines.push('서비스 티어: ' + qt.service + (qt.special ? ' ← 정가·혜택 기준' : ''));
     lines.push('작업 좌석: ' + tenant.seats + ' · 알림톡 수신: ' + tenant.briefingRecipients);
     lines.push('채널: ' + (tenant.channels || []).join(', '));
-    if (com.setupFeeMan != null) lines.push('초기 구축비: ' + com.setupFeeMan + '만원');
-    else lines.push('초기 구축비: 별도 견적');
-    lines.push('월 유지비(정상가): ' + com.monthlyFeeMan + '만원');
+    lines.push(formatQuoteFeeBenefitLine('초기 구축비', listSetup, chargeSetup, feeMeta));
+    lines.push(formatQuoteFeeBenefitLine('월 유지비', listMonthly, chargeMonthly, feeMeta));
     if (prepaid.months) {
         lines.push('일시납: ' + prepaid.months + '개월 · 할인 ' + com.discountPct + '%');
-        lines.push('일시납 정상합: ' + prepaid.listTotal + '만원 → 결제 ' + prepaid.payTotal + '만원 (절약 ' + prepaid.save + '만원)');
+        lines.push('일시납 합계: 정상 ' + prepaid.listTotal + '만원 → 결제 ' + prepaid.payTotal + '만원 (절약 ' + prepaid.save + '만원)');
     } else {
         lines.push('결제 주기: 월납');
     }
