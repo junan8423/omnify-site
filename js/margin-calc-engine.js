@@ -12,17 +12,86 @@
     var STORAGE_KEY = 'omnify_margin_calc_v1';
     var APPLY_KEY = 'omnify_margin_calc_apply';
 
-    var CHANNEL_PRESETS = [
-        { id: 'cafe24', label: 'Cafe24(자사몰)', feePct: 0, logisticsPct: 6, pgPct: 3.2, returnPct: 2, adPct: 8 },
-        { id: 'smartstore', label: '네이버 스마트스토어', feePct: 5.5, logisticsPct: 6, pgPct: 0, returnPct: 2.5, adPct: 10 },
-        { id: 'coupang', label: '쿠팡', feePct: 11, logisticsPct: 7, pgPct: 0, returnPct: 3.5, adPct: 12 },
-        { id: 'gmarket', label: 'G마켓', feePct: 13, logisticsPct: 6, pgPct: 0, returnPct: 3, adPct: 8 },
-        { id: 'elevenst', label: '11번가', feePct: 12, logisticsPct: 6, pgPct: 0, returnPct: 3, adPct: 8 },
-        { id: 'ssg', label: 'SSG닷컴', feePct: 15, logisticsPct: 5, pgPct: 0, returnPct: 2.5, adPct: 5 },
-        { id: 'oliveyoung', label: '올리브영', feePct: 18, logisticsPct: 4, pgPct: 0, returnPct: 2, adPct: 4 },
-        { id: 'kakao_store', label: '카카오톡스토어', feePct: 6, logisticsPct: 6, pgPct: 0, returnPct: 2.5, adPct: 9 },
-        { id: 'other', label: '기타', feePct: 10, logisticsPct: 6, pgPct: 2, returnPct: 3, adPct: 8 }
-    ];
+    /** 채널별 전형 비용 힌트(%) — 정산서로 교체 전 시뮬레이션용 */
+    var FEE_DEFAULT = { feePct: 10, logisticsPct: 6, pgPct: 0, returnPct: 3, adPct: 8 };
+    var CHANNEL_FEE_HINTS = {
+        cafe24: { feePct: 0, logisticsPct: 6, pgPct: 3.2, returnPct: 2, adPct: 7 },
+        smartstore: { feePct: 5.5, logisticsPct: 6, pgPct: 0, returnPct: 2.5, adPct: 10 },
+        coupang: { feePct: 11, logisticsPct: 7, pgPct: 0, returnPct: 3.5, adPct: 12 },
+        gmarket: { feePct: 13, logisticsPct: 6, pgPct: 0, returnPct: 3, adPct: 8 },
+        elevenst: { feePct: 12, logisticsPct: 6, pgPct: 0, returnPct: 3, adPct: 8 },
+        auction: { feePct: 13, logisticsPct: 6, pgPct: 0, returnPct: 3, adPct: 8 },
+        ssg: { feePct: 15, logisticsPct: 5, pgPct: 0, returnPct: 2.5, adPct: 5 },
+        lotteon: { feePct: 14, logisticsPct: 5, pgPct: 0, returnPct: 2.5, adPct: 5 },
+        interpark: { feePct: 12, logisticsPct: 6, pgPct: 0, returnPct: 3, adPct: 6 },
+        ably: { feePct: 12, logisticsPct: 6, pgPct: 0, returnPct: 4, adPct: 10 },
+        musinsa: { feePct: 14, logisticsPct: 5, pgPct: 0, returnPct: 3, adPct: 7 },
+        oliveyoung: { feePct: 18, logisticsPct: 4, pgPct: 0, returnPct: 2, adPct: 4 },
+        zigzag: { feePct: 12, logisticsPct: 6, pgPct: 0, returnPct: 4, adPct: 10 },
+        cm29: { feePct: 16, logisticsPct: 5, pgPct: 0, returnPct: 2.5, adPct: 5 },
+        brandi: { feePct: 13, logisticsPct: 6, pgPct: 0, returnPct: 4, adPct: 9 },
+        wconcept: { feePct: 16, logisticsPct: 5, pgPct: 0, returnPct: 2.5, adPct: 5 },
+        hyundai_hmall: { feePct: 18, logisticsPct: 4, pgPct: 0, returnPct: 2, adPct: 4 },
+        galleria: { feePct: 18, logisticsPct: 4, pgPct: 0, returnPct: 2, adPct: 4 },
+        akmall: { feePct: 16, logisticsPct: 5, pgPct: 0, returnPct: 2.5, adPct: 5 },
+        kurly: { feePct: 15, logisticsPct: 8, pgPct: 0, returnPct: 2, adPct: 5 },
+        ohouse: { feePct: 12, logisticsPct: 7, pgPct: 0, returnPct: 2.5, adPct: 8 },
+        kakao_store: { feePct: 6, logisticsPct: 6, pgPct: 0, returnPct: 2.5, adPct: 9 },
+        toss: { feePct: 8, logisticsPct: 6, pgPct: 0, returnPct: 2.5, adPct: 9 },
+        aliexpress: { feePct: 8, logisticsPct: 10, pgPct: 0, returnPct: 5, adPct: 6 },
+        temu: { feePct: 10, logisticsPct: 10, pgPct: 0, returnPct: 5, adPct: 5 },
+        gsshop: { feePct: 20, logisticsPct: 4, pgPct: 0, returnPct: 2, adPct: 3 },
+        cjonstyle: { feePct: 20, logisticsPct: 4, pgPct: 0, returnPct: 2, adPct: 3 },
+        nsshop: { feePct: 20, logisticsPct: 4, pgPct: 0, returnPct: 2, adPct: 3 },
+        youtube_shop: { feePct: 5, logisticsPct: 6, pgPct: 3, returnPct: 3, adPct: 12 },
+        instagram_shop: { feePct: 5, logisticsPct: 6, pgPct: 3, returnPct: 3, adPct: 12 },
+        other: { feePct: 10, logisticsPct: 6, pgPct: 2, returnPct: 3, adPct: 8 }
+    };
+
+    var GROUP_LABELS = {
+        core: '핵심',
+        market: '종합몰 · 오픈마켓',
+        vertical: '패션 · 뷰티',
+        department: '백화점 · 프리미엄',
+        lifestyle: '장보기 · 리빙 · 소셜',
+        special: '글로벌 · 홈쇼핑 · 소셜',
+        other: '기타'
+    };
+
+    function feeHintFor(id) {
+        var h = CHANNEL_FEE_HINTS[id];
+        return h ? Object.assign({}, FEE_DEFAULT, h) : Object.assign({}, FEE_DEFAULT);
+    }
+
+    /**
+     * CHANNEL_CATALOG(또는 동일 스키마) → 프리셋 목록
+     * tenant-registry.js의 CHANNEL_CATALOG를 넘기면 등록 채널 전체가 선택 가능
+     */
+    function buildPresetsFromCatalog(catalog) {
+        var list = Array.isArray(catalog) && catalog.length
+            ? catalog
+            : Object.keys(CHANNEL_FEE_HINTS).map(function (id) {
+                return { id: id, label: id, group: 'other' };
+            });
+        return list.map(function (c) {
+            var fees = feeHintFor(c.id);
+            return {
+                id: c.id,
+                label: c.label || c.id,
+                group: c.group || 'other',
+                groupLabel: GROUP_LABELS[c.group] || c.group || '기타',
+                apiTier: c.apiTier || '',
+                feePct: fees.feePct,
+                logisticsPct: fees.logisticsPct,
+                pgPct: fees.pgPct,
+                returnPct: fees.returnPct,
+                adPct: fees.adPct
+            };
+        });
+    }
+
+    /** @deprecated 호환용 — buildPresetsFromCatalog() 결과와 동일 계열 */
+    var CHANNEL_PRESETS = buildPresetsFromCatalog(null);
 
     function round1(n) {
         if (!isFinite(n)) return 0;
@@ -210,11 +279,7 @@
         id = String(id || '');
         var idx = id.indexOf('_ch_');
         if (idx > 0) return id.slice(0, idx);
-        var known = ['cafe24', 'smartstore', 'coupang', 'gmarket', 'elevenst', 'auction',
-            'ssg', 'lotteon', 'interpark', 'ably', 'musinsa', 'oliveyoung', 'zigzag',
-            'cm29', 'brandi', 'wconcept', 'hyundai_hmall', 'galleria', 'akmall',
-            'kurly', 'ohouse', 'kakao_store', 'toss', 'aliexpress', 'temu',
-            'gsshop', 'cjonstyle', 'nsshop', 'youtube_shop', 'instagram_shop', 'other'];
+        var known = Object.keys(CHANNEL_FEE_HINTS);
         for (var i = 0; i < known.length; i++) {
             if (id === known[i] || id.indexOf(known[i] + '_') === 0) return known[i];
         }
@@ -318,6 +383,10 @@
         STORAGE_KEY: STORAGE_KEY,
         APPLY_KEY: APPLY_KEY,
         CHANNEL_PRESETS: CHANNEL_PRESETS,
+        CHANNEL_FEE_HINTS: CHANNEL_FEE_HINTS,
+        GROUP_LABELS: GROUP_LABELS,
+        feeHintFor: feeHintFor,
+        buildPresetsFromCatalog: buildPresetsFromCatalog,
         compute: compute,
         defaultInput: defaultInput,
         saveLocal: saveLocal,

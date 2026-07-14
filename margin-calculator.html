@@ -225,8 +225,8 @@
                 </div>
                 <div class="actions" style="margin-bottom:.45rem">
                     <button type="button" class="btn ghost" id="btn-add-ch">채널 추가</button>
-                    <select id="preset-pick" style="max-width:12rem">
-                        <option value="">프리셋 선택…</option>
+                    <select id="preset-pick" style="max-width:16rem">
+                        <option value="">판매채널 선택…</option>
                     </select>
                 </div>
                 <div class="ch-table-wrap">
@@ -286,11 +286,18 @@
 
     <div id="toast" class="toast" role="status"></div>
 
-    <script src="js/margin-calc-engine.js?v=20260715"></script>
+    <script src="js/tenant-registry.js?v=20260715-ch"></script>
+    <script src="js/margin-calc-engine.js?v=20260715b"></script>
     <script>
 (function () {
     var E = window.OmnifyMarginCalc;
     if (!E) return;
+
+    var PRESETS = E.buildPresetsFromCatalog(
+        typeof CHANNEL_CATALOG !== 'undefined' ? CHANNEL_CATALOG : null
+    );
+    var PRESET_MAP = {};
+    PRESETS.forEach(function (p) { PRESET_MAP[p.id] = p; });
 
     var $ = function (id) { return document.getElementById(id); };
     var channels = [];
@@ -306,11 +313,27 @@
 
     function fillPresets() {
         var sel = $('preset-pick');
-        E.CHANNEL_PRESETS.forEach(function (p) {
-            var o = document.createElement('option');
-            o.value = p.id;
-            o.textContent = p.label;
-            sel.appendChild(o);
+        sel.innerHTML = '<option value="">판매채널 선택…</option>';
+        var groups = [];
+        var byGroup = {};
+        PRESETS.forEach(function (p) {
+            var g = p.group || 'other';
+            if (!byGroup[g]) {
+                byGroup[g] = [];
+                groups.push(g);
+            }
+            byGroup[g].push(p);
+        });
+        groups.forEach(function (g) {
+            var og = document.createElement('optgroup');
+            og.label = (E.GROUP_LABELS && E.GROUP_LABELS[g]) || g;
+            byGroup[g].forEach(function (p) {
+                var o = document.createElement('option');
+                o.value = p.id;
+                o.textContent = p.label + (p.apiTier ? ' · ' + p.apiTier : '');
+                og.appendChild(o);
+            });
+            sel.appendChild(og);
         });
     }
 
@@ -497,7 +520,7 @@
     $('preset-pick').addEventListener('change', function () {
         var id = $('preset-pick').value;
         if (!id) return;
-        var p = E.CHANNEL_PRESETS.filter(function (x) { return x.id === id; })[0];
+        var p = PRESET_MAP[id];
         if (!p) return;
         var used = channels.some(function (c) {
             return (c.id === p.id) || (String(c.id).indexOf(p.id + '_ch_') === 0);
