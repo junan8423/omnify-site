@@ -212,6 +212,18 @@
             font-size: var(--fs-xs); line-height: var(--lh); white-space: pre-wrap; color: #d1d5db;
             max-height: 220px; overflow: auto;
         }
+        textarea.quote-box {
+            display: block; width: 100%; min-height: 220px; max-height: 420px;
+            resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre; overflow: auto;
+        }
+        textarea.quote-box:focus {
+            outline: none; border-color: rgba(59,130,246,.55);
+            box-shadow: 0 0 0 2px rgba(59,130,246,.15);
+        }
+        .quote-status { font-size: var(--fs-2xs); color: var(--muted); font-weight: 650; }
+        .quote-status.saved { color: #6ee7b7; }
+        .quote-status.dirty { color: #fcd34d; }
         .check-list { display: flex; flex-direction: column; gap: .25rem; }
         .check-list label {
             display: flex; gap: .4rem; align-items: flex-start;
@@ -586,11 +598,16 @@
                     <p class="hint">테넌트 저장 후 체크리스트·견적·백업을 관리합니다. Phase1 모듈은 대시보드 메뉴를 실제로 제한합니다.</p>
 
                     <div class="section-block">
-                        <p class="section-title">견적 요약</p>
-                        <pre id="quote-preview" class="quote-box">테넌트를 저장·선택하면 견적이 표시됩니다.</pre>
+                        <div class="section-title-row">
+                            <p class="section-title">견적 요약</p>
+                            <span id="quote-status" class="quote-status">미저장</span>
+                        </div>
+                        <p class="pipe-help">생성된 견적을 바로 수정·저장해 고객 공유용으로 쓸 수 있습니다. 「자동 생성」은 현재 계약값으로 다시 만듭니다.</p>
+                        <textarea id="quote-preview" class="quote-box" spellcheck="false" placeholder="테넌트를 저장·선택하면 견적이 표시됩니다."></textarea>
                         <div class="actions" style="margin-top:.5rem">
-                            <button type="button" class="btn ghost" id="btn-copy-quote">견적 복사</button>
-                            <button type="button" class="btn ghost" id="btn-refresh-quote">견적 새로고침</button>
+                            <button type="button" class="btn primary" id="btn-save-quote">견적 저장</button>
+                            <button type="button" class="btn ghost" id="btn-copy-quote">복사</button>
+                            <button type="button" class="btn ghost" id="btn-refresh-quote">자동 생성</button>
                         </div>
                     </div>
 
@@ -647,7 +664,7 @@
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
     <script src="js/margin-calc-engine.js?v=20260715"></script>
-    <script src="js/tenant-registry.js?v=20260715-quote"></script>
-    <script src="js/admin-app.js?v=20260715-w"></script>
+    <script src="js/tenant-registry.js?v=20260715-quote2"></script>
+    <script src="js/admin-app.js?v=20260715-quote"></script>
 </body>
 </html>

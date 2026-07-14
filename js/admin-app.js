@@ -122,14 +122,89 @@
         return state;
     }
 
-    function refreshQuotePreview(tenant) {
+    function formatQuoteUpdatedAt(iso) {
+        if (!iso) return '';
+        try {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            var pad = function (n) { return n < 10 ? '0' + n : String(n); };
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+                ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function updateQuoteStatus(tenant, dirty) {
+        var el = $('quote-status');
+        if (!el) return;
+        if (!tenant || tenant.id === '(draft)') {
+            el.textContent = '초안 · 저장하려면 테넌트 생성 필요';
+            el.className = 'quote-status dirty';
+            return;
+        }
+        if (dirty) {
+            el.textContent = '수정됨 · 저장 필요';
+            el.className = 'quote-status dirty';
+            return;
+        }
+        if (tenant.quoteText) {
+            el.textContent = '저장됨' + (tenant.quoteUpdatedAt ? ' · ' + formatQuoteUpdatedAt(tenant.quoteUpdatedAt) : '');
+            el.className = 'quote-status saved';
+            return;
+        }
+        el.textContent = '자동 생성 · 미저장';
+        el.className = 'quote-status';
+    }
+
+    function getQuoteEditorText() {
+        var el = $('quote-preview');
+        return el ? String(el.value || '') : '';
+    }
+
+    function setQuoteEditorText(text) {
+        var el = $('quote-preview');
+        if (el) el.value = text != null ? text : '';
+    }
+
+    function refreshQuotePreview(tenant, opts) {
+        opts = opts || {};
         var el = $('quote-preview');
         if (!el) return;
         if (!tenant) {
-            el.textContent = '테넌트를 저장·선택하면 견적이 표시됩니다.';
+            setQuoteEditorText('');
+            el.placeholder = '테넌트를 저장·선택하면 견적이 표시됩니다.';
+            updateQuoteStatus(null, false);
             return;
         }
-        el.textContent = buildQuoteText(tenant);
+        if (!opts.force && tenant.quoteText) {
+            setQuoteEditorText(tenant.quoteText);
+            updateQuoteStatus(tenant, false);
+            return;
+        }
+        setQuoteEditorText(buildQuoteText(tenant));
+        updateQuoteStatus(tenant, !!(opts.force && tenant.quoteText));
+    }
+
+    function saveQuoteText() {
+        if (!editingId) {
+            toast('먼저 테넌트를 생성·저장하세요.', 'warning');
+            return;
+        }
+        var t = getTenantById(editingId);
+        if (!t) return;
+        var text = getQuoteEditorText().trim();
+        if (!text) {
+            toast('견적 내용이 비어 있습니다.', 'warning');
+            return;
+        }
+        t.quoteText = text;
+        t.quoteUpdatedAt = new Date().toISOString();
+        t.updatedAt = t.quoteUpdatedAt;
+        upsertTenant(t);
+        renderList();
+        updateQuoteStatus(t, false);
+        toast('견적이 저장되었습니다.', 'success');
     }
 
     function refreshOpsTab() {
@@ -165,11 +240,16 @@
         t.contractChecklist = readChecklist('contract-check', CONTRACT_CHECKLIST_DEFS);
         t.opsChecklist = readChecklist('ops-check', OPS_CHECKLIST_DEFS);
         t.opsNotes = $('f-ops-notes').value.trim();
+        var quote = getQuoteEditorText().trim();
+        if (quote) {
+            t.quoteText = quote;
+            t.quoteUpdatedAt = new Date().toISOString();
+        }
         t.updatedAt = new Date().toISOString();
         upsertTenant(t);
         renderList();
         refreshOpsTab();
-        toast('체크리스트 저장됨', 'success');
+        toast('체크리스트 · 견적 · 메모 저장됨', 'success');
     }
 
     function readCustomForm() {
@@ -1151,7 +1231,7 @@
         }
 
         $('btn-copy-quote').addEventListener('click', function () {
-            var text = $('quote-preview').textContent || '';
+            var text = getQuoteEditorText();
             if (!text || text.indexOf('테넌트를 저장') === 0) {
                 toast('복사할 견적이 없습니다.', 'warning');
                 return;
@@ -1166,10 +1246,33 @@
                 toast('클립보드를 지원하지 않는 환경입니다.', 'warning');
             }
         });
+        if ($('btn-save-quote')) {
+            $('btn-save-quote').addEventListener('click', saveQuoteText);
+        }
         $('btn-refresh-quote').addEventListener('click', function () {
-            refreshOpsTab();
-            toast('견적 갱신', 'info');
+            var t = editingId ? getTenantById(editingId) : null;
+            if (!t) {
+                try {
+                    var form = readForm();
+                    if (form.companyName) {
+                        t = buildTenantDraft(form);
+                        t.id = '(draft)';
+                    }
+                } catch (e) { /* ignore */ }
+            }
+            if (!t) {
+                toast('견적을 만들 계약 정보가 없습니다.', 'warning');
+                return;
+            }
+            refreshQuotePreview(t, { force: true });
+            toast(t.quoteText ? '자동 생성됨 · 저장하면 덮어씁니다' : '견적 자동 생성', 'info');
         });
+        if ($('quote-preview')) {
+            $('quote-preview').addEventListener('input', function () {
+                var t = editingId ? getTenantById(editingId) : null;
+                updateQuoteStatus(t || { id: '(draft)' }, true);
+            });
+        }
         $('btn-export-tenants').addEventListener('click', function () {
             var bundle = TenantStore.exportBundle();
             var blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
