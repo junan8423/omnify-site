@@ -224,6 +224,24 @@
         .quote-status { font-size: var(--fs-2xs); color: var(--muted); font-weight: 650; }
         .quote-status.saved { color: #6ee7b7; }
         .quote-status.dirty { color: #fcd34d; }
+        .tax-badge {
+            font-size: .68rem; font-weight: 800; padding: .15rem .4rem; border-radius: .3rem;
+            background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
+        }
+        .tax-badge.ok { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+        .tax-badge.warn { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+        .tax-badge.bad { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .tax-status {
+            font-size: .82rem; line-height: 1.45; padding: .55rem .65rem;
+            border-radius: .5rem; background: #f8fafc; border: 1px solid #e2e8f0; color: #334155;
+        }
+        .tax-status.ok { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+        .tax-status.warn { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+        .tax-status.bad { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+        .tax-ready { margin: .35rem 0 0; color: #047857; font-weight: 700; }
+        .tax-miss { margin: .35rem 0 0; color: #c2410c; font-weight: 650; }
+        .tax-hist { margin: 0; padding-left: 1.1rem; font-size: .8rem; }
+        .tax-hist li { margin: .35rem 0; }
         .check-list { display: flex; flex-direction: column; gap: .25rem; }
         .check-list label {
             display: flex; gap: .4rem; align-items: flex-start;
@@ -634,6 +652,60 @@
                     </div>
 
                     <div class="section-block">
+                        <div class="section-title-row">
+                            <p class="section-title">전자세금계산서 (팝빌)</p>
+                            <span id="tax-config-badge" class="tax-badge">확인 중…</span>
+                        </div>
+                        <p class="pipe-help">테넌트 요금·사업자 정보로 초안을 만들고, 확인 후 팝빌로 즉시 발행합니다. 금액(만원)은 <strong>공급가액(부가세 별도)</strong>입니다.</p>
+                        <div class="row2">
+                            <label class="field"><span>대표자명 *</span><input id="f-tax-ceo" type="text" placeholder="홍길동"></label>
+                            <label class="field"><span>세금계산서 수신 이메일 *</span><input id="f-tax-email" type="email" placeholder="tax@company.com"></label>
+                        </div>
+                        <label class="field"><span>사업장 주소</span><input id="f-tax-addr" type="text" placeholder="서울시 …"></label>
+                        <div class="row2">
+                            <label class="field"><span>업태</span><input id="f-tax-biztype" type="text" placeholder="서비스"></label>
+                            <label class="field"><span>종목</span><input id="f-tax-bizclass" type="text" placeholder="소프트웨어"></label>
+                        </div>
+                        <div class="row2">
+                            <label class="field"><span>담당자</span><input id="f-tax-contact" type="text" placeholder="담당자명"></label>
+                            <label class="field"><span>연락처</span><input id="f-tax-tel" type="tel" placeholder="010-…"></label>
+                        </div>
+                        <label class="field"><span>종사업장 식별번호</span><input id="f-tax-regid" type="text" placeholder="없으면 비움 · 4자리" maxlength="4"></label>
+                        <div class="row2">
+                            <label class="field"><span>발행 품목</span>
+                                <select id="tax-item-type">
+                                    <option value="setup" selected>초기 구축비</option>
+                                    <option value="monthly">월 이용료</option>
+                                    <option value="prepaid">일시납(AOP) 합계</option>
+                                    <option value="custom">커스텀 금액</option>
+                                </select>
+                            </label>
+                            <label class="field"><span>영수/청구</span>
+                                <select id="tax-purpose">
+                                    <option value="영수" selected>영수</option>
+                                    <option value="청구">청구</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div id="tax-custom-fields" class="hidden">
+                            <div class="row2">
+                                <label class="field"><span>커스텀 공급가액(만원)</span><input id="tax-custom-man" type="number" min="0" step="0.1" placeholder="예: 50"></label>
+                                <label class="field"><span>품명</span><input id="tax-custom-name" type="text" placeholder="Omnify 추가 구축"></label>
+                            </div>
+                        </div>
+                        <label class="field"><span>비고</span><input id="tax-remark" type="text" placeholder="선택"></label>
+                        <label class="checkline"><input id="tax-force" type="checkbox"> 지연발행 허용 (작성일 기준 과거분)</label>
+                        <div class="actions" style="margin-top:.5rem">
+                            <button type="button" class="btn ghost" id="btn-tax-preview">초안 미리보기</button>
+                            <button type="button" class="btn primary" id="btn-tax-issue">팝빌 즉시 발행</button>
+                        </div>
+                        <div id="tax-issue-status" class="tax-status" style="margin-top:.55rem">테넌트 선택 후 미리보기를 눌러 주세요.</div>
+                        <pre id="tax-preview-json" class="quote-box" style="margin-top:.45rem;min-height:48px;max-height:180px">—</pre>
+                        <p class="muted" style="margin:.55rem 0 .25rem">발행 이력</p>
+                        <div id="tax-history"><p class="muted">발행 이력이 없습니다.</p></div>
+                    </div>
+
+                    <div class="section-block">
                         <p class="section-title">구축 실행 체크리스트</p>
                         <div id="ops-checklist" class="check-list"></div>
                         <label class="field" style="margin-top:.75rem"><span>운영 메모 (JK)</span><textarea id="f-ops-notes" class="tall" placeholder="차단 이슈, 대기 중 토큰, 고객 피드백…"></textarea></label>
@@ -681,9 +753,10 @@
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
     <script src="js/margin-calc-engine.js?v=20260715"></script>
-    <script src="js/quote-pdf.js?v=20260715e"></script>
-    <script src="js/contract-pdf.js?v=20260715"></script>
-    <script src="js/tenant-registry.js?v=20260715-intake2"></script>
-    <script src="js/admin-app.js?v=20260715-intake2"></script>
+    <script src="js/quote-pdf.js?v=20260715-tax"></script>
+    <script src="js/contract-pdf.js?v=20260715-tax"></script>
+    <script src="js/tenant-registry.js?v=20260715-tax"></script>
+    <script src="js/taxinvoice-admin.js?v=20260715-tax"></script>
+    <script src="js/admin-app.js?v=20260715-tax"></script>
 </body>
 </html>

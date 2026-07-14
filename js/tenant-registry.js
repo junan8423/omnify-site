@@ -1044,6 +1044,8 @@ function buildTenantDraft(form) {
         opsChecklist: mergeChecklist(OPS_CHECKLIST_DEFS, form.opsChecklist),
         contractChecklist: mergeChecklist(CONTRACT_CHECKLIST_DEFS, form.contractChecklist),
         opsNotes: form.opsNotes || '',
+        taxProfile: form.taxProfile || {},
+        taxInvoices: [],
         custom: mergeCustomConfig(defaultCustomConfig(form), form.custom || null),
         provision: {
             status: 'pending',

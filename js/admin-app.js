@@ -346,11 +346,17 @@
             $('f-ops-notes').value = t.opsNotes || '';
             refreshQuotePreview(t);
             refreshIntakePanel(t);
+            if (typeof TaxInvoiceAdmin !== 'undefined' && TaxInvoiceAdmin.fillTaxProfileForm) {
+                TaxInvoiceAdmin.fillTaxProfileForm(t);
+            }
         } else {
             renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, {}, 'contract-check');
             renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, {}, 'ops-check');
             $('f-ops-notes').value = '';
             refreshIntakePanel(null);
+            if (typeof TaxInvoiceAdmin !== 'undefined' && TaxInvoiceAdmin.fillTaxProfileForm) {
+                TaxInvoiceAdmin.fillTaxProfileForm(null);
+            }
             var draft = null;
             try {
                 var form = readForm();
@@ -373,6 +379,9 @@
         t.contractChecklist = readChecklist('contract-check', CONTRACT_CHECKLIST_DEFS);
         t.opsChecklist = readChecklist('ops-check', OPS_CHECKLIST_DEFS);
         t.opsNotes = $('f-ops-notes').value.trim();
+        if (typeof TaxInvoiceAdmin !== 'undefined' && TaxInvoiceAdmin.applyTaxProfileToTenant) {
+            TaxInvoiceAdmin.applyTaxProfileToTenant(t);
+        }
         var quote = getQuoteEditorText().trim();
         if (quote) {
             t.quoteText = quote;
@@ -687,6 +696,9 @@
                 ? readChecklist('contract-check', CONTRACT_CHECKLIST_DEFS)
                 : undefined,
             opsNotes: $('f-ops-notes') ? $('f-ops-notes').value.trim() : '',
+            taxProfile: (typeof TaxInvoiceAdmin !== 'undefined' && TaxInvoiceAdmin.readTaxProfileFromForm)
+                ? TaxInvoiceAdmin.readTaxProfileFromForm()
+                : undefined,
             custom: custom
         };
     }
@@ -734,6 +746,9 @@
         fillCustomForm(t && t.custom ? t.custom : null, t ? t.channels : selectedChannels());
         updateNamingPreview();
         refreshIntakePanel(t);
+        if (typeof TaxInvoiceAdmin !== 'undefined' && TaxInvoiceAdmin.fillTaxProfileForm) {
+            TaxInvoiceAdmin.fillTaxProfileForm(t);
+        }
         if (activeTab === 'ops') refreshOpsTab();
         else refreshQuotePreview(t);
     }
@@ -999,6 +1014,7 @@
                 opsChecklist: mergeChecklist(OPS_CHECKLIST_DEFS, form.opsChecklist || tenant.opsChecklist),
                 contractChecklist: mergeChecklist(CONTRACT_CHECKLIST_DEFS, form.contractChecklist || tenant.contractChecklist),
                 opsNotes: form.opsNotes != null ? form.opsNotes : (tenant.opsNotes || ''),
+                taxProfile: form.taxProfile || tenant.taxProfile || {},
                 custom: mergeCustomConfig(defaultCustomConfig(form), form.custom),
                 updatedAt: new Date().toISOString(),
                 status: 'draft',
@@ -1018,6 +1034,7 @@
             upsertTenant(tenant);
         } else {
             tenant = buildTenantDraft(form);
+            if (form.taxProfile) tenant.taxProfile = form.taxProfile;
             tenant.lifecycle = 'building';
             upsertTenant(tenant);
             editingId = tenant.id;
@@ -1533,6 +1550,16 @@
         updateNamingPreview();
         renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, {}, 'contract-check');
         renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, {}, 'ops-check');
+        if (typeof TaxInvoiceAdmin !== 'undefined' && TaxInvoiceAdmin.wire) {
+            TaxInvoiceAdmin.wire({
+                toast: toast,
+                getEditingId: function () { return editingId; },
+                getTenantById: getTenantById,
+                upsertTenant: upsertTenant,
+                renderList: renderList,
+                refreshOpsTab: refreshOpsTab
+            });
+        }
         hydrateFromServer();
     });
 })();
