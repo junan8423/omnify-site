@@ -749,14 +749,14 @@ function defaultCustomConfig(form) {
         briefing: {
             sendTime: '08:30',
             items: defaultBriefingItems(),
-            recipientsText: ''
+            recipientsText: '이름|역할|전화'
         },
         team: {
-            seedText: ''
+            seedText: '이름|역할|admin\n이름|역할|member'
         },
         ads: {
             monthlyBudgetMan: 1500,
-            mediaText: 'Meta Ads|SNS|50\nGoogle Ads|검색|35\n네이버 검색광고|검색|40'
+            mediaText: '매체명|유형|50\n매체명|유형|35\n매체명|유형|40'
         }
     };
 }
@@ -842,14 +842,31 @@ function customToSettingsPatch(custom, tenantChannels) {
 function customTeamSeed(custom) {
     var lines = parsePipeLines(custom && custom.team && custom.team.seedText, 1);
     var colors = ['from-blue-500 to-cyan-400', 'from-violet-500 to-fuchsia-400', 'from-emerald-500 to-teal-400', 'from-amber-500 to-orange-400', 'from-rose-500 to-pink-400'];
+    var seats = { admin: 1, member: 1, viewer: 1 };
     return lines.map(function(p, i) {
         var name = p[0];
+        var role = p[1] || '멤버';
+        var email = '';
+        var seatType = i === 0 ? 'admin' : 'member';
+        if (p.length >= 4) {
+            /* 구형: 이름|역할|이메일|좌석 */
+            email = p[2] || '';
+            if (seats[p[3]]) seatType = p[3];
+        } else if (p.length === 3) {
+            if (seats[p[2]]) {
+                seatType = p[2];
+            } else if (String(p[2]).indexOf('@') >= 0) {
+                email = p[2];
+            } else {
+                seatType = p[2] || seatType;
+            }
+        }
         return {
             id: 't' + (i + 1) + '_' + name.slice(0, 2),
             name: name,
-            role: p[1] || '멤버',
-            email: p[2] || '',
-            seatType: (p[3] === 'admin' || p[3] === 'viewer' || p[3] === 'member') ? p[3] : (i === 0 ? 'admin' : 'member'),
+            role: role,
+            email: email,
+            seatType: seats[seatType] ? seatType : (i === 0 ? 'admin' : 'member'),
             active: true,
             avatar: name.charAt(0),
             color: colors[i % colors.length]

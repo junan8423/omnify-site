@@ -184,6 +184,17 @@
             margin: 0 0 .45rem; font-size: var(--fs-xs); font-weight: 700;
             letter-spacing: .04em; color: #93c5fd; text-transform: uppercase;
         }
+        .section-title-row {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: .5rem; margin-bottom: .45rem;
+        }
+        .section-title-row .section-title { margin: 0; }
+        .weight-sum {
+            font-size: var(--fs-xs); color: var(--muted); font-weight: 650; white-space: nowrap;
+        }
+        .weight-sum strong { font-size: var(--fs-sm); }
+        .weight-sum.ok { color: #6ee7b7; }
+        .weight-sum.bad { color: #fca5a5; }
         .weight-row {
             display: grid; grid-template-columns: 1.1fr .7fr 1.4fr; gap: .45rem; align-items: end;
             margin-bottom: .45rem;
@@ -527,8 +538,11 @@
                     </div>
 
                     <div class="section-block">
-                        <p class="section-title">채널 비중 · 어드민 URL</p>
-                        <p class="pipe-help">기본 탭에서 선택한 채널만 표시됩니다. 비중 합계 100% 권장.</p>
+                        <div class="section-title-row">
+                            <p class="section-title">채널 비중 · 어드민 URL</p>
+                            <span id="channel-weight-sum" class="weight-sum">비중 합 <strong>0</strong>%</span>
+                        </div>
+                        <p class="pipe-help">기본 탭에서 선택한 채널만 표시됩니다. 위에서부터 비중을 넣으면 아래 채널이 나머지로 자동 배분됩니다 (합 100%).</p>
                         <div id="channel-custom-grid"></div>
                     </div>
 
@@ -547,21 +561,24 @@
                         <label class="field"><span>발송 시각</span><input id="c-brief-time" type="time" value="08:30"></label>
                         <p class="muted" style="margin:0 0 .4rem">포함 항목</p>
                         <div class="briefing-item-grid" id="briefing-items-grid"></div>
-                        <label class="field" style="margin-top:.85rem"><span>수신자 시드</span><textarea id="c-brief-recipients" class="tall" placeholder="김지현|대표|010-1234-5678"></textarea></label>
-                        <p class="pipe-help">한 줄당 1명 · 형식: 이름|역할|전화</p>
+                        <label class="field" style="margin-top:.85rem"><span>수신자 시드</span><textarea id="c-brief-recipients" class="tall">이름|역할|전화</textarea></label>
+                        <p class="pipe-help">한 줄당 1명 · 이름|역할|전화 — 기본 문구만 고치면 됩니다</p>
                     </div>
 
                     <div class="section-block">
                         <p class="section-title">팀 · 좌석 시드</p>
-                        <label class="field"><span>팀원 목록</span><textarea id="c-team" class="tall" placeholder="김지현|대표|ceo@corp.com|admin&#10;박서연|물류|ops@corp.com|member"></textarea></label>
-                        <p class="pipe-help">형식: 이름|역할|이메일|좌석(admin/member/viewer)</p>
+                        <label class="field"><span>팀원 목록</span><textarea id="c-team" class="tall">이름|역할|admin
+이름|역할|member</textarea></label>
+                        <p class="pipe-help">형식: 이름|역할|좌석(admin/member/viewer) · 이메일은 선택(구형 4열도 인식)</p>
                     </div>
 
                     <div class="section-block">
                         <p class="section-title">광고 매체 시드</p>
                         <label class="field"><span>월 광고비(만원)</span><input id="c-ad-budget" type="number" min="0" value="1500"></label>
-                        <label class="field"><span>매체 목록</span><textarea id="c-ad-media" class="tall">Meta Ads|SNS|50&#10;Google Ads|검색|35&#10;네이버 검색광고|검색|40</textarea></label>
-                        <p class="pipe-help">형식: 매체명|유형|일예산(만원) · 선택적 4열 ROAS</p>
+                        <label class="field"><span>매체 목록</span><textarea id="c-ad-media" class="tall">매체명|유형|50
+매체명|유형|35
+매체명|유형|40</textarea></label>
+                        <p class="pipe-help">형식: 매체명|유형|일예산(만원) · 선택 4열 ROAS — 기본값만 수정하면 됩니다</p>
                     </div>
                 </div>
 
@@ -630,7 +647,7 @@
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
     <script src="js/margin-calc-engine.js?v=20260715"></script>
-    <script src="js/tenant-registry.js?v=20260714-ch2"></script>
-    <script src="js/admin-app.js?v=20260715-m"></script>
+    <script src="js/tenant-registry.js?v=20260715-seed"></script>
+    <script src="js/admin-app.js?v=20260715-w"></script>
 </body>
 </html>

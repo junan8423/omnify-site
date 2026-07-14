@@ -266,12 +266,66 @@
         document.querySelectorAll('input[name="brief-item"]').forEach(function (el) {
             el.checked = custom.briefing.items[el.value] !== false;
         });
-        $('c-brief-recipients').value = custom.briefing.recipientsText || '';
-        $('c-team').value = custom.team.seedText || '';
+        $('c-brief-recipients').value = custom.briefing.recipientsText || '이름|역할|전화';
+        $('c-team').value = custom.team.seedText || '이름|역할|admin\n이름|역할|member';
         $('c-ad-budget').value = custom.ads.monthlyBudgetMan || '';
-        $('c-ad-media').value = custom.ads.mediaText || '';
+        $('c-ad-media').value = custom.ads.mediaText || '매체명|유형|50\n매체명|유형|35\n매체명|유형|40';
         syncChannelCustomGrid(custom);
         updateCustomChecklist();
+    }
+
+    var weightBalanceQuiet = false;
+
+    function channelWeightInputs() {
+        return selectedChannels().map(function (id) {
+            return document.getElementById('cw-' + id);
+        }).filter(Boolean);
+    }
+
+    function updateChannelWeightSum() {
+        var el = $('channel-weight-sum');
+        if (!el) return;
+        var inputs = channelWeightInputs();
+        if (!inputs.length) {
+            el.innerHTML = '비중 합 <strong>—</strong>';
+            el.className = 'weight-sum';
+            return;
+        }
+        var sum = 0;
+        inputs.forEach(function (inp) { sum += parseFloat(inp.value) || 0; });
+        sum = Math.round(sum * 10) / 10;
+        var ok = Math.abs(sum - 100) < 0.6;
+        el.innerHTML = '비중 합 <strong>' + sum + '</strong>%';
+        el.className = 'weight-sum ' + (ok ? 'ok' : 'bad');
+    }
+
+    /** 위에서부터 index까지 고정 → 아래 행에 나머지(100−합) 균등 배분 */
+    function redistributeWeightsFrom(index) {
+        if (weightBalanceQuiet) return;
+        var inputs = channelWeightInputs();
+        if (!inputs.length) {
+            updateChannelWeightSum();
+            return;
+        }
+        if (index < 0 || index >= inputs.length - 1) {
+            updateChannelWeightSum();
+            return;
+        }
+        var locked = 0;
+        for (var i = 0; i <= index; i++) {
+            locked += Math.max(0, parseFloat(inputs[i].value) || 0);
+        }
+        var rest = Math.max(0, Math.round((100 - locked) * 10) / 10);
+        var below = inputs.length - index - 1;
+        var each = Math.floor(rest / below);
+        var rem = Math.round((rest - each * below) * 10) / 10;
+        weightBalanceQuiet = true;
+        for (var j = 0; j < below; j++) {
+            var v = each + (j === below - 1 ? rem : 0);
+            inputs[index + 1 + j].value = v;
+        }
+        weightBalanceQuiet = false;
+        updateChannelWeightSum();
     }
 
     function syncChannelCustomGrid(custom) {
@@ -285,6 +339,7 @@
         };
         if (!channels.length) {
             box.innerHTML = '<p class="muted">기본 탭에서 채널을 먼저 선택하세요.</p>';
+            updateChannelWeightSum();
             return;
         }
         var nameMap = {};
@@ -302,9 +357,24 @@
                 '<label class="field" style="margin:0"><span>어드민 URL</span><input id="cu-' + id + '" type="text" value="' + escapeHtml(url) + '"></label>' +
                 '</div>';
         }).join('');
+        channels.forEach(function (id, idx) {
+            var wInp = document.getElementById('cw-' + id);
+            if (wInp) {
+                wInp.addEventListener('input', function () {
+                    redistributeWeightsFrom(idx);
+                    updateCustomChecklist();
+                });
+                wInp.addEventListener('change', function () {
+                    redistributeWeightsFrom(idx);
+                    updateCustomChecklist();
+                });
+            }
+        });
         box.querySelectorAll('input').forEach(function (inp) {
+            if (inp.id && inp.id.indexOf('cw-') === 0) return;
             inp.addEventListener('input', updateCustomChecklist);
         });
+        updateChannelWeightSum();
     }
 
     function updateCustomChecklist() {
@@ -840,8 +910,9 @@
                 custom.channelWeights[id] = each + (i === 0 ? rem : 0);
             });
         }
-        custom.team.seedText = '김대표|대표||admin\n운영팀장|운영||member\n물류담당|물류||member';
+        custom.team.seedText = '김대표|대표|admin\n운영팀장|운영|member\n물류담당|물류|member';
         custom.briefing.recipientsText = '김대표|대표|010-****-0001\n운영팀장|운영|010-****-0002';
+        custom.ads.mediaText = 'Meta Ads|SNS|50\nGoogle Ads|검색|35\n네이버 검색광고|검색|40';
         fillCustomForm(custom, selectedChannels());
         switchTab('custom');
         toast('갓바디 계약·커스텀 예시가 채워졌습니다.', 'info');
