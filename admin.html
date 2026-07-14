@@ -18,155 +18,240 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            /* 내부 어드민용 조밀 타이포 */
+            --fs-2xs: 0.625rem;   /* 10px */
+            --fs-xs: 0.6875rem;   /* 11px */
+            --fs-sm: 0.75rem;     /* 12px */
+            --fs-md: 0.8125rem;   /* 13px — body */
+            --fs-lg: 0.875rem;    /* 14px — section titles */
+            --fs-xl: 1rem;        /* 16px — page h1 */
+            --lh: 1.45;
+            --lh-tight: 1.35;
         }
         * { box-sizing: border-box; }
         body {
             margin: 0;
             font-family: Pretendard, system-ui, sans-serif;
+            font-size: var(--fs-md);
+            line-height: var(--lh);
             background: radial-gradient(1200px 600px at 10% -10%, rgba(59,130,246,.18), transparent),
                         radial-gradient(900px 500px at 100% 0%, rgba(16,185,129,.08), transparent),
                         var(--bg);
             color: var(--text);
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
-        a { color: #93c5fd; }
-        .wrap { max-width: 1180px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+        a { color: #93c5fd; font-size: inherit; }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 1rem 1rem 2.5rem; }
         header.admin-top {
-            display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: flex-end;
-            margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+            display: flex; flex-wrap: wrap; gap: .75rem; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 1.15rem; padding-bottom: .85rem; border-bottom: 1px solid var(--border);
         }
-        header h1 { margin: 0; font-size: 1.35rem; }
-        header p { margin: .35rem 0 0; color: var(--muted); font-size: .875rem; line-height: 1.45; }
+        header h1 { margin: 0; font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.01em; }
+        header p { margin: .25rem 0 0; color: var(--muted); font-size: var(--fs-sm); line-height: var(--lh-tight); }
+        header p code { font-size: var(--fs-xs); }
         .grid {
-            display: grid; gap: 1.25rem;
+            display: grid; gap: 1rem;
             grid-template-columns: 1.15fr .85fr;
         }
         @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
         .card {
             background: rgba(11,17,32,.85);
             border: 1px solid rgba(55,65,81,.7);
-            border-radius: 1rem;
-            padding: 1.15rem 1.2rem;
+            border-radius: .85rem;
+            padding: .95rem 1rem;
             backdrop-filter: blur(8px);
         }
-        .card h2 { margin: 0 0 1rem; font-size: 1rem; }
-        .muted { color: var(--muted); font-size: .75rem; line-height: 1.4; }
-        label.field { display: block; margin-bottom: .85rem; }
-        label.field > span { display: block; font-size: .72rem; color: var(--muted); margin-bottom: .3rem; font-weight: 600; }
-        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%; padding: .55rem .7rem; border-radius: .55rem;
-            border: 1px solid var(--border); background: var(--bg); color: var(--text);
-            font: inherit;
+        .card h2 { margin: 0 0 .75rem; font-size: var(--fs-lg); font-weight: 700; letter-spacing: -.01em; }
+        .muted { color: var(--muted); font-size: var(--fs-xs); line-height: var(--lh-tight); }
+        label.field { display: block; margin-bottom: .7rem; }
+        label.field > span {
+            display: block; font-size: var(--fs-xs); color: var(--muted);
+            margin-bottom: .22rem; font-weight: 600; letter-spacing: .01em;
         }
-        textarea { min-height: 72px; resize: vertical; }
-        textarea.tall { min-height: 110px; }
-        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-        .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="time"], input[type="date"], input[type="search"], select, textarea {
+            width: 100%; padding: .42rem .6rem; border-radius: .45rem;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+            font-family: inherit; font-size: var(--fs-md); line-height: var(--lh-tight);
+        }
+        textarea { min-height: 64px; resize: vertical; }
+        textarea.tall { min-height: 96px; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+        .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; }
         @media (max-width: 640px) {
             .row2, .row3 { grid-template-columns: 1fr; }
         }
         .channel-grid, .module-grid, .briefing-item-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .75rem;
-            padding: .6rem; border: 1px solid var(--border); border-radius: .6rem; background: rgba(3,7,18,.5);
+            display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .65rem;
+            padding: .5rem; border: 1px solid var(--border); border-radius: .5rem; background: rgba(3,7,18,.5);
         }
-        .chk { font-size: .8rem; color: #d1d5db; display: flex; gap: .4rem; align-items: center; }
-        .checkline { display: flex; align-items: center; gap: .5rem; font-size: .85rem; margin: .5rem 0 1rem; color: #d1d5db; }
-        .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+        .chk { font-size: var(--fs-sm); color: #d1d5db; display: flex; gap: .35rem; align-items: center; }
+        .checkline {
+            display: flex; align-items: center; gap: .4rem;
+            font-size: var(--fs-sm); margin: .4rem 0 .85rem; color: #d1d5db;
+        }
+        .actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .85rem; }
         .btn, .btn-sm {
             border: 1px solid var(--border); background: var(--surface); color: var(--text);
-            border-radius: .55rem; padding: .55rem .9rem; font: inherit; font-weight: 600; cursor: pointer;
+            border-radius: .45rem; padding: .42rem .7rem;
+            font-family: inherit; font-size: var(--fs-sm); font-weight: 600; cursor: pointer;
+            line-height: 1.3;
         }
-        .btn-sm { padding: .35rem .6rem; font-size: .75rem; }
+        .btn-sm { padding: .28rem .5rem; font-size: var(--fs-xs); }
         .btn.primary { background: var(--primary); border-color: #2563eb; color: #fff; }
         .btn.ghost { background: transparent; }
-        .btn.block { display: block; text-align: center; text-decoration: none; margin-top: 1rem; }
+        .btn.block { display: block; text-align: center; text-decoration: none; margin-top: .85rem; }
         .btn:disabled { opacity: .5; cursor: not-allowed; }
         .btn-sm.danger { color: #fca5a5; border-color: rgba(239,68,68,.4); }
-        .tenant-list { display: flex; flex-direction: column; gap: .65rem; max-height: 420px; overflow: auto; }
+        .tenant-list { display: flex; flex-direction: column; gap: .5rem; max-height: 420px; overflow: auto; }
         .tenant-card {
-            border: 1px solid var(--border); border-radius: .75rem; padding: .75rem .85rem; background: rgba(3,7,18,.45);
+            border: 1px solid var(--border); border-radius: .6rem; padding: .6rem .7rem; background: rgba(3,7,18,.45);
         }
-        .tenant-card-top { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; }
-        .tenant-card h3 { margin: 0; font-size: .95rem; }
-        .tenant-card .meta { margin: .4rem 0 .55rem; font-size: .72rem; color: var(--muted); }
-        .tenant-actions { display: flex; flex-wrap: wrap; gap: .35rem; }
+        .tenant-card-top { display: flex; justify-content: space-between; gap: .6rem; align-items: flex-start; }
+        .tenant-card h3 { margin: 0; font-size: var(--fs-md); font-weight: 650; }
+        .tenant-card .meta { margin: .3rem 0 .45rem; font-size: var(--fs-2xs); color: var(--muted); line-height: var(--lh-tight); }
+        .tenant-actions { display: flex; flex-wrap: wrap; gap: .3rem; }
         .badge {
-            font-size: .65rem; font-weight: 700; padding: .2rem .45rem; border-radius: 999px;
-            border: 1px solid var(--border); white-space: nowrap;
+            font-size: var(--fs-2xs); font-weight: 700; padding: .15rem .4rem; border-radius: 999px;
+            border: 1px solid var(--border); white-space: nowrap; letter-spacing: .01em;
         }
         .badge.ready { color: #6ee7b7; border-color: rgba(16,185,129,.45); background: rgba(16,185,129,.12); }
         .badge.draft, .badge.pending { color: #fcd34d; border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.1); }
         .badge.error { color: #fca5a5; border-color: rgba(239,68,68,.45); background: rgba(239,68,68,.1); }
-        .prov-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
-        .prov-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .45rem; }
-        .prov-steps li { display: flex; gap: .6rem; align-items: flex-start; padding: .45rem .5rem; border-radius: .5rem; background: rgba(3,7,18,.4); border: 1px solid transparent; }
+        .prov-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; font-size: var(--fs-sm); }
+        .prov-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+        .prov-steps li { display: flex; gap: .5rem; align-items: flex-start; padding: .35rem .45rem; border-radius: .4rem; background: rgba(3,7,18,.4); border: 1px solid transparent; }
         .prov-done { border-color: rgba(16,185,129,.25) !important; }
         .prov-pending .prov-ico { color: var(--muted); }
         .prov-done .prov-ico { color: var(--success); }
         .prov-skipped .prov-ico { color: var(--muted); }
-        .prov-label { margin: 0; font-size: .82rem; font-weight: 600; }
+        .prov-label { margin: 0; font-size: var(--fs-sm); font-weight: 600; }
+        .prov-steps .muted { font-size: var(--fs-2xs); }
         .admin-toast {
             position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%) translateY(120%);
-            background: #111827; border: 1px solid var(--border); padding: .65rem 1rem; border-radius: .75rem;
-            font-size: .85rem; font-weight: 600; opacity: 0; transition: .25s ease; z-index: 50;
+            background: #111827; border: 1px solid var(--border); padding: .5rem .85rem; border-radius: .6rem;
+            font-size: var(--fs-sm); font-weight: 600; opacity: 0; transition: .25s ease; z-index: 50;
             box-shadow: 0 10px 40px rgba(0,0,0,.45);
         }
         .admin-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .admin-toast.warning { border-color: rgba(245,158,11,.5); }
         .admin-toast.success { border-color: rgba(16,185,129,.5); }
         .hidden { display: none !important; }
-        .side-stack { display: flex; flex-direction: column; gap: 1.25rem; }
+        .side-stack { display: flex; flex-direction: column; gap: 1rem; }
         .hint {
-            margin: 0 0 1rem; padding: .65rem .75rem; border-radius: .6rem;
+            margin: 0 0 .75rem; padding: .5rem .65rem; border-radius: .5rem;
             background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.25);
-            font-size: .78rem; color: #bfdbfe; line-height: 1.45;
+            font-size: var(--fs-xs); color: #bfdbfe; line-height: var(--lh-tight);
         }
         .tabs {
-            display: flex; gap: .35rem; margin-bottom: 1rem; padding: .25rem;
-            background: rgba(3,7,18,.55); border: 1px solid var(--border); border-radius: .7rem;
+            display: flex; gap: .3rem; margin-bottom: .85rem; padding: .2rem;
+            background: rgba(3,7,18,.55); border: 1px solid var(--border); border-radius: .55rem;
         }
         .tab-btn {
             flex: 1; border: 0; background: transparent; color: var(--muted);
-            font: inherit; font-size: .82rem; font-weight: 700; padding: .55rem .6rem;
-            border-radius: .55rem; cursor: pointer;
+            font-family: inherit; font-size: var(--fs-sm); font-weight: 650; padding: .4rem .5rem;
+            border-radius: .4rem; cursor: pointer; line-height: 1.3;
         }
         .tab-btn.active { background: var(--primary); color: #fff; }
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
         .section-block {
-            margin: 1.15rem 0 0; padding-top: 1rem;
+            margin: .95rem 0 0; padding-top: .85rem;
             border-top: 1px solid var(--border);
         }
         .section-block:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
         .section-title {
-            margin: 0 0 .55rem; font-size: .8rem; font-weight: 800;
-            letter-spacing: .02em; color: #93c5fd; text-transform: uppercase;
+            margin: 0 0 .45rem; font-size: var(--fs-xs); font-weight: 700;
+            letter-spacing: .04em; color: #93c5fd; text-transform: uppercase;
         }
         .weight-row {
-            display: grid; grid-template-columns: 1.1fr .7fr 1.4fr; gap: .5rem; align-items: end;
-            margin-bottom: .55rem;
+            display: grid; grid-template-columns: 1.1fr .7fr 1.4fr; gap: .45rem; align-items: end;
+            margin-bottom: .45rem;
         }
         @media (max-width: 640px) { .weight-row { grid-template-columns: 1fr; } }
-        .weight-row .ch-name { font-size: .8rem; font-weight: 600; padding-bottom: .45rem; }
+        .weight-row .ch-name { font-size: var(--fs-sm); font-weight: 600; padding-bottom: .35rem; }
         .completeness {
-            margin: 0 0 .75rem; font-size: .8rem; color: #d1d5db;
+            margin: 0 0 .6rem; font-size: var(--fs-sm); color: #d1d5db;
         }
         .completeness strong { color: #6ee7b7; }
-        .pipe-help { font-size: .7rem; color: var(--muted); margin: -.35rem 0 .65rem; line-height: 1.4; }
+        .pipe-help { font-size: var(--fs-2xs); color: var(--muted); margin: -.25rem 0 .55rem; line-height: var(--lh-tight); }
         .quote-box {
-            margin: 0; padding: .75rem .85rem; border-radius: .6rem;
+            margin: 0; padding: .6rem .7rem; border-radius: .5rem;
             border: 1px solid var(--border); background: rgba(3,7,18,.55);
-            font-size: .72rem; line-height: 1.5; white-space: pre-wrap; color: #d1d5db;
+            font-size: var(--fs-xs); line-height: var(--lh); white-space: pre-wrap; color: #d1d5db;
             max-height: 220px; overflow: auto;
         }
-        .check-list { display: flex; flex-direction: column; gap: .35rem; }
+        .check-list { display: flex; flex-direction: column; gap: .25rem; }
         .check-list label {
-            display: flex; gap: .5rem; align-items: flex-start;
-            font-size: .82rem; color: #d1d5db; padding: .4rem .5rem;
-            border-radius: .45rem; border: 1px solid transparent;
+            display: flex; gap: .4rem; align-items: flex-start;
+            font-size: var(--fs-sm); color: #d1d5db; padding: .3rem .4rem;
+            border-radius: .4rem; border: 1px solid transparent;
         }
         .check-list label:hover { background: rgba(3,7,18,.4); }
-        .check-list input { margin-top: .15rem; }
+        .check-list input { margin-top: .12rem; }
+        .portfolio {
+            margin-bottom: 1rem;
+        }
+        .portfolio > .muted { margin: -.35rem 0 .65rem !important; }
+        .portfolio-stats {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: .4rem;
+            margin-bottom: .7rem;
+        }
+        @media (max-width: 800px) { .portfolio-stats { grid-template-columns: repeat(2, 1fr); } }
+        .stat-pill {
+            border: 1px solid var(--border); border-radius: .5rem; padding: .4rem .55rem;
+            background: rgba(3,7,18,.45);
+        }
+        .stat-pill .n { font-size: var(--fs-lg); font-weight: 750; display: block; line-height: 1.2; }
+        .stat-pill .l { font-size: var(--fs-2xs); color: var(--muted); }
+        .portfolio-filters {
+            display: flex; flex-wrap: wrap; gap: .4rem; align-items: end; margin-bottom: .65rem;
+        }
+        .portfolio-filters .field { margin: 0; min-width: 130px; flex: 1; }
+        .portfolio-table-wrap {
+            overflow: auto; max-height: 420px; border: 1px solid var(--border);
+            border-radius: .5rem; background: rgba(3,7,18,.4);
+        }
+        table.portfolio-table {
+            width: 100%; border-collapse: collapse; font-size: var(--fs-xs);
+            min-width: 960px;
+        }
+        table.portfolio-table th, table.portfolio-table td {
+            padding: .4rem .5rem; text-align: left; border-bottom: 1px solid var(--border);
+            vertical-align: top; line-height: var(--lh-tight);
+        }
+        table.portfolio-table th {
+            position: sticky; top: 0; background: #0f172a; color: var(--muted);
+            font-size: var(--fs-2xs); font-weight: 700; letter-spacing: .03em; z-index: 1;
+            text-transform: uppercase;
+        }
+        table.portfolio-table tr:hover td { background: rgba(59,130,246,.06); }
+        table.portfolio-table .mono { font-family: ui-monospace, Consolas, monospace; font-size: var(--fs-2xs); color: #93c5fd; }
+        table.portfolio-table select.inline {
+            width: auto; min-width: 92px; padding: .2rem .35rem; font-size: var(--fs-xs);
+        }
+        table.portfolio-table input.inline {
+            width: 100%; min-width: 80px; padding: .2rem .35rem; font-size: var(--fs-xs);
+        }
+        .badge.live { color: #6ee7b7; border-color: rgba(16,185,129,.45); background: rgba(16,185,129,.12); }
+        .badge.building { color: #93c5fd; border-color: rgba(59,130,246,.4); background: rgba(59,130,246,.1); }
+        .badge.paused, .badge.ended { color: #fca5a5; border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.08); }
+        .health-dot {
+            display: inline-block; width: .5rem; height: .5rem; border-radius: 50%; margin-right: .25rem;
+        }
+        .health-green { background: #10b981; }
+        .health-yellow { background: #f59e0b; }
+        .health-red { background: #ef4444; }
+        .rule-box {
+            margin: 0 0 .75rem; padding: .5rem .65rem; border-radius: .5rem;
+            background: rgba(16,185,129,.07); border: 1px solid rgba(16,185,129,.25);
+            font-size: var(--fs-xs); color: #a7f3d0; line-height: var(--lh-tight);
+        }
+        .rule-box code {
+            font-family: ui-monospace, Consolas, monospace; font-size: var(--fs-2xs); color: #6ee7b7;
+            background: rgba(3,7,18,.45); padding: .05rem .25rem; border-radius: .2rem;
+        }
+        .rule-box strong { font-weight: 700; }
     </style>
 </head>
 <body>
@@ -175,14 +260,71 @@
             <div>
                 <h1>Omnify 구축 어드민</h1>
                 <p>내부 전용 · Basic Auth<br>
-                    ① 계약·상업 → ② 커스텀 → ③ 구축·산출 → 초안 URL<br>
-                    Phase1 모듈은 대시보드 메뉴를 제한하고, 견적·체크리스트·JSON 백업을 지원합니다.</p>
+                    ① 현황 보드 → ② 계약·상업 → ③ 커스텀 → ④ 구축·산출<br>
+                    키 ID를 직접 입력 → 폴더명·프로젝트 식별자로 사용 · 이메일은 연락처</p>
             </div>
             <div class="actions">
                 <a class="btn ghost" href="index.html">랜딩</a>
                 <a class="btn ghost" href="demo-dashboard.html" target="_blank" rel="noopener">공통 데모</a>
             </div>
         </header>
+
+        <section class="card portfolio" id="portfolio-section">
+            <h2>다중 업체 현황</h2>
+            <p class="muted" style="margin:-.5rem 0 .85rem">계약 업체가 늘어도 한눈에 운영 상태를 보고, 라이프사이클·다음 액션을 바로 수정합니다.</p>
+            <div class="portfolio-stats" id="portfolio-stats"></div>
+            <div class="portfolio-filters">
+                <label class="field"><span>검색</span><input id="pf-search" type="search" placeholder="업체명 · 이메일 · 폴더명"></label>
+                <label class="field"><span>라이프사이클</span>
+                    <select id="pf-lifecycle">
+                        <option value="">전체</option>
+                        <option value="draft">초안</option>
+                        <option value="building">구축중</option>
+                        <option value="ready">구축완료</option>
+                        <option value="live">운영중</option>
+                        <option value="paused">일시중단</option>
+                        <option value="ended">종료</option>
+                    </select>
+                </label>
+                <label class="field"><span>청구 플랜</span>
+                    <select id="pf-plan">
+                        <option value="">전체</option>
+                        <option value="starter">Starter</option>
+                        <option value="growth">Growth</option>
+                        <option value="enterprise">Enterprise</option>
+                    </select>
+                </label>
+                <label class="field"><span>헬스</span>
+                    <select id="pf-health">
+                        <option value="">전체</option>
+                        <option value="green">정상</option>
+                        <option value="yellow">주의</option>
+                        <option value="red">위험</option>
+                    </select>
+                </label>
+                <button type="button" class="btn ghost" id="btn-refresh-portfolio">새로고침</button>
+            </div>
+            <div class="portfolio-table-wrap">
+                <table class="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>업체</th>
+                            <th>키 ID (프로젝트)</th>
+                            <th>연락 이메일</th>
+                            <th>플랜</th>
+                            <th>라이프사이클</th>
+                            <th>헬스</th>
+                            <th>다음 액션</th>
+                            <th>계약·구축</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolio-body">
+                        <tr><td colspan="9" class="muted">등록된 업체가 없습니다.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         <div class="grid">
             <section class="card">
@@ -194,18 +336,58 @@
                 </div>
 
                 <div id="tab-basic" class="tab-panel active">
-                    <p class="hint">필수: 고객사명 · 채널 1개 이상. 청구 플랜과 서비스 티어를 다르게 둘 수 있습니다(특수관계 가격).</p>
+                    <div class="rule-box">
+                        <strong>네이밍 규칙</strong><br>
+                        · <strong>키 ID *</strong> = 등록 시 직접 입력하는 고유값 → <strong>프로젝트/폴더명과 동일</strong>하게 사용<br>
+                        · 형식: 영문 소문자 시작 · <code>a-z 0-9 _ -</code> (예: <code>omnify_gotbody</code>, <code>gotbody_2026</code>)<br>
+                        · 연락 이메일은 고유키가 아님 (Gmail·Naver 등 개인메일 허용)<br>
+                        · 영문명은 키 ID <em>제안</em>용이며, 최종 확정은 키 ID 입력란입니다
+                    </div>
+                    <p class="hint">필수: 고객사명 · 키 ID · 연락 이메일 · 채널 1개 이상.</p>
 
                     <label class="field"><span>고객사명 *</span><input id="f-company" type="text" placeholder="예: 갓바디" autocomplete="organization"></label>
                     <div class="row2">
-                        <label class="field"><span>영문/슬러그용</span><input id="f-company-en" type="text" placeholder="Gotbody"></label>
+                        <label class="field"><span>영문명 (키 ID 제안용)</span><input id="f-company-en" type="text" placeholder="Gotbody"></label>
                         <label class="field"><span>사업자번호</span><input id="f-bizno" type="text" placeholder="000-00-00000"></label>
                     </div>
+                    <label class="field"><span>키 ID * <span class="muted" style="font-weight:500">(폴더명 · 프로젝트 식별자)</span></span>
+                        <input id="f-key-id" type="text" placeholder="예: omnify_gotbody" autocomplete="off" spellcheck="false">
+                    </label>
+                    <p class="pipe-help" id="naming-preview">키 ID를 입력하면 폴더명·미리보기 경로에 그대로 쓰입니다. 비우면 영문명으로 제안합니다.</p>
                     <div class="row2">
                         <label class="field"><span>담당자</span><input id="f-contact" type="text"></label>
                         <label class="field"><span>연락처</span><input id="f-phone" type="tel"></label>
                     </div>
-                    <label class="field"><span>이메일</span><input id="f-email" type="email"></label>
+                    <label class="field"><span>연락 이메일 *</span><input id="f-email" type="email" placeholder="ops@gotbody.com 또는 개인메일" autocomplete="email"></label>
+                    <label class="field"><span>계정 담당</span><input id="f-account-owner" type="text" value="JK" placeholder="JK"></label>
+
+                    <div class="section-block">
+                        <p class="section-title">운영 현황 필드</p>
+                        <div class="row3">
+                            <label class="field"><span>라이프사이클</span>
+                                <select id="f-lifecycle">
+                                    <option value="draft">초안</option>
+                                    <option value="building">구축중</option>
+                                    <option value="ready">구축완료</option>
+                                    <option value="live">운영중</option>
+                                    <option value="paused">일시중단</option>
+                                    <option value="ended">종료</option>
+                                </select>
+                            </label>
+                            <label class="field"><span>헬스</span>
+                                <select id="f-health">
+                                    <option value="green">정상</option>
+                                    <option value="yellow">주의</option>
+                                    <option value="red">위험</option>
+                                </select>
+                            </label>
+                            <label class="field"><span>다음 액션</span><input id="f-next-action" type="text" placeholder="예: Drive 공유 확인"></label>
+                        </div>
+                        <div class="row2">
+                            <label class="field"><span>계약 시작</span><input id="f-contract-start" type="date"></label>
+                            <label class="field"><span>계약 종료(예정)</span><input id="f-contract-end" type="date"></label>
+                        </div>
+                    </div>
 
                     <div class="row2">
                         <label class="field"><span>청구 플랜</span>
@@ -247,7 +429,7 @@
                         <label class="field"><span>폴더 소유자 이메일</span><input id="f-drive-owner" type="email" placeholder="ops@customer.com"></label>
                         <label class="field"><span>Omnify에 공유한 계정</span><input id="f-drive-shared" type="text" placeholder="service@omnify… (고객이 초대)"></label>
                     </div>
-                    <p class="muted" style="margin:.2rem 0 .6rem;font-size:.8rem">고객이 Drive 폴더에 Omnify 서비스 계정을 뷰어/편집자로 공유한 뒤 URL을 넣어 주세요.</p>
+                    <p class="muted" style="margin:.15rem 0 .5rem">고객이 Drive 폴더에 Omnify 서비스 계정을 뷰어/편집자로 공유한 뒤 URL을 넣어 주세요.</p>
 
                     <p class="muted" style="margin:0 0 .4rem">판매 채널 *</p>
                     <div class="channel-grid" id="channel-grid"></div>
@@ -421,7 +603,7 @@
 
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
-    <script src="js/tenant-registry.js?v=20260714-fb1"></script>
-    <script src="js/admin-app.js?v=20260714-fb1"></script>
+    <script src="js/tenant-registry.js?v=20260714-pf3"></script>
+    <script src="js/admin-app.js?v=20260714-pf3"></script>
 </body>
 </html>

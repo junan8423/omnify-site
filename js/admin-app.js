@@ -333,18 +333,52 @@
         }).join('') + '</ul>';
     }
 
+    function updateNamingPreview() {
+        var el = $('naming-preview');
+        if (!el) return;
+        var email = normalizeContactEmail($('f-email').value);
+        var en = $('f-company-en').value.trim();
+        var ko = $('f-company').value.trim();
+        var keyEl = $('f-key-id');
+        var key = '';
+        if (keyEl && keyEl.dataset.touched) {
+            key = normalizeKeyId(keyEl.value);
+            keyEl.value = key;
+        } else if (keyEl) {
+            key = typeof suggestKeyId === 'function' ? suggestKeyId(en, ko, editingId) : '';
+            keyEl.value = key;
+        }
+        var ok = isValidKeyId(key);
+        var mailNote = (email && isConsumerEmail(email)) ? ' · 개인메일은 연락처만' : '';
+        var clash = ok && findTenantByKeyId(key, editingId);
+        el.textContent = (ok ? '사용: 폴더·키 = ' + key : '키 ID 형식 오류 (영문 시작 · a-z0-9_-)') +
+            (clash ? ' · ⚠ 이미 사용 중: ' + clash.companyName : '') +
+            ' · 연락 ' + (email || '(미입력)') + mailNote;
+        el.style.color = (!ok || clash) ? '#fcd34d' : '';
+    }
+
     function readForm() {
         var channels = selectedChannels();
         var custom = readCustomForm();
         if (!custom.brand.displayName) custom.brand.displayName = $('f-company').value.trim();
         if (!custom.brand.legalName) custom.brand.legalName = $('f-company').value.trim();
+        var email = normalizeContactEmail($('f-email').value);
+        var keyId = normalizeKeyId($('f-key-id').value);
         return {
             companyName: $('f-company').value.trim(),
             companyNameEn: $('f-company-en').value.trim(),
             businessNo: $('f-bizno').value.trim(),
             contactName: $('f-contact').value.trim(),
-            contactEmail: $('f-email').value.trim(),
+            contactEmail: email,
+            keyId: keyId,
             contactPhone: $('f-phone').value.trim(),
+            projectFolder: keyId,
+            accountOwner: $('f-account-owner').value.trim() || 'JK',
+            lifecycle: $('f-lifecycle').value || 'draft',
+            health: $('f-health').value || 'green',
+            nextAction: $('f-next-action').value.trim(),
+            contractStart: $('f-contract-start').value || '',
+            contractEnd: $('f-contract-end').value || '',
             billingPlan: $('f-billing').value,
             serviceTier: $('f-service').value,
             specialPricing: $('f-special').checked,
@@ -383,6 +417,14 @@
         $('f-contact').value = t ? (t.contactName || '') : '';
         $('f-email').value = t ? (t.contactEmail || '') : '';
         $('f-phone').value = t ? (t.contactPhone || '') : '';
+        $('f-key-id').value = t ? (t.keyId || t.projectFolder || '') : '';
+        $('f-key-id').dataset.touched = t && (t.keyId || t.projectFolder) ? '1' : '';
+        $('f-account-owner').value = t ? (t.accountOwner || 'JK') : 'JK';
+        $('f-lifecycle').value = t ? (t.lifecycle || 'draft') : 'draft';
+        $('f-health').value = t ? (t.health || 'green') : 'green';
+        $('f-next-action').value = t ? (t.nextAction || '') : '';
+        $('f-contract-start').value = t ? (t.contractStart || '') : '';
+        $('f-contract-end').value = t ? (t.contractEnd || '') : '';
         $('f-billing').value = t ? t.billingPlan : 'growth';
         $('f-service').value = t ? t.serviceTier : 'enterprise';
         $('f-special').checked = t ? !!t.specialPricing : false;
@@ -405,6 +447,7 @@
         fillCommercialForm(t && t.commercial ? t.commercial : null, t ? t.billingPlan : $('f-billing').value);
         if ($('f-ops-notes')) $('f-ops-notes').value = t ? (t.opsNotes || '') : '';
         fillCustomForm(t && t.custom ? t.custom : null, t ? t.channels : selectedChannels());
+        updateNamingPreview();
         if (activeTab === 'ops') refreshOpsTab();
         else refreshQuotePreview(t);
     }
@@ -434,10 +477,105 @@
             draft: ['draft', '초안'],
             ready: ['ready', '구축완료'],
             error: ['error', '오류'],
-            pending: ['pending', '대기']
+            pending: ['pending', '대기'],
+            building: ['building', '구축중'],
+            live: ['live', '운영중'],
+            paused: ['paused', '일시중단'],
+            ended: ['ended', '종료']
         };
         var m = map[st] || ['pending', st || '-'];
         return '<span class="badge ' + m[0] + '">' + m[1] + '</span>';
+    }
+
+    function renderPortfolio() {
+        var statsEl = $('portfolio-stats');
+        var body = $('portfolio-body');
+        if (!body) return;
+        var list = loadTenants();
+        var q = ($('pf-search') && $('pf-search').value || '').trim().toLowerCase();
+        var lf = $('pf-lifecycle') && $('pf-lifecycle').value;
+        var plan = $('pf-plan') && $('pf-plan').value;
+        var health = $('pf-health') && $('pf-health').value;
+
+        var counts = { total: list.length, live: 0, building: 0, ready: 0, risk: 0 };
+        list.forEach(function (t) {
+            if (t.lifecycle === 'live') counts.live++;
+            if (t.lifecycle === 'building') counts.building++;
+            if (t.lifecycle === 'ready') counts.ready++;
+            if (t.health === 'red' || t.health === 'yellow') counts.risk++;
+        });
+        if (statsEl) {
+            statsEl.innerHTML =
+                '<div class="stat-pill"><span class="n">' + counts.total + '</span><span class="l">전체 업체</span></div>' +
+                '<div class="stat-pill"><span class="n">' + counts.live + '</span><span class="l">운영중</span></div>' +
+                '<div class="stat-pill"><span class="n">' + counts.building + '</span><span class="l">구축중</span></div>' +
+                '<div class="stat-pill"><span class="n">' + counts.ready + '</span><span class="l">구축완료</span></div>' +
+                '<div class="stat-pill"><span class="n">' + counts.risk + '</span><span class="l">주의·위험</span></div>';
+        }
+
+        var filtered = list.filter(function (t) {
+            if (lf && t.lifecycle !== lf) return false;
+            if (plan && t.billingPlan !== plan) return false;
+            if (health && t.health !== health) return false;
+            if (q) {
+                var hay = [t.companyName, t.companyNameEn, t.keyId, t.contactEmail, t.projectFolder, t.id, t.nextAction]
+                    .join(' ').toLowerCase();
+                if (hay.indexOf(q) < 0) return false;
+            }
+            return true;
+        });
+
+        if (!filtered.length) {
+            body.innerHTML = '<tr><td colspan="9" class="muted">' +
+                (list.length ? '필터에 맞는 업체가 없습니다.' : '등록된 업체가 없습니다. 아래에서 신규 계약을 등록하세요.') +
+                '</td></tr>';
+            return;
+        }
+
+        body.innerHTML = filtered.map(function (t) {
+            var ops = checklistProgress(OPS_CHECKLIST_DEFS, t.opsChecklist);
+            var con = checklistProgress(CONTRACT_CHECKLIST_DEFS, t.contractChecklist);
+            var lifeOpts = LIFECYCLE_DEFS.map(function (d) {
+                return '<option value="' + d.id + '"' + (t.lifecycle === d.id ? ' selected' : '') + '>' + d.label + '</option>';
+            }).join('');
+            var healthOpts = HEALTH_DEFS.map(function (d) {
+                return '<option value="' + d.id + '"' + (t.health === d.id ? ' selected' : '') + '>' + d.label + '</option>';
+            }).join('');
+            var key = t.keyId || t.projectFolder || '-';
+            return '<tr data-id="' + escapeHtml(t.id) + '">' +
+                '<td><strong>' + escapeHtml(t.companyName) + '</strong><br><span class="muted">#' + escapeHtml(t.id) +
+                (t.accountOwner ? ' · ' + escapeHtml(t.accountOwner) : '') + '</span></td>' +
+                '<td class="mono">' + escapeHtml(key) + '</td>' +
+                '<td class="mono">' + escapeHtml(t.contactEmail || '-') + '</td>' +
+                '<td>' + escapeHtml(t.billingPlan) +
+                (t.specialPricing ? '<br><span class="muted">서비스 ' + escapeHtml(t.serviceTier) + '</span>' : '') + '</td>' +
+                '<td><select class="inline" data-pf="lifecycle">' + lifeOpts + '</select></td>' +
+                '<td><span class="health-dot health-' + escapeHtml(t.health || 'green') + '"></span>' +
+                '<select class="inline" data-pf="health">' + healthOpts + '</select></td>' +
+                '<td><input class="inline" data-pf="nextAction" type="text" value="' + escapeHtml(t.nextAction || '') + '" placeholder="다음 액션"></td>' +
+                '<td><span class="muted">계약 ' + con.pct + '% · 구축 ' + ops.pct + '%</span><br>' +
+                statusBadge(t.status) + '</td>' +
+                '<td class="tenant-actions">' +
+                '<button type="button" class="btn-sm" data-pf-act="edit">수정</button>' +
+                '<button type="button" class="btn-sm" data-pf-act="open">대시보드</button>' +
+                '<button type="button" class="btn-sm" data-pf-act="save">저장</button>' +
+                '</td></tr>';
+        }).join('');
+    }
+
+    function patchTenantFromPortfolioRow(row) {
+        var id = row.getAttribute('data-id');
+        var t = getTenantById(id);
+        if (!t) return null;
+        var life = row.querySelector('[data-pf="lifecycle"]');
+        var health = row.querySelector('[data-pf="health"]');
+        var next = row.querySelector('[data-pf="nextAction"]');
+        if (life) t.lifecycle = life.value;
+        if (health) t.health = health.value;
+        if (next) t.nextAction = next.value.trim();
+        t.updatedAt = new Date().toISOString();
+        upsertTenant(t);
+        return t;
     }
 
     function renderList() {
@@ -447,6 +585,7 @@
         if (!list.length) {
             el.innerHTML = '';
             empty.classList.remove('hidden');
+            renderPortfolio();
             return;
         }
         empty.classList.add('hidden');
@@ -456,9 +595,11 @@
             return '<article class="tenant-card" data-id="' + t.id + '">' +
                 '<div class="tenant-card-top">' +
                 '<div><h3>' + escapeHtml(t.companyName) + '</h3>' +
-                '<p class="muted">#' + escapeHtml(t.id) + ' · 청구 ' + t.billingPlan + ' · 서비스 ' + t.serviceTier +
+                '<p class="muted">키 ' + escapeHtml(t.keyId || t.projectFolder || '-') +
+                '<br>메일 ' + escapeHtml(t.contactEmail || '-') +
+                '<br>청구 ' + t.billingPlan + ' · 서비스 ' + t.serviceTier +
                 (t.specialPricing ? ' · 특수가격' : '') + '</p></div>' +
-                statusBadge(t.status) +
+                statusBadge(t.lifecycle || t.status) +
                 '</div>' +
                 '<p class="meta">채널 ' + ch + ' · 좌석 ' + t.seats +
                 ' · 커스텀 ' + comp.pct + '%' +
@@ -471,6 +612,7 @@
                 '<button type="button" class="btn-sm danger" data-act="del">삭제</button>' +
                 '</div></article>';
         }).join('');
+        renderPortfolio();
     }
 
     function renderProvision(tenant) {
@@ -501,10 +643,32 @@
             switchTab('basic');
             return;
         }
+        if (!isValidKeyId(form.keyId)) {
+            toast('키 ID를 입력하세요. (영문 시작 · a-z 0-9 _ -)', 'warning');
+            switchTab('basic');
+            $('f-key-id').focus();
+            return;
+        }
+        if (!isValidContactEmail(form.contactEmail)) {
+            toast('연락 이메일을 올바르게 입력하세요.', 'warning');
+            switchTab('basic');
+            return;
+        }
+        var keyId = normalizeKeyId(form.keyId);
+        var keyClash = findTenantByKeyId(keyId, editingId);
+        if (keyClash) {
+            toast('이미 사용 중인 키 ID입니다: ' + keyClash.companyName, 'warning');
+            switchTab('basic');
+            $('f-key-id').focus();
+            return;
+        }
         if (!form.channels.length) {
             toast('채널을 1개 이상 선택하세요.', 'warning');
             switchTab('basic');
             return;
+        }
+        if (isConsumerEmail(form.contactEmail)) {
+            toast('개인메일은 연락처로만 저장됩니다. 식별은 키 ID를 사용합니다.', 'info');
         }
 
         var tenant;
@@ -520,7 +684,15 @@
                 businessNo: form.businessNo,
                 contactName: form.contactName,
                 contactEmail: form.contactEmail,
+                keyId: keyId,
                 contactPhone: form.contactPhone,
+                projectFolder: keyId,
+                accountOwner: form.accountOwner,
+                lifecycle: form.lifecycle === 'draft' ? 'building' : form.lifecycle,
+                health: form.health,
+                nextAction: form.nextAction,
+                contractStart: form.contractStart,
+                contractEnd: form.contractEnd,
                 billingPlan: form.billingPlan,
                 serviceTier: form.serviceTier,
                 specialPricing: form.specialPricing,
@@ -552,7 +724,7 @@
                     lastError: null
                 },
                 infra: {
-                    storagePrefix: 'tenants/' + tenant.id,
+                    storagePrefix: 'tenants/' + keyId,
                     webhookBase: 'https://hooks.omnify.local/' + tenant.id,
                     previewPath: 'demo-dashboard.html?tenant=' + encodeURIComponent(tenant.id) + '&tier=' + encodeURIComponent(form.serviceTier)
                 }
@@ -560,6 +732,7 @@
             upsertTenant(tenant);
         } else {
             tenant = buildTenantDraft(form);
+            tenant.lifecycle = 'building';
             upsertTenant(tenant);
             editingId = tenant.id;
         }
@@ -574,10 +747,14 @@
             renderProvision(t);
             renderList();
         }).then(function (t) {
+            if (t.lifecycle === 'building' || t.lifecycle === 'draft') t.lifecycle = 'ready';
+            t.updatedAt = new Date().toISOString();
+            upsertTenant(t);
             toast('대시보드 초안 구축 완료', 'success');
             $('btn-submit').disabled = false;
             fillForm(t);
             refreshOpsTab();
+            renderList();
             if (TenantStore._pendingSync) {
                 TenantStore._pendingSync.then(function () {
                     setStoreStatus('Firestore 저장됨 · ' + t.id, true);
@@ -596,6 +773,9 @@
         $('f-company').value = '갓바디';
         $('f-company-en').value = 'Gotbody';
         $('f-contact').value = '';
+        $('f-email').value = 'ops@gotbody.example';
+        $('f-key-id').value = 'omnify_gotbody';
+        $('f-key-id').dataset.touched = '1';
         $('f-billing').value = 'growth';
         $('f-service').value = 'enterprise';
         $('f-special').checked = true;
@@ -615,7 +795,12 @@
         $('f-monthly-fee').value = 30;
         $('f-setup-fee').value = 300;
         $('f-commercial-notes').value = '연간 최적화 12개월 일시납 검토';
+        $('f-lifecycle').value = 'building';
+        $('f-health').value = 'green';
+        $('f-next-action').value = 'Drive 폴더·카카오 수신자 수급';
+        $('f-account-owner').value = 'JK';
         updatePrepaidSummary();
+        updateNamingPreview();
         ['cafe24', 'smartstore', 'coupang', 'ably', 'zigzag', 'musinsa', 'elevenst', 'gmarket', 'auction', 'other'].forEach(function (id) {
             var el = document.querySelector('input[name="channel"][value="' + id + '"]');
             if (el) el.checked = true;
@@ -750,14 +935,79 @@
             $('c-display').dataset.touched = '';
             $('f-monthly-fee').dataset.touched = '';
             $('f-setup-fee').dataset.touched = '';
+            $('f-key-id').dataset.touched = '';
             syncDefaultsFromTier(true);
             syncFeesFromBilling();
             fillCustomForm(null, []);
             switchTab('basic');
             renderProvision(null);
+            updateNamingPreview();
         });
         $('btn-gotbody').addEventListener('click', preloadGotbody);
         $('btn-save-ops').addEventListener('click', saveOpsOnly);
+
+        ['f-email', 'f-company', 'f-company-en'].forEach(function (id) {
+            var el = $(id);
+            if (el) el.addEventListener('input', updateNamingPreview);
+        });
+        if ($('f-key-id')) {
+            $('f-key-id').addEventListener('input', function () {
+                this.dataset.touched = '1';
+                updateNamingPreview();
+            });
+            $('f-key-id').addEventListener('blur', function () {
+                this.value = normalizeKeyId(this.value);
+                updateNamingPreview();
+            });
+        }
+
+        ['pf-search', 'pf-lifecycle', 'pf-plan', 'pf-health'].forEach(function (id) {
+            var el = $(id);
+            if (!el) return;
+            el.addEventListener(id === 'pf-search' ? 'input' : 'change', renderPortfolio);
+        });
+        if ($('btn-refresh-portfolio')) {
+            $('btn-refresh-portfolio').addEventListener('click', function () {
+                renderPortfolio();
+                toast('현황 갱신', 'info');
+            });
+        }
+        if ($('portfolio-body')) {
+            $('portfolio-body').addEventListener('click', function (e) {
+                var btn = e.target.closest('[data-pf-act]');
+                if (!btn) return;
+                var row = btn.closest('tr[data-id]');
+                if (!row) return;
+                var id = row.getAttribute('data-id');
+                var t = getTenantById(id);
+                var act = btn.getAttribute('data-pf-act');
+                if (act === 'edit' && t) {
+                    fillForm(t);
+                    renderProvision(t);
+                    switchTab('basic');
+                    window.scrollTo({ top: document.getElementById('form-title').offsetTop - 20, behavior: 'smooth' });
+                } else if (act === 'open' && t && t.infra) {
+                    window.open(t.infra.previewPath, '_blank');
+                } else if (act === 'save') {
+                    var saved = patchTenantFromPortfolioRow(row);
+                    if (saved) {
+                        toast('현황 저장: ' + saved.companyName, 'success');
+                        renderList();
+                    }
+                }
+            });
+            $('portfolio-body').addEventListener('change', function (e) {
+                if (!e.target.matches('[data-pf="lifecycle"], [data-pf="health"]')) return;
+                var row = e.target.closest('tr[data-id]');
+                if (!row) return;
+                var saved = patchTenantFromPortfolioRow(row);
+                if (saved) {
+                    toast('업데이트: ' + saved.companyName, 'success');
+                    renderList();
+                }
+            });
+        }
+
         $('btn-copy-quote').addEventListener('click', function () {
             var text = $('quote-preview').textContent || '';
             if (!text || text.indexOf('테넌트를 저장') === 0) {
@@ -867,6 +1117,7 @@
         renderList();
         renderProvision(null);
         updateCustomChecklist();
+        updateNamingPreview();
         renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, {}, 'contract-check');
         renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, {}, 'ops-check');
         hydrateFromServer();

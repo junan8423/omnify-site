@@ -234,6 +234,92 @@ function extractDriveFolderId(urlOrId) {
     return m ? m[1] : '';
 }
 
+/**
+ * 업체 식별·폴더 규칙
+ * - keyId: 등록 시 JK가 직접 입력하는 고유 키 (프로젝트/폴더명으로도 사용)
+ * - projectFolder = keyId
+ * - contactEmail: 연락처 (고유키 아님, 개인메일 허용)
+ * - id: URL용 — 기본적으로 keyId와 동일(가능하면)
+ */
+var LIFECYCLE_DEFS = [
+    { id: 'draft', label: '초안', badge: 'draft' },
+    { id: 'building', label: '구축중', badge: 'pending' },
+    { id: 'ready', label: '구축완료', badge: 'ready' },
+    { id: 'live', label: '운영중', badge: 'ready' },
+    { id: 'paused', label: '일시중단', badge: 'pending' },
+    { id: 'ended', label: '종료', badge: 'error' }
+];
+
+var HEALTH_DEFS = [
+    { id: 'green', label: '정상' },
+    { id: 'yellow', label: '주의' },
+    { id: 'red', label: '위험' }
+];
+
+/** 개인 메일 도메인 — 연락처로 허용하되, 키 ID로는 쓰지 않음 */
+var CONSUMER_EMAIL_DOMAINS = [
+    'gmail.com', 'googlemail.com', 'naver.com', 'daum.net', 'hanmail.net',
+    'kakao.com', 'nate.com', 'hotmail.com', 'outlook.com', 'yahoo.com',
+    'icloud.com', 'me.com', 'proton.me', 'protonmail.com'
+];
+
+function normalizeContactEmail(email) {
+    return String(email || '').trim().toLowerCase();
+}
+
+function isValidContactEmail(email) {
+    var s = normalizeContactEmail(email);
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+function isConsumerEmail(email) {
+    var s = normalizeContactEmail(email);
+    var at = s.lastIndexOf('@');
+    if (at < 0) return false;
+    var domain = s.slice(at + 1);
+    return CONSUMER_EMAIL_DOMAINS.indexOf(domain) >= 0;
+}
+
+/** 키 ID 정규화: 소문자 · 영문시작 · [a-z0-9_-] */
+function normalizeKeyId(value) {
+    var s = String(value || '').trim().toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_-]/g, '')
+        .replace(/_+/g, '_')
+        .replace(/^-+|-+$/g, '');
+    return s.slice(0, 40);
+}
+
+function isValidKeyId(value) {
+    var s = normalizeKeyId(value);
+    return /^[a-z][a-z0-9_-]{1,39}$/.test(s);
+}
+
+/** @deprecated */
+function isValidKeyIdEmail(email) {
+    return isValidContactEmail(email);
+}
+
+function findTenantByKeyId(keyId, exceptId) {
+    var k = normalizeKeyId(keyId);
+    if (!k) return null;
+    return loadTenantsRaw().find(function (t) {
+        if (!t || t.id === exceptId) return false;
+        var candidates = [t.keyId, t.projectFolder, t.id].map(function (x) {
+            return normalizeKeyId(x);
+        });
+        return candidates.indexOf(k) >= 0;
+    }) || null;
+}
+
+function findTenantByContactEmail(email, exceptId) {
+    var k = normalizeContactEmail(email);
+    if (!k) return null;
+    return loadTenantsRaw().find(function (t) {
+        return t && normalizeContactEmail(t.contactEmail) === k && t.id !== exceptId;
+    }) || null;
+}
+
 function slugifyTenant(name) {
     var s = String(name || '')
         .trim()
@@ -242,23 +328,61 @@ function slugifyTenant(name) {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
     if (!s) s = 'tenant';
-    // ASCII-friendly id for URLs
-    var ascii = s.replace(/[가-힣]/g, '');
+    var ascii = s.replace(/[가-힣]/g, '').replace(/[^a-z0-9-]/g, '');
     if (ascii.length < 2) {
         ascii = 't' + Date.now().toString(36).slice(-6);
     }
     return ascii.slice(0, 32);
 }
 
-function loadTenants() {
+/**
+ * 키 ID 초안 제안값 (자동 채움용, 확정은 수동 입력)
+ * 권장: omnify_{영문슬러그}
+ */
+function suggestKeyId(companyNameEn, companyName, exceptId, listOpt) {
+    var base = slugifyTenant(companyNameEn || companyName || 'tenant').replace(/-/g, '');
+    if (!base) base = 'tenant';
+    var folder = 'omnify_' + base.slice(0, 28);
+    var n = 1;
+    var list = listOpt || loadTenantsRaw();
+    while (list.some(function (t) {
+        if (!t || t.id === exceptId) return false;
+        return normalizeKeyId(t.projectFolder) === folder ||
+            normalizeKeyId(t.keyId) === folder ||
+            normalizeKeyId(t.id) === folder;
+    })) {
+        folder = 'omnify_' + base.slice(0, 24) + '_' + (++n);
+    }
+    return folder;
+}
+
+/** @deprecated 호환 — suggestKeyId 사용 */
+function buildProjectFolder(companyNameEn, companyName, exceptId, listOpt) {
+    return suggestKeyId(companyNameEn, companyName, exceptId, listOpt);
+}
+
+function lifecycleLabel(id) {
+    var d = LIFECYCLE_DEFS.find(function (x) { return x.id === id; });
+    return d ? d.label : (id || '-');
+}
+
+function healthLabel(id) {
+    var d = HEALTH_DEFS.find(function (x) { return x.id === id; });
+    return d ? d.label : (id || '-');
+}
+
+function loadTenantsRaw() {
     try {
         var raw = localStorage.getItem(OMNIFY_TENANTS_KEY);
         var list = raw ? JSON.parse(raw) : [];
-        if (!Array.isArray(list)) return [];
-        return list.map(normalizeTenantRecord);
+        return Array.isArray(list) ? list : [];
     } catch (e) {
         return [];
     }
+}
+
+function loadTenants() {
+    return loadTenantsRaw().map(normalizeTenantRecord);
 }
 
 function normalizeTenantRecord(t) {
@@ -267,6 +391,22 @@ function normalizeTenantRecord(t) {
     t.opsChecklist = mergeChecklist(OPS_CHECKLIST_DEFS, t.opsChecklist);
     t.contractChecklist = mergeChecklist(CONTRACT_CHECKLIST_DEFS, t.contractChecklist);
     t.opsNotes = t.opsNotes || '';
+    // 구버전: keyId가 이메일이면 비움 → projectFolder/제안값으로 보정
+    if (t.keyId && String(t.keyId).indexOf('@') >= 0) t.keyId = '';
+    if (t.projectFolder && String(t.projectFolder).indexOf('@') >= 0) t.projectFolder = '';
+    var resolvedKey = normalizeKeyId(t.keyId || t.projectFolder || '');
+    if (!resolvedKey || !isValidKeyId(resolvedKey)) {
+        resolvedKey = suggestKeyId(t.companyNameEn, t.companyName, t.id, loadTenantsRaw());
+    }
+    t.keyId = resolvedKey;
+    t.projectFolder = resolvedKey;
+    t.contactEmail = normalizeContactEmail(t.contactEmail || '');
+    t.lifecycle = t.lifecycle || (t.status === 'ready' ? 'ready' : t.status === 'error' ? 'draft' : 'draft');
+    t.health = t.health || 'green';
+    t.nextAction = t.nextAction || '';
+    t.accountOwner = t.accountOwner || 'JK';
+    t.contractStart = t.contractStart || '';
+    t.contractEnd = t.contractEnd || '';
     if (t.provision && Array.isArray(t.provision.steps)) {
         t.provision.steps.forEach(function (s) {
             if (s.operatorNote == null) s.operatorNote = '';
@@ -683,11 +823,16 @@ function countCustomCompleteness(custom) {
 
 function buildTenantDraft(form) {
     var now = new Date().toISOString();
-    var baseSlug = slugifyTenant(form.companyNameEn || form.companyName);
-    var id = baseSlug;
+    var contactEmail = normalizeContactEmail(form.contactEmail);
+    var keyId = normalizeKeyId(form.keyId || form.projectFolder || '');
+    if (!isValidKeyId(keyId)) {
+        keyId = suggestKeyId(form.companyNameEn, form.companyName);
+    }
+    // URL id: 키 ID와 동일 (충돌 시 접미사)
+    var id = keyId;
     var n = 1;
     while (getTenantById(id)) {
-        id = baseSlug + '-' + (++n);
+        id = keyId.slice(0, 32) + '-' + (++n);
     }
     var serviceTier = form.serviceTier || form.billingPlan || 'growth';
     var billingPlan = form.billingPlan || serviceTier;
@@ -696,13 +841,21 @@ function buildTenantDraft(form) {
         id: id,
         version: 1,
         status: 'draft',
+        keyId: keyId,
+        projectFolder: keyId,
+        lifecycle: form.lifecycle || 'draft',
+        health: form.health || 'green',
+        nextAction: form.nextAction || '',
+        accountOwner: form.accountOwner || 'JK',
+        contractStart: form.contractStart || '',
+        contractEnd: form.contractEnd || '',
         createdAt: now,
         updatedAt: now,
         companyName: form.companyName || '',
         companyNameEn: form.companyNameEn || '',
         businessNo: form.businessNo || '',
         contactName: form.contactName || '',
-        contactEmail: form.contactEmail || '',
+        contactEmail: contactEmail,
         contactPhone: form.contactPhone || '',
         billingPlan: billingPlan,
         serviceTier: serviceTier,
@@ -733,7 +886,7 @@ function buildTenantDraft(form) {
             lastError: null
         },
         infra: {
-            storagePrefix: 'tenants/' + id,
+            storagePrefix: 'tenants/' + keyId,
             webhookBase: 'https://hooks.omnify.local/' + id,
             previewPath: 'demo-dashboard.html?tenant=' + encodeURIComponent(id) + '&tier=' + encodeURIComponent(serviceTier)
         }
