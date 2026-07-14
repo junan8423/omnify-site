@@ -2318,39 +2318,27 @@ App.views['view-archive'] = () => `
                 <h2 class="text-xl font-bold">Google Drive 자료실</h2>
                 <span class="text-[10px] font-mono bg-[#4285f4]/15 text-blue-300 px-2 py-0.5 rounded border border-[#4285f4]/25">DRIVE</span>
             </div>
-            <p class="text-sm text-gray-400">고객사 Google Drive 폴더 연동 · 대시보드에서 검색 · 바로가기</p>
+            <p class="text-sm text-gray-400">연동 폴더 검색 · 바로가기 · 폴더 관리는 Google Drive에서</p>
         </div>
-        <button type="button" onclick="showToast('Google Drive에서 폴더를 엽니다. (데모)', 'info')" class="text-xs font-semibold px-4 py-2 rounded-lg border border-[#4285f4]/40 text-blue-300 hover:bg-[#4285f4]/10 transition-colors flex items-center gap-1.5">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5zm8.43 12L12.58 21H5.74l3.43-5.5h6.97z"/></svg>
-            Drive에서 열기
-        </button>
+        <div class="flex flex-wrap gap-2" id="archive-header-actions">
+            <button type="button" id="btn-archive-open-drive" class="text-xs font-semibold px-4 py-2 rounded-lg border border-[#4285f4]/40 text-blue-300 hover:bg-[#4285f4]/10 transition-colors flex items-center gap-1.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5zm8.43 12L12.58 21H5.74l3.43-5.5h6.97z"/></svg>
+                Drive 폴더 열기
+            </button>
+        </div>
     </div>
 
-    <div class="glass rounded-xl p-5 border border-[#4285f4]/25 bg-[#4285f4]/5" id="archive-drive-connect">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-start gap-3">
-                <div class="w-11 h-11 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-                    <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5z"/><path fill="#34A853" d="M16.14 15L12.58 21H5.74l3.43-5.5h6.97z"/><path fill="#FBBC04" d="M7.71 3.5h8.57L22.85 15h-6.71L7.71 3.5z"/></svg>
-                </div>
-                <div>
-                    <p class="font-bold text-sm">Google Drive 연동됨</p>
-                    <p class="text-xs text-gray-400 mt-0.5">계정: marketing@sample.co.kr</p>
-                    <p class="text-xs text-gray-500 mt-1">폴더: <span class="font-mono text-gray-300">/Omnify_자료실</span> · 저장 비용은 고객 Google 계정</p>
-                </div>
-            </div>
-            <div class="flex flex-wrap gap-2 shrink-0">
-                <span class="text-[10px] px-2.5 py-1 rounded-full bg-success/20 text-success font-bold">연동 활성</span>
-                <button type="button" onclick="showToast('Drive 폴더 설정 (데모)', 'info')" class="text-[10px] font-semibold px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">폴더 변경</button>
-            </div>
-        </div>
-    </div>
+    <div class="glass rounded-xl p-5 border border-[#4285f4]/25 bg-[#4285f4]/5" id="archive-drive-connect"></div>
+
+    <div class="glass rounded-xl p-4 border border-border/80" id="archive-drive-guide"></div>
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" id="archive-stats"></div>
 
     <div class="archive-dropzone p-6 text-center opacity-80" id="archive-dropzone">
         <svg class="w-10 h-10 mx-auto text-[#4285f4]/60 mb-2" viewBox="0 0 24 24" fill="currentColor"><path d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5z"/></svg>
-        <p class="text-sm text-gray-300 font-medium">파일 업로드는 Google Drive에서 진행합니다</p>
-        <p class="text-[10px] text-gray-500 mt-1">Omnify는 연동 폴더를 검색 · 미리보기 · 바로가기합니다 (데모: 로컬 목록)</p>
+        <p class="text-sm text-gray-300 font-medium">파일 업로드 · 하위 폴더 생성은 Google Drive에서</p>
+        <p class="text-[10px] text-gray-500 mt-1">아래 「Drive 폴더 열기」로 이동한 뒤 폴더명·구조를 변경하세요. Omnify는 목록 · 검색 · 바로가기를 제공합니다.</p>
+        <button type="button" id="btn-archive-open-drive-dz" class="mt-3 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-[#4285f4]/35 text-blue-300 hover:bg-[#4285f4]/10">↗ Drive에서 관리하기</button>
     </div>
 
     <div class="glass rounded-xl p-4">
@@ -3245,12 +3233,177 @@ function formatFileSize(bytes) {
     return bytes + ' B';
 }
 
+function getTenantDriveInfo() {
+    var t = (typeof App !== 'undefined' && App.tenantMeta) ? App.tenantMeta : null;
+    var folderId = '';
+    var folderUrl = '';
+    var owner = '';
+    var sharedWith = '';
+    var enabled = true;
+    var keyId = '';
+    var company = '';
+    if (t) {
+        folderId = t.driveFolderId || (typeof extractDriveFolderId === 'function' ? extractDriveFolderId(t.driveFolderUrl) : '') || '';
+        folderUrl = t.driveFolderUrl || '';
+        owner = t.driveOwnerEmail || '';
+        sharedWith = t.driveSharedWith || '';
+        enabled = t.driveEnabled !== false;
+        keyId = t.keyId || t.projectFolder || t.id || '';
+        company = t.companyName || '';
+    }
+    var openUrl = '';
+    if (folderUrl && /^https?:\/\//i.test(folderUrl)) {
+        openUrl = folderUrl;
+    } else if (folderId) {
+        openUrl = 'https://drive.google.com/drive/folders/' + encodeURIComponent(folderId);
+    }
+    return {
+        enabled: enabled,
+        configured: !!(openUrl || folderId || folderUrl),
+        folderId: folderId,
+        folderUrl: folderUrl,
+        openUrl: openUrl,
+        owner: owner,
+        sharedWith: sharedWith,
+        keyId: keyId,
+        company: company
+    };
+}
+
+function openTenantDriveFolder() {
+    var info = getTenantDriveInfo();
+    if (!info.openUrl) {
+        showToast('등록된 Drive 폴더가 없습니다. 구축 어드민에서 공유 폴더 URL을 등록해 주세요.', 'warning');
+        return;
+    }
+    window.open(info.openUrl, '_blank', 'noopener,noreferrer');
+}
+
+function copyTenantDriveFolderLink() {
+    var info = getTenantDriveInfo();
+    if (!info.openUrl) {
+        showToast('복사할 폴더 링크가 없습니다.', 'warning');
+        return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(info.openUrl).then(function () {
+            showToast('Drive 폴더 링크를 복사했습니다.', 'success');
+        }).catch(function () {
+            showToast(info.openUrl, 'info');
+        });
+    } else {
+        showToast(info.openUrl, 'info');
+    }
+}
+
+function escapeArchiveHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+}
+
+function renderArchiveDrivePanel() {
+    var box = document.getElementById('archive-drive-connect');
+    var guide = document.getElementById('archive-drive-guide');
+    var info = getTenantDriveInfo();
+    var openBtn = document.getElementById('btn-archive-open-drive');
+    var dzBtn = document.getElementById('btn-archive-open-drive-dz');
+
+    function bindOpen(el) {
+        if (!el) return;
+        el.onclick = function (e) {
+            e.preventDefault();
+            openTenantDriveFolder();
+        };
+        el.disabled = !info.openUrl;
+        el.classList.toggle('opacity-40', !info.openUrl);
+        el.classList.toggle('cursor-not-allowed', !info.openUrl);
+    }
+    bindOpen(openBtn);
+    bindOpen(dzBtn);
+
+    if (box) {
+        if (!info.enabled) {
+            box.innerHTML =
+                '<div class="flex items-start gap-3">' +
+                '<div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-lg">📁</div>' +
+                '<div><p class="font-bold text-sm text-amber-200">Drive 연동 미포함</p>' +
+                '<p class="text-xs text-gray-400 mt-1">이 테넌트는 Drive 자료실이 꺼져 있습니다. 어드민에서 연동을 켜고 폴더를 등록하세요.</p></div></div>';
+        } else if (!info.configured) {
+            box.innerHTML =
+                '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">' +
+                '<div class="flex items-start gap-3">' +
+                '<div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-200 text-lg">!</div>' +
+                '<div><p class="font-bold text-sm text-amber-100">공유 폴더 미등록</p>' +
+                '<p class="text-xs text-gray-400 mt-0.5">구축 시 등록한 Drive 폴더 URL이 없습니다.</p>' +
+                '<p class="text-[11px] text-gray-500 mt-1">어드민 → 계약 · 기본 → Google Drive 자료실에 폴더 URL을 넣어 주세요.</p></div></div>' +
+                '<span class="text-[10px] px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-200 font-bold shrink-0">설정 필요</span></div>';
+        } else {
+            var pathLabel = info.folderId
+                ? (info.keyId ? info.keyId + ' / ' : '') + info.folderId
+                : (info.folderUrl || '등록된 폴더');
+            box.innerHTML =
+                '<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">' +
+                '<div class="flex items-start gap-3 min-w-0">' +
+                '<div class="w-11 h-11 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">' +
+                '<svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M7.71 3.5L1.15 15l3.43 5.5h6.84l6.57-10.5L7.71 3.5z"/><path fill="#34A853" d="M16.14 15L12.58 21H5.74l3.43-5.5h6.97z"/><path fill="#FBBC04" d="M7.71 3.5h8.57L22.85 15h-6.71L7.71 3.5z"/></svg></div>' +
+                '<div class="min-w-0">' +
+                '<p class="font-bold text-sm">Google Drive 연동됨' +
+                (info.company ? ' · ' + escapeArchiveHtml(info.company) : '') + '</p>' +
+                (info.owner ? '<p class="text-xs text-gray-400 mt-0.5">소유자: ' + escapeArchiveHtml(info.owner) + '</p>' : '') +
+                (info.sharedWith ? '<p class="text-xs text-gray-500">Omnify 공유 계정: ' + escapeArchiveHtml(info.sharedWith) + '</p>' : '') +
+                '<p class="text-xs text-gray-500 mt-1 truncate" title="' + escapeArchiveHtml(pathLabel) + '">폴더: <span class="font-mono text-gray-300">' +
+                escapeArchiveHtml(pathLabel) + '</span></p>' +
+                '<p class="text-[10px] text-gray-500 mt-1">저장 비용은 고객 Google 계정 · 폴더 구조 변경은 Drive에서</p>' +
+                '</div></div>' +
+                '<div class="flex flex-wrap gap-2 shrink-0">' +
+                '<span class="text-[10px] px-2.5 py-1 rounded-full bg-success/20 text-success font-bold self-center">연동 활성</span>' +
+                '<button type="button" id="btn-archive-copy-link" class="text-[10px] font-semibold px-3 py-1.5 rounded-lg border border-border hover:border-primary/40">링크 복사</button>' +
+                '<button type="button" id="btn-archive-manage" class="text-[10px] font-semibold px-3 py-1.5 rounded-lg border border-[#4285f4]/40 text-blue-300 hover:bg-[#4285f4]/10">↗ Drive에서 관리</button>' +
+                '</div></div>';
+            var copyBtn = document.getElementById('btn-archive-copy-link');
+            var manageBtn = document.getElementById('btn-archive-manage');
+            if (copyBtn) copyBtn.onclick = copyTenantDriveFolderLink;
+            if (manageBtn) manageBtn.onclick = openTenantDriveFolder;
+        }
+    }
+
+    if (guide) {
+        guide.innerHTML =
+            '<p class="text-xs font-bold text-gray-200 mb-2">폴더 커스텀 가이드 (Google Drive)</p>' +
+            '<ol class="text-[11px] text-gray-400 space-y-1.5 list-decimal pl-4 leading-relaxed">' +
+            '<li><button type="button" class="text-blue-300 underline underline-offset-2 hover:text-blue-200" id="btn-archive-guide-open">등록된 공유 폴더</button>를 Drive에서 엽니다.</li>' +
+            '<li>하위 폴더 만들기: 우클릭 → <span class="text-gray-300">새 폴더</span> (예: 계약서 / 정산 / 디자인).</li>' +
+            '<li>폴더명 변경: 폴더 선택 → 이름 바꾸기. Omnify 연동은 같은 폴더 ID를 유지합니다.</li>' +
+            '<li>파일 업로드·이동도 Drive에서 진행하세요. Omnify는 조회·검색·바로가기만 제공합니다.</li>' +
+            '<li>연동 폴더 자체를 바꾸려면 Omnify 담당자(어드민)에게 새 URL 등록을 요청하세요.</li>' +
+            '</ol>' +
+            (!info.openUrl
+                ? '<p class="text-[11px] text-amber-200/90 mt-3">아직 폴더가 없어 바로가기를 열 수 없습니다. 구축 어드민에 Drive URL을 먼저 등록해 주세요.</p>'
+                : '<p class="text-[11px] text-gray-500 mt-3">팁: 팀원에게는 「링크 복사」로 폴더 주소를 공유하면 됩니다.</p>');
+        var gOpen = document.getElementById('btn-archive-guide-open');
+        if (gOpen) {
+            gOpen.onclick = openTenantDriveFolder;
+            if (!info.openUrl) {
+                gOpen.classList.add('opacity-50', 'pointer-events-none');
+                gOpen.classList.remove('underline');
+            }
+        }
+    }
+}
+
 function initArchiveView() {
+    renderArchiveDrivePanel();
     renderArchiveStats();
     renderArchiveCatFilters();
     renderArchiveFiles();
     var dz = document.getElementById('archive-dropzone');
-    if (dz) dz.onclick = function() { var inp = document.getElementById('archive-file-input'); if (inp) inp.click(); };
+    if (dz) {
+        dz.onclick = function (e) {
+            if (e.target && (e.target.id === 'btn-archive-open-drive-dz' || e.target.closest('#btn-archive-open-drive-dz'))) return;
+            openTenantDriveFolder();
+        };
+    }
     document.querySelectorAll('.archive-sort-btn').forEach(function(btn) {
         btn.classList.toggle('bg-surface', btn.dataset.asort === archiveFilter.sort);
         btn.classList.toggle('border-primary/40', btn.dataset.asort === archiveFilter.sort);

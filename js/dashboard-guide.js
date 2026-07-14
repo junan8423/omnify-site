@@ -528,20 +528,30 @@ var DashboardGuide = (function () {
         },
         'menu-archive': {
             view: 'view-archive', menu: 'Google Drive 자료실', title: 'Google Drive 자료실',
-            summary: '고객사 Google Drive 폴더를 연동해 계약서·리포트·템플릿을 검색·바로가기합니다. 전 플랜 포함.',
-            keywords: ['자료실', 'Drive', 'Google', '폴더', '연동', '검색'],
+            summary: '구축 시 등록한 고객 Drive 공유 폴더로 바로가기·검색합니다. 폴더 생성·이름 변경은 Drive에서 진행합니다.',
+            keywords: ['자료실', 'Drive', 'Google', '폴더', '연동', '검색', '바로가기'],
             faq: [
                 { q: '어느 플랜인가요?', a: '스타터·그로스·엔터프라이즈 모두 포함입니다. 저장 용량은 고객 Google 계정 기준입니다.' },
-                { q: '저장 비용은?', a: 'Google Drive 저장 용량은 고객 Google 계정 기준입니다. Omnify는 연동·검색·미리보기만 제공합니다.' },
-                { q: '업로드는 어디서?', a: '파일 업로드·폴더 관리는 Google Drive에서 진행하고, Omnify에서는 연동 폴더를 조회합니다.' }
+                { q: '저장 비용은?', a: 'Google Drive 저장 용량은 고객 Google 계정 기준입니다. Omnify는 연동·검색·바로가기만 제공합니다.' },
+                { q: '업로드·폴더 수정은?', a: '「Drive 폴더 열기」로 이동해 Drive에서 하위 폴더 생성·이름 변경·업로드를 하세요. Omnify 화면에서는 Drive를 직접 수정하지 않습니다.' },
+                { q: '바로가기는 어디 정보?', a: '구축 어드민에 등록한 공유 폴더 URL/ID를 사용합니다.' }
             ]
         },
         'archive-drive-connect': {
-            view: 'view-archive', menu: 'Google Drive 자료실', title: 'Drive 연동 상태',
-            summary: '연동 계정·폴더 경로·활성 상태를 표시합니다.',
-            keywords: ['연동', '계정', '폴더', 'Omnify_자료실'],
+            view: 'view-archive', menu: 'Google Drive 자료실', title: 'Drive 연동 · 바로가기',
+            summary: '등록된 공유 폴더 정보·소유자·Omnify 공유 계정을 표시하고 Drive로 바로 엽니다.',
+            keywords: ['연동', '계정', '폴더', '바로가기', '링크'],
             faq: [
-                { q: '폴더 변경은?', a: '「폴더 변경」으로 연동 대상 Drive 폴더를 교체할 수 있습니다(데모: 토스트).' }
+                { q: '폴더를 바꾸려면?', a: 'Drive 안에서 하위 구조는 자유롭게 바꾸면 됩니다. 연동 루트 폴더 자체를 바꾸려면 어드민에 새 URL 등록이 필요합니다.' },
+                { q: '링크 복사는?', a: '팀원에게 같은 Drive 폴더 주소를 공유할 때 사용합니다.' }
+            ]
+        },
+        'archive-drive-guide': {
+            view: 'view-archive', menu: 'Google Drive 자료실', title: '폴더 커스텀 가이드',
+            summary: '하위 폴더 생성·이름 변경 등 Drive에서 하는 작업을 단계로 안내합니다.',
+            keywords: ['가이드', '하위폴더', '이름변경', '커스텀'],
+            faq: [
+                { q: '이름이 바뀌면 Omnify 연동이 끊기나요?', a: '폴더 ID가 같으면 이름만 바꿔도 연동은 유지됩니다. 폴더를 새로 만들면 어드민 URL을 다시 등록해야 합니다.' }
             ]
         }
     };
@@ -620,6 +630,7 @@ var DashboardGuide = (function () {
         ],
         'view-archive': [
             { sel: '#archive-drive-connect', id: 'archive-drive-connect' },
+            { sel: '#archive-drive-guide', id: 'archive-drive-guide' },
             { sel: '#archive-stats', id: 'menu-archive' },
             { sel: '#archive-file-grid', id: 'menu-archive' }
         ]
