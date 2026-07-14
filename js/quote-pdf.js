@@ -63,7 +63,7 @@
     function defaultSealSvg() {
         var co = OMNIFY_SUPPLIER.companyName;
         var ceo = OMNIFY_SUPPLIER.ceo;
-        return '<svg class="seal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="88" height="88" aria-label="직인">' +
+        return '<svg class="seal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="64" height="64" aria-label="직인">' +
             '<circle cx="60" cy="60" r="56" fill="none" stroke="#c62828" stroke-width="3.5"/>' +
             '<circle cx="60" cy="60" r="48" fill="none" stroke="#c62828" stroke-width="1.5"/>' +
             '<text x="60" y="40" text-anchor="middle" fill="#c62828" font-size="10.5" font-weight="700" ' +
@@ -75,25 +75,28 @@
             '</svg>';
     }
 
-    /** 저장된 견적 텍스트 → 본문 HTML */
+    /** 저장된 견적 텍스트 → 본문 HTML (1페이지용 밀집) */
     function bodyFromQuoteText(text) {
         var raw = String(text || '').trim();
         if (!raw) return '<p class="muted">견적 내용이 없습니다.</p>';
-        var blocks = raw.split(/\n{2,}/);
-        return blocks.map(function (block) {
-            var lines = block.split(/\n/).map(function (l) { return l.replace(/\s+$/, ''); });
-            var first = lines[0] || '';
-            if (/^\[.+\]$/.test(first.trim())) {
-                var title = first.replace(/^\[|\]$/g, '');
-                var rest = lines.slice(1).filter(Boolean);
-                return '<div class="sec"><h3>' + esc(title) + '</h3><ul>' +
-                    rest.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') +
-                    '</ul></div>';
+        var skipHead = /^(고객사|청구 플랜|서비스 티어|작업 좌석|채널|초기 구축비|월 유지비|결제 주기|일시납|미리보기)/;
+        var lines = raw.split(/\n/).map(function (l) { return l.replace(/\s+$/, ''); }).filter(Boolean);
+        var html = [];
+        var inList = false;
+        lines.forEach(function (line) {
+            if (/^\[Omnify 견적/.test(line) || line === '[Omnify 견적 요약]') return;
+            if (/^\[.+\]$/.test(line.trim())) {
+                if (inList) { html.push('</ul>'); inList = false; }
+                html.push('<h3>' + esc(line.replace(/^\[|\]$/g, '')) + '</h3><ul>');
+                inList = true;
+                return;
             }
-            return '<div class="sec"><ul>' +
-                lines.filter(Boolean).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') +
-                '</ul></div>';
-        }).join('');
+            if (skipHead.test(line)) return;
+            if (!inList) { html.push('<ul>'); inList = true; }
+            html.push('<li>' + esc(line) + '</li>');
+        });
+        if (inList) html.push('</ul>');
+        return html.length ? '<div class="sec body-compact">' + html.join('') + '</div>' : '<p class="muted">견적 상세는 상단 품목표·총계를 참고하세요.</p>';
     }
 
     /**
@@ -210,75 +213,80 @@
         if (pay.supplySum != null) {
             totalBlock =
                 '<table class="totals">' +
-                '<tr><th>공급가액 합계</th><td class="r">' + esc(formatWon(pay.supplySum)) + '</td></tr>' +
-                '<tr><th>부가세 (10%)</th><td class="r">' + esc(formatWon(pay.vatSum)) + '</td></tr>' +
-                '<tr class="grand"><th>납입 총액 (부가세 포함)</th><td class="r">' + esc(formatWon(pay.grandTotal)) + '</td></tr>' +
-                '</table>' +
-                '<p class="pay-note">납입 내역 요약 — ' +
-                pay.lines.filter(function (l) { return l.supply != null; }).map(function (l) {
-                    return esc(l.name.replace(/\s*\(.*/, '')) + ' ' + formatWon(l.supply) + ' / 부가세 ' + formatWon(l.vat);
-                }).join('  ·  ') +
-                '  ·  총계 ' + formatWon(pay.supplySum) + ' / 부가세 ' + formatWon(pay.vatSum) +
-                ' / <strong>' + formatWon(pay.grandTotal) + '</strong></p>';
+                '<tr><th>공급가액 합계</th><td class="r">' + esc(formatWon(pay.supplySum)) + '</td>' +
+                '<th>부가세 (10%)</th><td class="r">' + esc(formatWon(pay.vatSum)) + '</td></tr>' +
+                '<tr class="grand"><th colspan="2">납입 총액 (부가세 포함)</th><td class="r" colspan="2">' +
+                esc(formatWon(pay.grandTotal)) + '</td></tr>' +
+                '</table>';
         }
 
         var body = bodyFromQuoteText(quoteText || tenant.quoteText || '');
         var seal = defaultSealSvg();
+        var previewUrl = (typeof absolutePreviewUrl === 'function'
+            ? absolutePreviewUrl(tenant.infra && tenant.infra.previewPath)
+            : (tenant.infra && tenant.infra.previewPath)) || '-';
 
         return '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
             '<title>Omnify 견적서_' + esc(customer) + '_' + ymd + '</title>' +
             '<style>' +
-            '@page{size:A4;margin:14mm 16mm}' +
+            '@page{size:A4;margin:8mm 10mm}' +
             '*{box-sizing:border-box}' +
-            'body{margin:0;font-family:"Malgun Gothic","Apple SD Gothic Neo",Pretendard,sans-serif;' +
-            'color:#111;font-size:11px;line-height:1.45;background:#fff}' +
-            '.sheet{max-width:190mm;margin:0 auto}' +
-            '.toolbar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px;' +
-            'position:sticky;top:0;background:#fff;padding:8px 0;z-index:2}' +
-            '.toolbar button{font:inherit;font-size:12px;font-weight:700;padding:8px 14px;' +
+            'html,body{margin:0;height:100%}' +
+            'body{font-family:"Malgun Gothic","Apple SD Gothic Neo",Pretendard,sans-serif;' +
+            'color:#111;font-size:9.5px;line-height:1.32;background:#fff}' +
+            '.toolbar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px;' +
+            'position:sticky;top:0;background:#fff;padding:6px 0;z-index:2}' +
+            '.toolbar button{font:inherit;font-size:12px;font-weight:700;padding:7px 12px;' +
             'border:1px solid #111;background:#111;color:#fff;border-radius:6px;cursor:pointer}' +
             '.toolbar button.ghost{background:#fff;color:#111}' +
-            'h1{margin:0;font-size:22px;letter-spacing:.12em;text-align:center}' +
-            '.sub{text-align:center;color:#555;margin:.25rem 0 1rem;font-size:11px}' +
-            '.meta{display:flex;justify-content:space-between;margin-bottom:12px;font-size:11px}' +
+            '.page{width:100%;max-width:190mm;margin:0 auto;' +
+            'height:calc(297mm - 16mm);overflow:hidden}' +
+            '.sheet-inner{width:100%}' +
+            'h1{margin:0;font-size:17px;letter-spacing:.14em;text-align:center}' +
+            '.sub{text-align:center;color:#555;margin:1px 0 5px;font-size:9px}' +
+            '.meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:9px}' +
             '.meta strong{font-weight:700}' +
-            '.parties{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}' +
-            '.box{border:1px solid #222;padding:10px 12px;min-height:118px}' +
-            '.box h2{margin:0 0 8px;font-size:12px;border-bottom:1px solid #ddd;padding-bottom:4px}' +
-            '.box dl{margin:0;display:grid;grid-template-columns:72px 1fr;gap:3px 8px}' +
+            '.parties{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}' +
+            '.box{border:1px solid #222;padding:5px 7px}' +
+            '.box h2{margin:0 0 4px;font-size:10px;border-bottom:1px solid #ddd;padding-bottom:2px}' +
+            '.box dl{margin:0;display:grid;grid-template-columns:58px 1fr;gap:1px 6px}' +
             '.box dt{color:#666;font-weight:600}' +
-            '.box dd{margin:0;font-weight:600}' +
-            'table.items{width:100%;border-collapse:collapse;margin:0 0 8px}' +
-            'table.items th,table.items td{border:1px solid #333;padding:6px 7px;vertical-align:top}' +
-            'table.items th{background:#f3f4f6;font-size:10px;font-weight:700}' +
+            '.box dd{margin:0;font-weight:600;word-break:break-all}' +
+            'table.items{width:100%;border-collapse:collapse;margin:0 0 5px}' +
+            'table.items th,table.items td{border:1px solid #333;padding:3px 5px;vertical-align:middle}' +
+            'table.items th{background:#f3f4f6;font-size:8.5px;font-weight:700}' +
             'table.items .c{text-align:center} table.items .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}' +
-            'table.totals{width:100%;border-collapse:collapse;margin:0 0 10px;max-width:100%}' +
-            'table.totals th,table.totals td{border:1px solid #222;padding:7px 10px;font-size:12px}' +
-            'table.totals th{text-align:left;background:#f9fafb;width:55%;font-weight:700}' +
+            'table.totals{width:100%;border-collapse:collapse;margin:0 0 6px}' +
+            'table.totals th,table.totals td{border:1px solid #222;padding:4px 6px;font-size:10px}' +
+            'table.totals th{text-align:left;background:#f9fafb;font-weight:700}' +
             'table.totals .r{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}' +
-            'table.totals tr.grand th,table.totals tr.grand td{background:#111;color:#fff;font-size:13px}' +
-            '.pay-note{margin:0 0 12px;font-size:10px;color:#333;line-height:1.5;word-break:keep-all}' +
-            '.badge{display:inline-block;border:1px solid #111;padding:1px 6px;font-size:10px;margin-left:4px}' +
-            '.sec{margin:0 0 10px}' +
-            '.sec h3{margin:0 0 4px;font-size:12px;border-left:3px solid #111;padding-left:6px}' +
-            '.sec ul{margin:0;padding-left:16px}' +
-            '.sec li{margin:2px 0;word-break:keep-all}' +
+            'table.totals tr.grand th,table.totals tr.grand td{background:#111;color:#fff;font-size:11px}' +
+            '.badge{display:inline-block;border:1px solid #111;padding:0 4px;font-size:8px;margin-left:3px}' +
+            '.sec{margin:0 0 4px}' +
+            '.sec h3,.body-compact h3{margin:3px 0 1px;font-size:9.5px;border-left:2px solid #111;padding-left:5px}' +
+            '.body-compact ul,.sec ul{margin:0;padding-left:14px}' +
+            '.body-compact li,.sec li{margin:0;word-break:keep-all}' +
             '.muted{color:#666}' +
-            '.foot{margin-top:16px;border-top:1px solid #ccc;padding-top:10px;display:grid;' +
-            'grid-template-columns:1.15fr .85fr;gap:12px;align-items:end}' +
-            '.sign{text-align:center;padding-top:4px;position:relative}' +
-            '.sign .co{font-size:13px;font-weight:800;margin-bottom:6px}' +
-            '.sign-block{position:relative;display:inline-block;min-width:160px;padding:8px 8px 4px}' +
-            '.sign .line{border-bottom:1px solid #111;width:100%;margin:36px auto 4px}' +
-            '.sign .who{font-size:11px}' +
-            '.seal{position:absolute;right:4px;top:0;opacity:.92;pointer-events:none}' +
-            '.note{font-size:10px;color:#444;margin:0}' +
-            '@media print{.toolbar{display:none!important} body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}' +
-            '</style></head><body><div class="sheet">' +
+            '.foot{margin-top:4px;border-top:1px solid #ccc;padding-top:4px;display:grid;' +
+            'grid-template-columns:1.2fr .8fr;gap:8px;align-items:end}' +
+            '.sign{text-align:center;position:relative}' +
+            '.sign .co{font-size:11px;font-weight:800;margin-bottom:2px}' +
+            '.sign-block{position:relative;display:inline-block;min-width:130px;padding:2px}' +
+            '.sign .line{border-bottom:1px solid #111;width:100%;margin:22px auto 2px}' +
+            '.sign .who{font-size:9px}' +
+            '.seal{position:absolute;right:0;top:-4px;opacity:.9;pointer-events:none;width:64px;height:64px}' +
+            '.note{font-size:8px;color:#444;margin:0;line-height:1.35}' +
+            '@media print{' +
+            '.toolbar{display:none!important}' +
+            'body{print-color-adjust:exact;-webkit-print-color-adjust:exact}' +
+            '.page{height:277mm;max-height:277mm}' +
+            '}' +
+            '</style></head><body>' +
             '<div class="toolbar">' +
             '<button type="button" class="ghost" onclick="window.close()">닫기</button>' +
-            '<button type="button" onclick="window.print()">PDF로 저장 / 인쇄</button>' +
+            '<button type="button" onclick="window.__omnifyPrint&&window.__omnifyPrint()">PDF로 저장 / 인쇄</button>' +
             '</div>' +
+            '<div class="page"><div class="sheet-inner">' +
             '<h1>견 적 서</h1>' +
             '<p class="sub">' + esc(OMNIFY_SUPPLIER.brand) + ' · 멀티채널 커맨드 센터</p>' +
             '<div class="meta"><div>견적번호 <strong>' + esc(no) + '</strong></div>' +
@@ -299,28 +307,43 @@
             '<dt>서비스</dt><dd>' + esc(planLabel(tenant.serviceTier)) + '</dd>' +
             '<dt>좌석/수신</dt><dd>작업 ' + esc(tenant.seats != null ? tenant.seats : '-') +
             ' · 알림톡 ' + esc(tenant.briefingRecipients != null ? tenant.briefingRecipients : '-') + '</dd>' +
-            '<dt>미리보기</dt><dd style="word-break:break-all;font-weight:600">' +
-            esc((typeof absolutePreviewUrl === 'function'
-                ? absolutePreviewUrl(tenant.infra && tenant.infra.previewPath)
-                : (tenant.infra && tenant.infra.previewPath)) || '-') + '</dd>' +
+            '<dt>미리보기</dt><dd>' + esc(previewUrl) + '</dd>' +
             '</dl></div></div>' +
             '<table class="items"><thead><tr>' +
-            '<th style="width:32px">No</th><th>품목</th><th style="width:72px">수량/기간</th>' +
-            '<th style="width:100px">공급가액</th><th style="width:88px">부가세</th><th style="width:72px">비고</th>' +
+            '<th style="width:28px">No</th><th>품목</th><th style="width:64px">수량/기간</th>' +
+            '<th style="width:92px">공급가액</th><th style="width:78px">부가세</th><th style="width:64px">비고</th>' +
             '</tr></thead><tbody>' + tableHtml + '</tbody></table>' +
             totalBlock +
-            '<div class="sec"><h3>견적 상세</h3></div>' + body +
+            '<div class="sec"><h3>견적 상세 · 약관</h3></div>' + body +
             '<div class="foot">' +
-            '<div><p class="note">※ 공급가액 기준 부가가치세 10%가 별도 가산되며, 납입 총액은 부가세 포함 금액입니다.<br>' +
-            '※ 본 견적의 유효기간은 발행일로부터 30일입니다.<br>' +
-            '※ 중도 해지 시 할인 전 정상가(월 이용료) 기준 사용분 차감 후 잔액 환불 · 초기 구축비는 비환불.</p></div>' +
+            '<div><p class="note">※ 공급가액 기준 부가세 10% 별도 · 납입 총액은 부가세 포함.<br>' +
+            '※ 견적 유효기간: 발행일로부터 30일.<br>' +
+            '※ 중도 해지 시 할인 전 정상가(월 이용료) 기준 사용분 차감 후 잔액 환불 · 초기 구축비 비환불.</p></div>' +
             '<div class="sign"><div class="co">' + esc(OMNIFY_SUPPLIER.companyName) + '</div>' +
             '<div class="sign-block">' + seal +
             '<div class="line"></div>' +
             '<div class="who">대표 ' + esc(OMNIFY_SUPPLIER.ceo) + ' (인)</div>' +
             '</div></div>' +
-            '</div></div>' +
-            '<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},250)});<\/script>' +
+            '</div></div></div>' +
+            '<script>' +
+            'function fitOnePage(){' +
+            'var page=document.querySelector(".page");' +
+            'var inner=document.querySelector(".sheet-inner");' +
+            'if(!page||!inner)return 1;' +
+            'inner.style.transform="none";inner.style.width="100%";' +
+            'var avail=page.clientHeight||inner.scrollHeight;' +
+            'var need=inner.scrollHeight;' +
+            'if(need<=avail||!need)return 1;' +
+            'var s=Math.max(0.68,Math.min(1,avail/need));' +
+            'inner.style.transformOrigin="top left";' +
+            'inner.style.transform="scale("+s+")";' +
+            'inner.style.width=(100/s)+"%";' +
+            'return s;' +
+            '}' +
+            'window.__omnifyPrint=function(){fitOnePage();setTimeout(function(){window.print()},80);};' +
+            'window.addEventListener("load",function(){fitOnePage();setTimeout(function(){window.print()},320);});' +
+            'window.addEventListener("beforeprint",fitOnePage);' +
+            '<\/script>' +
             '</body></html>';
     }
 
