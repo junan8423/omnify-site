@@ -119,7 +119,10 @@ const App = {
         { label: 'Cafe24 어드민', action: () => openAdminLink('Cafe24 어드민', 'https://eclogin.cafe24.com/Shop/'), icon: '☁️' },
         { label: '스마트스토어 센터', action: () => openAdminLink('스마트스토어 센터', 'https://sell.smartstore.naver.com/'), icon: '🛒' },
         { label: '쿠팡 Wing', action: () => openAdminLink('쿠팡 Wing', 'https://wing.coupang.com/'), icon: '📦' },
-        { label: '리포트 다운로드', action: () => showToast('PDF 리포트 생성 중...', 'info'), icon: '📄' },
+        { label: '리포트 다운로드', action: function () {
+            if (typeof OmnifyReportPrint !== 'undefined') OmnifyReportPrint.openReport('auto');
+            else showToast('PDF 리포트 생성 중...', 'info');
+        }, icon: '📄' },
         { label: '수동 데이터 동기화', action: () => syncOrdersDemo(), icon: '🔄' },
     ],
 
@@ -238,8 +241,14 @@ function getMockMetrics() {
     var avgRoas = +(s.kpi.targetRoas - 0.08).toFixed(2);
     var marginDelta = (marginGlobal - s.kpi.targetMargin).toFixed(1);
     var coupangDrop = (s.margins.coupang - 28.5).toFixed(1);
+    var orderCount = Math.max(1, Math.round(p.collected * rangeMult * Math.max(0.35, scale)));
+    var aov = Math.round(dailyRevenue / orderCount);
+    var newMembers = Math.max(12, Math.round(orderCount * 0.085));
+    var returnRate = +(1.8 + (100 - marginGlobal) * 0.04).toFixed(1);
+    var companyName = App.brandName || (App.tenantMeta && App.tenantMeta.companyName) || '고객사';
 
     return {
+        companyName: companyName,
         dailyRevenue: dailyRevenue,
         dailyRevenueFormatted: App.formatWon(dailyRevenue),
         dailyRevenueChange: '+14.2%',
@@ -267,6 +276,17 @@ function getMockMetrics() {
         coupangMargin: s.margins.coupang,
         coupangDrop: coupangDrop,
         channelMargins: [s.margins.cafe24, s.margins.smartstore, s.margins.coupang, s.margins.ably],
+        orderCount: orderCount,
+        orderCountFormatted: fmtCount(orderCount),
+        aov: aov,
+        aovFormatted: App.formatWon(aov),
+        newMembers: newMembers,
+        newMembersFormatted: fmtCount(newMembers),
+        returnRate: returnRate,
+        orderCountChange: '+8.4%',
+        aovChange: '+2.1%',
+        newMembersChange: '+11.0%',
+        returnRateChange: '-0.3%p'
     };
 }
 
@@ -718,23 +738,151 @@ function toggleBriefingItem(id) {
     renderBriefingPreview();
 }
 
-function drillDownKpi(type) {
-    if (App.isStarter && typeof drillDownKpiStarter === 'function' && drillDownKpiStarter(type)) return;
-    App.pendingDrillDown = { type: type };
-    if (type === 'revenue') {
-        dataHubFilter.period = App.globalDateRange.dataHubPeriod || 'daily';
-        dataHubFilter.channel = 'all';
-        openView('view-datahub', '누적 데이터 DB', '매일 보는 리포트');
-    } else if (type === 'margin') {
-        navigateTo('view-profit');
-    } else if (type === 'target') {
-        dataHubFilter.period = 'monthly';
-        dataHubFilter.channel = 'all';
-        openView('view-datahub', '누적 데이터 DB', '매일 보는 리포트');
-    } else if (type === 'actions') {
-        App.pendingDrillDown.ordersFilter = '발주대기';
-        navigateTo('view-orders');
+function closeHomeDetailPopup() {
+    var modal = document.getElementById('home-detail-modal');
+    if (modal) {
+        modal.classList.remove('open');
+        delete modal.dataset.report;
     }
+    document.removeEventListener('keydown', _homeDetailEscHandler);
+}
+
+function _homeDetailEscHandler(e) {
+    if (e.key === 'Escape') closeHomeDetailPopup();
+}
+
+function buildHomeDetailPayload(type) {
+    var m = getMockMetrics();
+    var s = typeof getSettings === 'function' ? getSettings() : { margins: {}, kpi: {} };
+    var channels = [
+        { name: 'Cafe24', share: 0.34, margin: s.margins && s.margins.cafe24 },
+        { name: '스마트스토어', share: 0.28, margin: s.margins && s.margins.smartstore },
+        { name: '쿠팡', share: 0.22, margin: s.margins && s.margins.coupang },
+        { name: '에이블리', share: 0.16, margin: s.margins && s.margins.ably }
+    ];
+    if (type === 'revenue') {
+        var rows = channels.map(function (c) {
+            var amt = Math.round(m.dailyRevenue * c.share);
+            return '<tr><td>' + c.name + '</td><td class="text-right font-mono">' + App.formatWon(amt) +
+                '</td><td class="text-right">' + Math.round(c.share * 100) + '%</td><td class="text-right">' +
+                (c.margin != null ? c.margin + '%' : '-') + '</td></tr>';
+        }).join('');
+        return {
+            title: m.companyName + ' 채널통합매출',
+            sub: App.globalDateRange.label + ' · 채널별 분해 (샘플)',
+            report: 'dashboard',
+            body: '<div class="grid grid-cols-2 gap-2 mb-3">' +
+                '<div class="home-ops-cell"><p class="lab">합계</p><p class="val" style="font-size:1rem">' + m.dailyRevenueFormatted + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">전일 대비</p><p class="val text-success" style="font-size:1rem">' + m.dailyRevenueChange + '</p></div></div>' +
+                '<table class="home-detail-table"><thead><tr><th>채널</th><th class="text-right">매출</th><th class="text-right">비중</th><th class="text-right">마진</th></tr></thead><tbody>' +
+                rows + '</tbody></table>' +
+                '<p class="text-[11px] text-gray-500 mt-3">화면 이동 없이 홈에서 확인하는 상세 레이아웃입니다. 인쇄는 상단 「출력」을 사용하세요.</p>'
+        };
+    }
+    if (type === 'ops' || type === 'margin') {
+        return {
+            title: '오늘의 운영 요약',
+            sub: App.globalDateRange.label + ' · 주문·객단가·회원·반품',
+            report: 'dashboard',
+            body: '<div class="grid grid-cols-2 gap-2 mb-3">' +
+                '<div class="home-ops-cell"><p class="lab">주문건수</p><p class="val">' + m.orderCountFormatted + '</p><p class="delta text-success">▲ ' + m.orderCountChange + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">객단가</p><p class="val" style="font-size:.95rem">' + m.aovFormatted + '</p><p class="delta text-success">▲ ' + m.aovChange + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">신규회원</p><p class="val">' + m.newMembersFormatted + '</p><p class="delta text-success">▲ ' + m.newMembersChange + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">반품율</p><p class="val">' + m.returnRate + '%</p><p class="delta text-success">▼ ' + m.returnRateChange + '</p></div></div>' +
+                '<table class="home-detail-table"><thead><tr><th>지표</th><th>설명</th><th class="text-right">값</th></tr></thead><tbody>' +
+                '<tr><td>수집 주문</td><td class="text-gray-400">파이프라인 금일 수집</td><td class="text-right font-mono">' + fmtCount(m.pipeline.collected) + '</td></tr>' +
+                '<tr><td>발주 대기</td><td class="text-gray-400">미처리 송장·발주</td><td class="text-right font-mono">' + fmtCount(m.pipeline.pending) + '</td></tr>' +
+                '<tr><td>출고 완료</td><td class="text-gray-400">금일 출고</td><td class="text-right font-mono">' + fmtCount(m.pipeline.shipped) + '</td></tr>' +
+                '</tbody></table>'
+        };
+    }
+    if (type === 'target') {
+        var cur = s.kpi && s.kpi.currentMonthlyRevenue ? s.kpi.currentMonthlyRevenue : 0;
+        var tgt = s.kpi && s.kpi.monthlyRevenueTarget ? s.kpi.monthlyRevenueTarget : 1;
+        return {
+            title: '이달 AI 예상 마감 매출',
+            sub: '목표 대비 달성률 ' + m.kpiPct + '%',
+            report: 'dashboard',
+            body: '<div class="grid grid-cols-2 gap-2 mb-3">' +
+                '<div class="home-ops-cell"><p class="lab">예상 마감</p><p class="val" style="font-size:1rem">' + m.monthlyTargetFormatted + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">달성률</p><p class="val text-success" style="font-size:1rem">' + m.kpiPct + '%</p></div></div>' +
+                '<div class="w-full bg-gray-800 rounded-full h-2 mb-3"><div class="h-2 rounded-full bg-gradient-to-r from-primary to-accent" style="width:' + m.kpiPct + '%"></div></div>' +
+                '<table class="home-detail-table"><thead><tr><th>항목</th><th class="text-right">금액</th></tr></thead><tbody>' +
+                '<tr><td>월 매출 목표</td><td class="text-right font-mono">' + App.formatWon(tgt) + '</td></tr>' +
+                '<tr><td>현재 누적(목업)</td><td class="text-right font-mono">' + App.formatWon(cur) + '</td></tr>' +
+                '<tr><td>잔여 목표</td><td class="text-right font-mono">' + App.formatWon(Math.max(0, tgt - cur)) + '</td></tr>' +
+                '</tbody></table>'
+        };
+    }
+    if (type === 'actions') {
+        var pending = (App.orders || []).filter(function (o) { return o.status === 'pending'; }).slice(0, 8);
+        var rows2 = pending.map(function (o) {
+            return '<tr><td class="font-mono text-xs">' + o.id + '</td><td>' + o.channel + '</td><td class="truncate max-w-[160px]">' +
+                (o.product || o.productTitle || '') + '</td><td class="text-right font-mono">' + App.formatWon(o.amount) + '</td></tr>';
+        }).join('');
+        return {
+            title: '미처리 액션',
+            sub: '긴급 ' + m.urgentActions + ' · 전체 ' + m.pendingActions + '건',
+            report: 'orders',
+            body: '<div class="grid grid-cols-3 gap-2 mb-3">' +
+                '<div class="home-ops-cell"><p class="lab">미처리</p><p class="val">' + m.pendingActions + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">발주대기</p><p class="val text-warning">' + fmtCount(m.pendingShipments) + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">위험재고</p><p class="val text-danger">' + m.atRiskInventory + '</p></div></div>' +
+                '<p class="text-xs font-bold text-gray-400 mb-1.5">발주 대기 주문 (샘플)</p>' +
+                '<table class="home-detail-table"><thead><tr><th>주문</th><th>채널</th><th>상품</th><th class="text-right">금액</th></tr></thead><tbody>' +
+                (rows2 || '<tr><td colspan="4">대기 주문 없음</td></tr>') + '</tbody></table>'
+        };
+    }
+    if (type === 'promo') {
+        var ps = getHomePromoSummary();
+        var list = (typeof promoPlans !== 'undefined' && promoPlans) ? promoPlans : [];
+        var prows = list.map(function (p) {
+            var st = p.status === 'active' ? '진행' : (p.status === 'planning' ? '기획' : '완료');
+            return '<tr><td>' + (p.label || p.title || '') + '</td><td>' + st + '</td><td class="text-xs text-gray-400">' +
+                (p.startDate || '') + ' ~ ' + (p.endDate || '') + '</td><td class="text-right font-mono">' +
+                App.formatWon(p.kpi && p.kpi.actualRevenue) + '</td></tr>';
+        }).join('');
+        return {
+            title: '프로모션 현황 상세',
+            sub: '진행 ' + ps.active + ' · 기획 ' + ps.planning + ' · 완료 ' + ps.completed,
+            report: 'promo',
+            body: '<div class="grid grid-cols-3 gap-2 mb-3">' +
+                '<div class="home-ops-cell"><p class="lab">목표 대비</p><p class="val">' + ps.pct + '%</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">실적</p><p class="val" style="font-size:.85rem">' + App.formatWon(ps.actual) + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">목표</p><p class="val" style="font-size:.85rem">' + App.formatWon(ps.target) + '</p></div></div>' +
+                '<table class="home-detail-table"><thead><tr><th>프로모션</th><th>상태</th><th>기간</th><th class="text-right">실적</th></tr></thead><tbody>' +
+                (prows || '<tr><td colspan="4">등록된 프로모션 없음</td></tr>') + '</tbody></table>' +
+                '<p class="text-[11px] text-gray-500 mt-3">홈에서는 요약·스케줄만 제공합니다. CRM 메뉴로의 바로가기는 없습니다.</p>'
+        };
+    }
+    return {
+        title: '상세 내역',
+        sub: '',
+        report: 'dashboard',
+        body: '<p class="text-sm text-gray-400">표시할 상세 데이터가 없습니다.</p>'
+    };
+}
+
+function openHomeDetailPopup(type) {
+    var payload = buildHomeDetailPayload(type);
+    var modal = document.getElementById('home-detail-modal');
+    var title = document.getElementById('home-detail-title');
+    var sub = document.getElementById('home-detail-sub');
+    var body = document.getElementById('home-detail-body');
+    if (!modal || !body) {
+        showToast('상세 팝업을 열 수 없습니다.', 'warning');
+        return;
+    }
+    if (title) title.textContent = payload.title;
+    if (sub) sub.textContent = payload.sub || '';
+    body.innerHTML = payload.body;
+    modal.dataset.report = payload.report || 'dashboard';
+    modal.classList.add('open');
+    document.addEventListener('keydown', _homeDetailEscHandler);
+}
+
+function drillDownKpi(type) {
+    openHomeDetailPopup(type === 'margin' ? 'ops' : type);
 }
 
 function applyPendingDrillDown() {
@@ -788,6 +936,28 @@ function renderBriefingConfigPanel() {
             '<div class="w-10 h-5 rounded-full ' + (on ? 'bg-primary' : 'bg-gray-700') + ' relative transition-colors pointer-events-none">' +
             '<div class="w-4 h-4 bg-white rounded-full absolute top-0.5 ' + (on ? 'right-0.5' : 'left-0.5') + ' transition-all shadow"></div></div></div>';
     }).join('');
+    updateBriefingConfigSummary();
+}
+
+function updateBriefingConfigSummary() {
+    var summary = document.getElementById('briefing-config-summary');
+    if (!summary) return;
+    var onCount = BRIEFING_ITEM_DEFS.filter(function (item) { return App.briefingConfig[item.id]; }).length;
+    var body = document.getElementById('briefing-config-body');
+    var collapsed = !body || body.classList.contains('hidden');
+    summary.textContent = (collapsed ? '접힘' : '펼침') + ' · ON ' + onCount + '/' + BRIEFING_ITEM_DEFS.length + '항목';
+}
+
+function toggleBriefingConfigCollapse() {
+    var body = document.getElementById('briefing-config-body');
+    var btn = document.getElementById('briefing-config-toggle');
+    var chev = document.getElementById('briefing-config-chevron');
+    if (!body) return;
+    var willOpen = body.classList.contains('hidden');
+    body.classList.toggle('hidden', !willOpen);
+    if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    if (chev) chev.style.transform = willOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    updateBriefingConfigSummary();
 }
 
 function renderBriefingPreview() {
@@ -873,6 +1043,203 @@ var promoCalendarMode = 'week';
 var promoCalendarCursor = new Date(2026, 6, 10);
 var promoActivePlanId = null;
 var promoModalState = { editId: null, defaultDate: null, fromCalendar: false };
+
+function getHomePromoSummary() {
+    try {
+        if (typeof loadPromoPlans === 'function' && (!promoPlans || !promoPlans.length)) loadPromoPlans();
+    } catch (e) { /* ignore */ }
+    var list = Array.isArray(promoPlans) ? promoPlans : [];
+    var active = list.filter(function (p) { return p.status === 'active'; });
+    var planning = list.filter(function (p) { return p.status === 'planning'; });
+    var completed = list.filter(function (p) { return p.status === 'completed'; });
+    var focus = active[0] || planning[0] || list[0] || null;
+    var target = list.reduce(function (s, p) { return s + (p.kpi && p.kpi.targetRevenue ? p.kpi.targetRevenue : 0); }, 0);
+    var actual = list.reduce(function (s, p) { return s + (p.kpi && p.kpi.actualRevenue ? p.kpi.actualRevenue : 0); }, 0);
+    var pct = target > 0 ? Math.min(100, Math.round((actual / target) * 100)) : 0;
+    return {
+        count: list.length,
+        active: active.length,
+        planning: planning.length,
+        completed: completed.length,
+        focus: focus,
+        target: target,
+        actual: actual,
+        pct: pct
+    };
+}
+
+function renderHomePromoMiniCalHtml() {
+    if (typeof loadPromoPlans === 'function' && (!promoPlans || !promoPlans.length)) loadPromoPlans();
+    var cursor = (typeof promoCalendarCursor !== 'undefined' && promoCalendarCursor)
+        ? new Date(promoCalendarCursor.getFullYear(), promoCalendarCursor.getMonth(), 1)
+        : new Date(2026, 6, 1);
+    var y = cursor.getFullYear();
+    var m = cursor.getMonth();
+    var firstDay = new Date(y, m, 1);
+    var startOffset = (firstDay.getDay() + 6) % 7;
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var prevMonthDays = new Date(y, m, 0).getDate();
+    var todayStr = typeof formatPromoDate === 'function' ? formatPromoDate(new Date(2026, 6, 10)) : '2026-07-10';
+    var days = [];
+    for (var i = 0; i < startOffset; i++) {
+        var pd = prevMonthDays - startOffset + i + 1;
+        days.push('<div class="day muted"><div class="dnum">' + pd + '</div></div>');
+    }
+    for (var day = 1; day <= daysInMonth; day++) {
+        var dateStr = formatPromoDate(new Date(y, m, day));
+        var events = typeof getPromoPlansForDate === 'function' ? getPromoPlansForDate(dateStr) : [];
+        var pills = events.slice(0, 2).map(function (p) {
+            var cls = p.status === 'active' ? '' : (p.status === 'planning' ? ' plan' : ' done');
+            var lab = (p.label || p.title || '').slice(0, 8);
+            return '<span class="pill' + cls + '" title="' + (p.label || p.title || '') + '">' + lab + '</span>';
+        }).join('');
+        if (events.length > 2) pills += '<span class="pill plan">+' + (events.length - 2) + '</span>';
+        days.push('<div class="day' + (dateStr === todayStr ? '" style="outline:1px solid rgba(59,130,246,.55)' : '') +
+            '"><div class="dnum">' + day + '</div>' + pills + '</div>');
+    }
+    var total = startOffset + daysInMonth;
+    var remain = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for (var j = 1; j <= remain; j++) {
+        days.push('<div class="day muted"><div class="dnum">' + j + '</div></div>');
+    }
+    return '<div class="home-promo-mini-cal">' +
+        '<div class="flex items-center justify-between px-2.5 py-2 border-b border-border/60">' +
+        '<p class="text-[11px] font-bold text-gray-300">' + y + '년 ' + (m + 1) + '월 스케줄</p>' +
+        '<span class="text-[10px] text-gray-500">축소판</span></div>' +
+        '<div class="dow"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>' +
+        '<div class="days">' + days.join('') + '</div></div>';
+}
+
+function renderHomePromoCardHtml() {
+    var ps = getHomePromoSummary();
+    var focus = ps.focus;
+    var focusTitle = focus ? (focus.label || focus.title) : '등록된 프로모션 없음';
+    var focusMeta = focus
+        ? ((focus.startDate || '') + (focus.endDate ? ' ~ ' + focus.endDate : '') + ' · ' + (focus.channels || []).slice(0, 3).join(', '))
+        : '기간·채널·목표를 등록하면 여기에 요약됩니다';
+    var statusChip = focus
+        ? (focus.status === 'active' ? '<span class="promo-chip">진행중</span>'
+            : focus.status === 'planning' ? '<span class="promo-chip plan">기획</span>'
+            : '<span class="promo-chip done">완료</span>')
+        : '<span class="promo-chip plan">대기</span>';
+    var revLabel = ps.target >= 100000000
+        ? (ps.actual / 100000000).toFixed(1) + ' / ' + (ps.target / 100000000).toFixed(1) + '억'
+        : App.formatWon(ps.actual) + ' / ' + App.formatWon(ps.target);
+
+    return `
+    <div class="glass rounded-xl p-4 home-promo-card" id="home-promo-card">
+        <div class="chart-card-header mb-3">
+            <div class="chart-card-title">
+                <h2>프로모션 현황</h2>
+                <span class="chart-unit-badge">${ps.active} 진행</span>
+            </div>
+            <button type="button" onclick="openHomeDetailPopup('promo')" class="text-[11px] text-primary font-bold hover:underline shrink-0">상세</button>
+        </div>
+        <div class="home-promo-split">
+            <div class="min-w-0 flex flex-col">
+                <div class="flex items-start gap-2 mb-3">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">${statusChip}<p class="text-sm font-bold truncate">${focusTitle}</p></div>
+                        <p class="text-[11px] text-gray-500">${focusMeta}</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <div class="home-ops-cell"><p class="lab">진행</p><p class="val">${ps.active}</p></div>
+                    <div class="home-ops-cell"><p class="lab">기획</p><p class="val">${ps.planning}</p></div>
+                    <div class="home-ops-cell"><p class="lab">완료</p><p class="val">${ps.completed}</p></div>
+                </div>
+                <div class="mb-1 flex justify-between text-[10px] text-gray-500">
+                    <span>기간 매출 목표 대비</span><span class="font-mono text-gray-300">${revLabel} · ${ps.pct}%</span>
+                </div>
+                <div class="w-full bg-gray-800 rounded-full h-1.5 mb-3">
+                    <div class="h-1.5 rounded-full bg-gradient-to-r from-primary to-accent" style="width:${ps.pct}%"></div>
+                </div>
+                <p class="text-[11px] text-gray-500 mb-3 leading-relaxed">좌측은 기간 프로모션 써머리, 우측은 스케줄 축소판입니다. 메뉴 바로가기 없이 홈에서만 확인합니다.</p>
+                <div class="mt-auto flex gap-2">
+                    <button type="button" onclick="openHomeDetailPopup('promo')" class="flex-1 text-xs font-semibold py-2 rounded-lg bg-surface border border-border hover:border-primary/40">써머리 상세</button>
+                    <button type="button" onclick="typeof openPromoPlanModal==='function'&&openPromoPlanModal()" class="flex-1 text-xs font-semibold py-2 rounded-lg bg-primary/90 text-white hover:bg-primary">+ 프로모션</button>
+                </div>
+            </div>
+            <div class="min-w-0">${renderHomePromoMiniCalHtml()}</div>
+        </div>
+    </div>`;
+}
+
+function getPipelineHealth() {
+    var warn = (App.apiChannels || []).some(function (c) { return c.status === 'warn' || c.status === 'error'; });
+    var latest = (App.syncHistory || [])[0];
+    return {
+        ok: !warn,
+        label: warn ? '주의' : '정상',
+        badge: warn ? '!' : 'OK',
+        latest: latest
+    };
+}
+
+function refreshPipelinePanel() {
+    var health = getPipelineHealth();
+    var btn = document.getElementById('pipeline-btn');
+    var badge = document.getElementById('pipeline-header-badge');
+    var chip = document.getElementById('pipeline-status-chip');
+    if (btn) {
+        btn.classList.toggle('pipe-ok', health.ok);
+        btn.classList.toggle('pipe-warn', !health.ok);
+    }
+    if (badge) {
+        badge.textContent = health.badge;
+        badge.style.background = health.ok ? '#10b981' : '#f59e0b';
+    }
+    if (chip) {
+        chip.textContent = health.label;
+        chip.className = 'text-[10px] font-mono px-2 py-0.5 rounded border shrink-0 ' +
+            (health.ok ? 'bg-success/10 text-success border-success/20' : 'bg-warning/10 text-warning border-warning/20');
+    }
+    var flow = document.getElementById('pipeline-flow');
+    if (flow) {
+        var steps = ['Cron', 'API Sync', 'Parse', 'Store', '브리핑'];
+        flow.innerHTML = steps.map(function (n, i) {
+            return (i > 0 ? '<div class="w-5 h-0.5 bg-gray-700 shrink-0' + (i === 1 ? ' flow-line' : '') + '"></div>' : '') +
+                '<div class="shrink-0 flex flex-col items-center gap-1">' +
+                '<div class="w-9 h-9 rounded-lg ' + (i === 1 ? 'bg-primary/20 border-2 border-primary pulse-live' : 'bg-surface border border-border') +
+                ' flex items-center justify-center text-[8px] font-bold ' + (i === 1 ? 'text-primary' : 'text-gray-400') + '">' + n + '</div></div>';
+        }).join('');
+    }
+    var list = document.getElementById('pipeline-sync-list');
+    if (list) {
+        var rows = (App.syncHistory || []).slice(0, 4);
+        list.innerHTML = rows.map(function (row) {
+            var ok = row.status === 'success';
+            return '<div class="flex items-start gap-2 p-1.5 rounded-lg bg-surface/60 border border-border/60">' +
+                '<span class="pipeline-dot ' + (ok ? '' : 'warn') + ' mt-1.5 shrink-0"></span>' +
+                '<div class="min-w-0 flex-1">' +
+                '<p class="font-semibold text-gray-200 truncate">' + (row.channel || '') + ' · ' + (row.job || '') + '</p>' +
+                '<p class="text-[10px] text-gray-500">' + (row.time || '') + ' · ' + (row.records != null ? fmtCount(row.records) + '건' : '') +
+                (row.note ? ' · ' + row.note : '') + '</p></div></div>';
+        }).join('') || '<p class="text-gray-500">동기화 이력이 없습니다.</p>';
+    }
+}
+
+function togglePipelinePanel(e) {
+    if (e) e.stopPropagation();
+    var panel = document.getElementById('pipeline-panel');
+    var btn = document.getElementById('pipeline-btn');
+    if (!panel) return;
+    var open = !panel.classList.contains('open');
+    panel.classList.toggle('open', open);
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+        refreshPipelinePanel();
+        var notif = document.getElementById('notif-panel');
+        if (notif) notif.classList.add('hidden');
+    }
+}
+
+function closePipelinePanel() {
+    var panel = document.getElementById('pipeline-panel');
+    var btn = document.getElementById('pipeline-btn');
+    if (panel) panel.classList.remove('open');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+}
 
 function getPromoStatsSummary() {
     if (!promoPlans) loadPromoPlans();
@@ -1611,29 +1978,49 @@ App.views['view-dashboard'] = () => {
 
     <!-- KPI Row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        ${[
-            { label: '옴니채널 통합 매출 (금일)', value: m.dailyRevenueFormatted, change: m.dailyRevenueChange, up: true, sub: App.globalDateRange.label + ' · 클릭→DB', spark: [18,22,20,28,25,32,35], drill: 'revenue' },
-            { label: '통합 실시간 마진율', value: m.marginGlobal + '%', change: (m.marginUp ? '+' : '') + m.marginDelta + '%p', up: m.marginUp, sub: '목표 ' + m.targetMargin + '% · 클릭→분석', spark: [28,29,30,29,31,30,32], drill: 'margin' },
-            { label: '이달 AI 예상 마감 매출', value: m.monthlyTargetFormatted, change: m.kpiPct + '%', up: true, sub: '목표 대비 · 클릭→월간DB', progress: m.kpiPct, drill: 'target' },
-            { label: '미처리 액션', value: m.pendingActions + '건', change: '긴급 ' + m.urgentActions, up: false, sub: '클릭→발주대기', alert: true, drill: 'actions' },
-        ].map(k => `
-        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill ${k.alert ? 'kpi-glow-danger border-l-4 border-l-warning' : ''}" onclick="drillDownKpi('${k.drill}')" title="클릭하여 상세 보기">
-            <p class="kpi-label">${k.label}</p>
+        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill" onclick="drillDownKpi('revenue')">
+            <p class="kpi-label">${m.companyName} 채널통합매출 (금일)</p>
             <div class="kpi-body">
-                <p class="kpi-value text-white">${k.value}</p>
-                ${k.spark ? `<div class="kpi-spark-wrap"><canvas class="sparkline" data-spark="${k.spark.join(',')}"></canvas></div>` : ''}
+                <p class="kpi-value text-white">${m.dailyRevenueFormatted}</p>
+                <div class="kpi-spark-wrap"><canvas class="sparkline" data-spark="18,22,20,28,25,32,35"></canvas></div>
             </div>
-            ${k.progress ? `<div class="w-full bg-gray-800 rounded-full h-1.5 mt-2 mb-1"><div class="progress-bar bg-gradient-to-r from-primary to-accent h-1.5 rounded-full" style="width:${k.progress}%"></div></div>` : ''}
             <div class="kpi-footer">
-                <span class="font-bold ${k.up ? 'text-success' : 'text-warning'}">${k.up ? '▲' : '●'} ${k.change}</span>
-                <span class="text-gray-500">${k.sub}</span>
+                <span class="font-bold text-success">▲ ${m.dailyRevenueChange}</span>
+                <span class="text-gray-500">${App.globalDateRange.label} · 클릭→상세</span>
             </div>
-        </div>`).join('')}
+        </div>
+        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill" id="home-ops-kpi" onclick="openHomeDetailPopup('ops')">
+            <p class="kpi-label">오늘의 운영 요약</p>
+            <div class="home-ops-grid">
+                <div class="home-ops-cell"><p class="lab">주문건수</p><p class="val">${m.orderCountFormatted}</p><p class="delta text-success">▲ ${m.orderCountChange}</p></div>
+                <div class="home-ops-cell"><p class="lab">객단가</p><p class="val" style="font-size:.92rem">${m.aovFormatted}</p><p class="delta text-success">▲ ${m.aovChange}</p></div>
+                <div class="home-ops-cell"><p class="lab">신규회원</p><p class="val">${m.newMembersFormatted}</p><p class="delta text-success">▲ ${m.newMembersChange}</p></div>
+                <div class="home-ops-cell"><p class="lab">반품율</p><p class="val">${m.returnRate}%</p><p class="delta text-success">▼ ${m.returnRateChange}</p></div>
+            </div>
+            <div class="kpi-footer mt-2"><span class="text-gray-500">${App.globalDateRange.label} · 클릭→상세</span></div>
+        </div>
+        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill" onclick="drillDownKpi('target')">
+            <p class="kpi-label">이달 AI 예상 마감 매출</p>
+            <div class="kpi-body"><p class="kpi-value text-white">${m.monthlyTargetFormatted}</p></div>
+            <div class="w-full bg-gray-800 rounded-full h-1.5 mt-2 mb-1"><div class="progress-bar bg-gradient-to-r from-primary to-accent h-1.5 rounded-full" style="width:${m.kpiPct}%"></div></div>
+            <div class="kpi-footer">
+                <span class="font-bold text-success">▲ ${m.kpiPct}%</span>
+                <span class="text-gray-500">목표 대비 · 클릭→상세</span>
+            </div>
+        </div>
+        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill kpi-glow-danger border-l-4 border-l-warning" onclick="drillDownKpi('actions')">
+            <p class="kpi-label">미처리 액션</p>
+            <div class="kpi-body"><p class="kpi-value text-white">${m.pendingActions}건</p></div>
+            <div class="kpi-footer">
+                <span class="font-bold text-warning">● 긴급 ${m.urgentActions}</span>
+                <span class="text-gray-500">클릭→상세</span>
+            </div>
+        </div>
     </div>
 
     <!-- Charts + Alerts -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
-        <div class="glass rounded-xl p-4 xl:col-span-2 chart-card">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 home-chart-row">
+        <div class="glass rounded-xl p-4 xl:col-span-2 chart-card h-full">
             <div class="chart-card-header">
                 <div class="chart-card-title">
                     <h2 id="chart-period-title">${App.dashboardChartPeriod === 'monthly' ? '월간' : '주간'} 채널별 매출 & ROAS</h2>
@@ -1653,14 +2040,14 @@ App.views['view-dashboard'] = () => {
             <div class="chart-canvas-wrap tall"><canvas id="multiChannelChart"></canvas></div>
         </div>
 
-        <div class="glass rounded-xl p-4">
+        <div class="glass rounded-xl p-4 home-inv-alert h-full">
             <div class="chart-card-header mb-2">
                 <div class="chart-card-title">
                     <h2>위험 재고 경보</h2>
                     <span class="chart-unit-badge text-danger border-danger/30 bg-danger/10">${m.atRiskInventory}건</span>
                 </div>
             </div>
-            <div class="space-y-2.5">
+            <div class="space-y-2.5 home-inv-list">
                 ${App.inventory.filter(i => i.status !== 'safe').map(i => `
                 <div class="p-3 rounded-lg bg-surface border border-border hover:border-danger/30 transition-colors cursor-pointer" onclick="navigateTo('view-inventory')">
                     <div class="flex justify-between items-start mb-1">
@@ -1674,49 +2061,13 @@ App.views['view-dashboard'] = () => {
                     <div class="mt-2 w-full bg-gray-800 rounded-full h-1">
                         <div class="h-1 rounded-full ${i.status==='critical'?'bg-danger':'bg-warning'}" style="width:${Math.min(100,(i.total/i.safety)*100)}%"></div>
                     </div>
-                </div>`).join('')}
+                </div>`).join('') || '<p class="text-sm text-gray-500 py-6 text-center">위험 재고 없음</p>'}
             </div>
-            <button onclick="navigateTo('view-inventory')" class="mt-3 text-xs text-primary font-semibold hover:underline text-center w-full">전체 재고 보기 →</button>
+            <button onclick="navigateTo('view-inventory')" class="mt-3 text-xs text-primary font-semibold hover:underline text-center w-full shrink-0">전체 재고 보기 →</button>
         </div>
     </div>
 
-    <!-- Channel Status + Pipeline -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-        <div class="glass rounded-xl p-4">
-            <div class="chart-card-header mb-3">
-                <h2 class="font-bold text-sm">채널 API 상태</h2>
-            </div>
-            <div class="space-y-3">
-                ${App.apiChannels.map(c => `
-                <div class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface transition-colors">
-                    <span class="text-lg">${c.icon}</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium truncate">${c.name}</p>
-                        <p class="text-[10px] text-gray-500">토큰 만료: ${c.tokenExpiry} · ${c.lastSync}</p>
-                    </div>
-                    <span class="status-dot ${c.status}"></span>
-                </div>`).join('')}
-            </div>
-            <button onclick="navigateTo('view-api')" class="mt-3 text-xs text-primary font-semibold hover:underline">API · 동기화 이력 →</button>
-        </div>
-
-        <div class="glass rounded-xl p-4">
-            <div class="chart-card-header mb-2">
-                <div class="chart-card-title">
-                    <h2>데이터 파이프라인</h2>
-                </div>
-                <span class="text-[10px] font-mono bg-warning/10 text-warning px-2 py-0.5 rounded border border-warning/20 shrink-0">자동 동기화</span>
-            </div>
-            <p class="text-[10px] text-gray-500 mb-3">채널 웹훅·동기화 → 정규화 → Firebase 적재 → 매일 알림톡 브리핑</p>
-            <div class="flex items-center gap-1 overflow-x-auto py-2 text-center">
-                ${['Cron','API Sync','Parse','Firebase','카톡'].map((n,i) => `
-                ${i>0?'<div class="w-6 h-0.5 bg-gray-700 relative shrink-0'+(i===1?' flow-line':'')+'"></div>':''}
-                <div class="shrink-0 flex flex-col items-center gap-1">
-                    <div class="w-10 h-10 rounded-lg ${i===1?'bg-primary/20 border-2 border-primary pulse-live':'bg-surface border border-border'} flex items-center justify-center text-[9px] font-bold ${i===1?'text-primary':'text-gray-400'}">${n}</div>
-                </div>`).join('')}
-            </div>
-        </div>
-    </div>
+    ${typeof renderHomePromoCardHtml === 'function' ? renderHomePromoCardHtml() : ''}
 
     <!-- Recent Orders -->
     <div class="glass rounded-xl overflow-hidden">
@@ -1810,8 +2161,8 @@ App.views['view-datahub'] = () => `
     <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3" id="datahub-kpis"></div>
 
     <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-        <div class="glass rounded-xl p-4 lg:col-span-2 chart-card">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 datahub-chart-row">
+        <div class="glass rounded-xl p-4 lg:col-span-2 chart-card h-full">
             <div class="chart-card-header">
                 <div class="chart-card-title">
                     <h2 id="datahub-chart-title">매출 추이</h2>
@@ -1822,17 +2173,19 @@ App.views['view-datahub'] = () => `
                 <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(59,130,246,0.8)"></span>매출</span>
                 <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(16,185,129,0.8)"></span>주문건수</span>
             </div>
-            <div class="chart-canvas-wrap tall"><canvas id="dataHubTrendChart"></canvas></div>
+            <div class="chart-canvas-wrap tall datahub-canvas-grow"><canvas id="dataHubTrendChart"></canvas></div>
         </div>
-        <div class="glass rounded-xl p-4 chart-card">
+        <div class="glass rounded-xl p-4 chart-card h-full datahub-share-card">
             <div class="chart-card-header">
                 <div class="chart-card-title">
                     <h2>채널별 매출 비중</h2>
                     <span class="chart-unit-badge" id="datahub-pie-period">일간</span>
                 </div>
             </div>
-            <div class="chart-canvas-wrap short"><canvas id="dataHubChannelChart"></canvas></div>
-            <div class="space-y-2 mt-2" id="datahub-channel-legend"></div>
+            <div class="datahub-share-body">
+                <div class="chart-canvas-wrap datahub-share-pie"><canvas id="dataHubChannelChart"></canvas></div>
+                <div class="datahub-channel-legend-grid" id="datahub-channel-legend" aria-label="채널 범례 (최대 12개 · 3열)"></div>
+            </div>
         </div>
     </div>
 
@@ -1922,9 +2275,17 @@ App.views['view-briefing'] = () => {
                 <p class="text-[11px] text-gray-500 mb-3" id="briefing-recipients-meta"></p>
                 <div class="space-y-2" id="briefing-recipients-list"></div>
             </div>
-            <div class="glass rounded-xl p-5">
-                <h3 class="font-bold text-sm mb-4">브리핑 구성 항목 <span class="text-[10px] text-gray-500 font-normal">클릭하여 ON/OFF</span></h3>
-                <div class="space-y-3" id="briefing-config-list"></div>
+            <div class="glass rounded-xl overflow-hidden" id="briefing-config-card">
+                <button type="button" id="briefing-config-toggle" class="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-surface/40 transition-colors" onclick="toggleBriefingConfigCollapse()" aria-expanded="false" aria-controls="briefing-config-body">
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-sm">브리핑 구성 항목 <span class="text-[10px] text-gray-500 font-normal">클릭하여 ON/OFF</span></h3>
+                        <p class="text-[11px] text-gray-500 mt-0.5" id="briefing-config-summary">접힘 · 미리보기·수신 설정만 우선 확인</p>
+                    </div>
+                    <svg id="briefing-config-chevron" class="w-4 h-4 text-gray-400 shrink-0 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="briefing-config-body" class="hidden px-5 pb-5 border-t border-border">
+                    <div class="space-y-3 pt-4" id="briefing-config-list"></div>
+                </div>
             </div>
             <div class="glass rounded-xl p-5">
                 <h3 class="font-bold text-sm mb-3">발송 이력</h3>
@@ -1948,13 +2309,16 @@ App.views['view-orders'] = () => {
 <div id="view-orders" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-            <h2 class="text-xl font-bold">옴니채널 주문 · 발주 현황</h2>
+            <h2 class="text-xl font-bold">${m.companyName} 주문 · 발주 현황</h2>
             <p class="text-sm text-gray-400 mt-1">전 채널 주문 상태 미러 · 발주·출고 실행은 사방넷/채널 <span class="demo-pill">데모</span></p>
         </div>
-        <button onclick="syncOrdersDemo()" class="text-sm font-semibold px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 flex items-center gap-2 transition-colors">
-            <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            수동 동기화
-        </button>
+        <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="typeof OmnifyReportPrint!=='undefined'&&OmnifyReportPrint.openForm('orders')" class="text-sm font-semibold px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 transition-colors">출력 양식</button>
+            <button onclick="syncOrdersDemo()" class="text-sm font-semibold px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 flex items-center gap-2 transition-colors">
+                <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                수동 동기화
+            </button>
+        </div>
     </div>
 
     <div class="glass rounded-xl p-4 border border-warning/25 bg-warning/5" id="orders-policy-banner">
@@ -2023,6 +2387,7 @@ App.views['view-inventory'] = () => {
             <p class="text-sm text-gray-400 mt-1">${pol ? pol.subtitle : '사방넷 실재고 + 채널 재고 조회'} <span class="demo-pill">데모</span></p>
         </div>
         <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="typeof OmnifyReportPrint!=='undefined'&&OmnifyReportPrint.openForm('inventory')" class="text-xs font-semibold px-3 py-2 rounded-lg border border-border hover:border-primary/40 transition-colors">출력 양식</button>
             <button type="button" onclick="openInventorySourceHint()" class="text-xs font-semibold px-3 py-2 rounded-lg border border-border hover:border-primary/40 transition-colors">원천 시스템 안내</button>
             <button type="button" onclick="blockInventoryWrite('재고 수량 수정')" class="text-xs font-semibold px-3 py-2 rounded-lg border border-warning/40 text-warning/90 hover:bg-warning/10">재고 수정 (봉쇄)</button>
         </div>
@@ -2092,7 +2457,10 @@ App.views['view-crm'] = () => `
             <h2 class="text-xl font-bold">프로모션 기획 · 성과</h2>
             <p class="text-sm text-gray-400 mt-1">캘린더 일정 · 목표 KPI · 외부 실행 후 실적 기록 <span class="demo-pill">데모</span></p>
         </div>
-        <button onclick="openPromoPlanModal()" class="text-sm font-bold px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors">+ 프로모션</button>
+        <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="typeof OmnifyReportPrint!=='undefined'&&OmnifyReportPrint.openForm('promo')" class="text-sm font-semibold px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 transition-colors">출력 양식</button>
+            <button onclick="openPromoPlanModal()" class="text-sm font-bold px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 transition-colors">+ 프로모션</button>
+        </div>
     </div>
 
     <div class="glass rounded-xl p-4 border border-primary/20 bg-primary/5" id="crm-execution-banner">
@@ -2141,7 +2509,10 @@ App.views['view-profit'] = () => {
     var m = getMockMetrics();
     return `
 <div id="view-profit" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
-    <div><h2 class="text-xl font-bold">AI 수익성 분석</h2><p class="text-sm text-gray-400 mt-1">채널별 마진 · 광고 ROAS · AI 인사이트 <span class="demo-pill">설정 연동</span></p></div>
+    <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div><h2 class="text-xl font-bold">AI 수익성 분석</h2><p class="text-sm text-gray-400 mt-1">채널별 마진 · 광고 ROAS · AI 인사이트 <span class="demo-pill">설정 연동</span></p></div>
+        <button type="button" onclick="typeof OmnifyReportPrint!=='undefined'&&OmnifyReportPrint.openForm('profit')" class="text-sm font-semibold px-4 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 transition-colors">출력 양식</button>
+    </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         ${[
             ['이번 달 순이익', m.netProfitFormatted, '+18.3%'],
@@ -2151,8 +2522,8 @@ App.views['view-profit'] = () => {
         ].map(([l,v,c])=>`
         <div class="glass rounded-xl p-5"><p class="text-xs text-gray-400 mb-1">${l}</p><p class="text-2xl font-extrabold mb-1">${v}</p><p class="text-xs text-gray-500">${c}</p></div>`).join('')}
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-        <div class="glass rounded-xl p-4 lg:col-span-2 chart-card">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 profit-chart-row">
+        <div class="glass rounded-xl p-4 lg:col-span-2 chart-card h-full">
             <div class="chart-card-header">
                 <div class="chart-card-title">
                     <h2>광고 지출 vs 순이익</h2>
@@ -2163,17 +2534,17 @@ App.views['view-profit'] = () => {
                 <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(239,68,68,0.7)"></span>광고 지출</span>
                 <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(16,185,129,0.7)"></span>순이익</span>
             </div>
-            <div class="chart-canvas-wrap tall"><canvas id="profitChart"></canvas></div>
+            <div class="chart-canvas-wrap tall profit-canvas-grow"><canvas id="profitChart"></canvas></div>
         </div>
-        <div class="glass rounded-xl p-4 chart-card">
+        <div class="glass rounded-xl p-4 chart-card h-full profit-margin-card">
             <div class="chart-card-header">
                 <div class="chart-card-title">
                     <h2>채널별 마진율</h2>
                     <span class="chart-unit-badge">%</span>
                 </div>
             </div>
-            <div class="chart-canvas-wrap short"><canvas id="marginChart"></canvas></div>
-            <div class="p-4 rounded-lg bg-primary/10 border border-primary/20">
+            <div class="chart-canvas-wrap tall profit-canvas-grow"><canvas id="marginChart"></canvas></div>
+            <div class="p-4 rounded-lg bg-primary/10 border border-primary/20 profit-insight">
                 <p class="text-xs font-bold text-primary mb-1">🤖 AI 인사이트</p>
                 <p class="text-xs text-gray-300 leading-relaxed">쿠팡 마진율 <strong class="text-danger">${Math.abs(parseFloat(m.coupangDrop))}%p ${parseFloat(m.coupangDrop) < 0 ? '하락' : '상승'}</strong>. 메타 광고 예산 15% 재배분 시 월 <strong class="text-success">${m.aiSavingsFormatted}</strong> 절감 예상.</p>
             </div>
@@ -3960,10 +4331,41 @@ function generateDataHubRows(period, channel) {
 function getDataHubSummary(rows) {
     var totalRev = rows.reduce(function(s, r) { return s + r.revenue; }, 0);
     var totalOrders = rows.reduce(function(s, r) { return s + r.orders; }, 0);
-    var avgMargin = rows.reduce(function(s, r) { return s + r.margin; }, 0) / rows.length;
+    var avgMargin = rows.length ? rows.reduce(function(s, r) { return s + r.margin; }, 0) / rows.length : 0;
     var totalNew = rows.reduce(function(s, r) { return s + r.newCustomers; }, 0);
-    var avgReturn = rows.reduce(function(s, r) { return s + r.returnRate; }, 0) / rows.length;
-    var lastGrowth = rows.length ? rows[rows.length - 1].growth : 0;
+    var avgReturn = rows.length ? rows.reduce(function(s, r) { return s + r.returnRate; }, 0) / rows.length : 0;
+    var lastGrowth = rows.length ? rows[0].growth : 0;
+
+    /* 직전 구간 대비: 최근 절반 vs 이전 절반 (rows[0]=최신) */
+    var mid = Math.max(1, Math.ceil(rows.length / 2));
+    var recent = rows.slice(0, mid);
+    var older = rows.slice(mid);
+    if (!older.length && rows.length >= 2) {
+        recent = [rows[0]];
+        older = [rows[1]];
+    }
+    function avg(arr, key) {
+        if (!arr.length) return 0;
+        return arr.reduce(function (s, r) { return s + (Number(r[key]) || 0); }, 0) / arr.length;
+    }
+    function sum(arr, key) {
+        return arr.reduce(function (s, r) { return s + (Number(r[key]) || 0); }, 0);
+    }
+    var cmp = older.length ? {
+        revenue: sum(recent, 'revenue'),
+        revenuePrev: sum(older, 'revenue'),
+        orders: sum(recent, 'orders'),
+        ordersPrev: sum(older, 'orders'),
+        aov: avg(recent, 'aov'),
+        aovPrev: avg(older, 'aov'),
+        margin: avg(recent, 'margin'),
+        marginPrev: avg(older, 'margin'),
+        newCustomers: sum(recent, 'newCustomers'),
+        newCustomersPrev: sum(older, 'newCustomers'),
+        returnRate: avg(recent, 'returnRate'),
+        returnRatePrev: avg(older, 'returnRate')
+    } : null;
+
     return {
         revenue: totalRev,
         orders: totalOrders,
@@ -3972,29 +4374,82 @@ function getDataHubSummary(rows) {
         newCustomers: totalNew,
         returnRate: avgReturn.toFixed(1),
         growth: lastGrowth,
+        cmp: cmp,
+        compareLabel: older.length ? '직전구간 대비' : ''
     };
 }
 
 function formatDataHubWon(n) {
-    if (n >= 100000000) return '₩ ' + (n / 100000000).toFixed(1) + '억';
-    if (n >= 10000) return '₩ ' + (n / 10000).toFixed(0) + '만';
+    n = Number(n) || 0;
+    var abs = Math.abs(n);
+    var sign = n < 0 ? '-' : '';
+    if (abs >= 100000000) return sign + '₩ ' + (abs / 100000000).toFixed(1) + '억';
+    if (abs >= 10000) return sign + '₩ ' + (abs / 10000).toFixed(0) + '만';
     return App.formatWon(n);
+}
+
+/** 약식 증감: ▲12% · ▼0.3p · ▲820만 */
+function formatDataHubDeltaSmart(curr, prev, kind) {
+    if (prev == null || curr == null || !isFinite(prev) || !isFinite(curr)) {
+        return { text: '—', cls: 'text-gray-500', title: '' };
+    }
+    var diff = curr - prev;
+    var up = diff >= 0;
+    var arrow = up ? '▲' : '▼';
+    var cls = up ? 'text-success' : 'text-danger';
+    if (kind === 'invert') cls = up ? 'text-danger' : 'text-success';
+    var absDiff = Math.abs(diff);
+    var pct = prev !== 0 ? (diff / Math.abs(prev)) * 100 : 0;
+    var text;
+    if (kind === 'pp') {
+        text = arrow + absDiff.toFixed(1) + 'p';
+    } else if (Math.abs(pct) >= 0.8 || kind === 'pct') {
+        text = arrow + (Math.abs(pct) >= 10 ? Math.abs(pct).toFixed(0) : Math.abs(pct).toFixed(1)) + '%';
+    } else if (kind === 'won') {
+        if (absDiff >= 100000000) text = arrow + (absDiff / 100000000).toFixed(1) + '억';
+        else if (absDiff >= 10000) text = arrow + Math.round(absDiff / 10000) + '만';
+        else text = arrow + Math.round(absDiff).toLocaleString('ko-KR');
+    } else if (kind === 'count') {
+        if (absDiff >= 1000) text = arrow + (absDiff / 1000).toFixed(1) + '천';
+        else text = arrow + Math.round(absDiff).toLocaleString('ko-KR');
+    } else {
+        text = arrow + (Math.abs(pct) >= 10 ? Math.abs(pct).toFixed(0) : Math.abs(pct).toFixed(1)) + '%';
+    }
+    return { text: text, cls: cls, title: 'Δ ' + (diff >= 0 ? '+' : '') + (kind === 'won' ? formatDataHubWon(diff) : diff.toFixed(2)) };
 }
 
 function renderDataHubKpis(summary) {
     var el = document.getElementById('datahub-kpis');
     if (!el) return;
     var periodNames = { daily: '일간', weekly: '주간', monthly: '월간', yearly: '연간' };
+    var cmp = summary.cmp;
+    var deltas = cmp ? {
+        revenue: formatDataHubDeltaSmart(cmp.revenue, cmp.revenuePrev, 'won'),
+        orders: formatDataHubDeltaSmart(cmp.orders, cmp.ordersPrev, 'count'),
+        aov: formatDataHubDeltaSmart(cmp.aov, cmp.aovPrev, 'won'),
+        margin: formatDataHubDeltaSmart(cmp.margin, cmp.marginPrev, 'pp'),
+        newCustomers: formatDataHubDeltaSmart(cmp.newCustomers, cmp.newCustomersPrev, 'count'),
+        returnRate: formatDataHubDeltaSmart(cmp.returnRate, cmp.returnRatePrev, 'invert')
+    } : null;
+    var foot = summary.compareLabel || (periodNames[dataHubFilter.period] + ' 합계');
     var kpis = [
-        ['누적 매출', formatDataHubWon(summary.revenue), periodNames[dataHubFilter.period] + ' 합계'],
-        ['총 주문', summary.orders.toLocaleString() + '건', '전 기간 누적'],
-        ['평균 객단가', App.formatWon(summary.aov), '주문당'],
-        ['평균 마진율', summary.margin + '%', '광고·원가 반영'],
-        ['신규 고객', summary.newCustomers.toLocaleString() + '명', '기간 내 유입'],
-        ['반품률', summary.returnRate + '%', '전기 대비 ' + (summary.growth >= 0 ? '+' : '') + summary.growth + '%'],
+        { label: '누적 매출', value: formatDataHubWon(summary.revenue), d: deltas && deltas.revenue },
+        { label: '총 주문', value: summary.orders.toLocaleString() + '건', d: deltas && deltas.orders },
+        { label: '평균 객단가', value: App.formatWon(summary.aov), d: deltas && deltas.aov },
+        { label: '평균 마진율', value: summary.margin + '%', d: deltas && deltas.margin },
+        { label: '신규 고객', value: summary.newCustomers.toLocaleString() + '명', d: deltas && deltas.newCustomers },
+        { label: '반품률', value: summary.returnRate + '%', d: deltas && deltas.returnRate }
     ];
-    el.innerHTML = kpis.map(function(k) {
-        return '<div class="glass rounded-xl p-4"><p class="text-[10px] text-gray-500 mb-1">' + k[0] + '</p><p class="text-lg font-extrabold">' + k[1] + '</p><p class="text-[10px] text-gray-600 mt-0.5">' + k[2] + '</p></div>';
+    el.innerHTML = kpis.map(function (k) {
+        var deltaHtml = k.d
+            ? '<span class="datahub-kpi-delta ' + k.d.cls + '" title="' + (k.d.title || '') + '">' + k.d.text + '</span>'
+            : '';
+        return '<div class="glass rounded-xl p-4 datahub-kpi-card">' +
+            '<p class="text-[10px] text-gray-500 mb-1">' + k.label + '</p>' +
+            '<div class="flex items-baseline gap-1.5 flex-wrap">' +
+            '<p class="text-lg font-extrabold leading-none">' + k.value + '</p>' + deltaHtml +
+            '</div>' +
+            '<p class="text-[10px] text-gray-600 mt-1">' + foot + '</p></div>';
     }).join('');
 }
 
@@ -4057,14 +4512,35 @@ function renderDataHubInsight(summary, rows) {
         '</p>';
 }
 
+var DATAHUB_CHANNEL_COLORS = [
+    '#3b82f6', '#10b981', '#f97316', '#ec4899',
+    '#a78bfa', '#14b8a6', '#f59e0b', '#ef4444',
+    '#60a5fa', '#84cc16', '#e879f9', '#fb7185'
+];
+var DATAHUB_CHANNEL_COLORS_RGBA = [
+    'rgba(59,130,246,0.85)', 'rgba(16,185,129,0.85)', 'rgba(249,115,22,0.85)', 'rgba(236,72,153,0.85)',
+    'rgba(167,139,250,0.85)', 'rgba(20,184,166,0.85)', 'rgba(245,158,11,0.85)', 'rgba(239,68,68,0.85)',
+    'rgba(96,165,250,0.85)', 'rgba(132,204,22,0.85)', 'rgba(232,121,249,0.85)', 'rgba(251,113,133,0.85)'
+];
+
+function getDataHubShareChannels() {
+    return (App.dataHubChannels || [])
+        .filter(function (c) { return c.id !== 'all'; })
+        .slice(0, 12);
+}
+
 function renderDataHubChannelLegend() {
     var el = document.getElementById('datahub-channel-legend');
     if (!el) return;
-    var colors = ['#3b82f6', '#10b981', '#f97316', '#ec4899'];
-    var channels = App.dataHubChannels.filter(function(c) { return c.id !== 'all'; });
-    el.innerHTML = channels.map(function(c, i) {
-        var pct = (c.weight * 100).toFixed(0);
-        return '<div class="flex items-center justify-between text-[10px]"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:' + colors[i] + '"></span>' + c.name + '</span><span class="font-mono text-gray-400">' + pct + '%</span></div>';
+    var channels = getDataHubShareChannels();
+    var totalW = channels.reduce(function (s, c) { return s + (Number(c.weight) || 0); }, 0) || 1;
+    el.innerHTML = channels.map(function (c, i) {
+        var pct = ((Number(c.weight) || 0) / totalW * 100).toFixed(0);
+        var color = DATAHUB_CHANNEL_COLORS[i % DATAHUB_CHANNEL_COLORS.length];
+        return '<div class="datahub-channel-legend-item" title="' + c.name + ' ' + pct + '%">' +
+            '<span class="dot" style="background:' + color + '"></span>' +
+            '<span class="name">' + c.name + '</span>' +
+            '<span class="pct">' + pct + '%</span></div>';
     }).join('');
 }
 
@@ -4310,7 +4786,10 @@ function updateBreadcrumb(title, group) {
     }
 }
 function toggleMobileSidebar() { document.getElementById('mobile-sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('open'); }
-function toggleNotifications() { document.getElementById('notif-panel').classList.toggle('hidden'); }
+function toggleNotifications() {
+    closePipelinePanel();
+    document.getElementById('notif-panel').classList.toggle('hidden');
+}
 function renderNotifications() {
     var list = document.getElementById('notif-list');
     if (!list) return;
@@ -4451,15 +4930,30 @@ function initCharts() {
 
     var dhChannel = document.getElementById('dataHubChannelChart');
     if (dhChannel) {
-        var chData = App.dataHubChannels.filter(function(c) { return c.id !== 'all'; });
+        var chData = getDataHubShareChannels();
         var periodMult = { daily: 1, weekly: 7, monthly: 30, yearly: 365 }[dataHubFilter.period] || 1;
+        var totalW = chData.reduce(function (s, c) { return s + (Number(c.weight) || 0); }, 0) || 1;
         App.charts.push(new Chart(dhChannel, {
             type: 'doughnut',
             data: {
-                labels: chData.map(function(c) { return c.name; }),
-                datasets: [{ data: chData.map(function(c) { return Math.round(28450000 * c.weight * periodMult / 10000); }), backgroundColor: ['rgba(59,130,246,0.8)','rgba(16,185,129,0.8)','rgba(249,115,22,0.8)','rgba(236,72,153,0.8)'], borderWidth: 0 }]
+                labels: chData.map(function (c) { return c.name; }),
+                datasets: [{
+                    data: chData.map(function (c) {
+                        return Math.round(28450000 * ((Number(c.weight) || 0) / totalW) * periodMult / 10000);
+                    }),
+                    backgroundColor: chData.map(function (_, i) {
+                        return DATAHUB_CHANNEL_COLORS_RGBA[i % DATAHUB_CHANNEL_COLORS_RGBA.length];
+                    }),
+                    borderWidth: 0
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '58%',
+                plugins: { legend: { display: false } },
+                layout: { padding: 2 }
+            }
         }));
     }
 }
@@ -4561,6 +5055,7 @@ function initKeyboard() {
 }
 function applyTenantChrome(tenant) {
     if (!tenant) return;
+    if (tenant.companyName) App.brandName = tenant.companyName;
     var nameEl = document.getElementById('sidebar-company-name');
     if (nameEl) nameEl.textContent = tenant.companyName;
     var roleEl = document.getElementById('sidebar-user-role');
@@ -4629,6 +5124,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         var p = document.getElementById('notif-panel'), b = document.getElementById('notif-btn');
         if (p && !p.contains(e.target) && b && !b.contains(e.target)) p.classList.add('hidden');
+        var pipe = document.getElementById('pipeline-panel');
+        var pipeBtn = document.getElementById('pipeline-btn');
+        if (pipe && pipe.classList.contains('open') && !pipe.contains(e.target) && pipeBtn && !pipeBtn.contains(e.target)) {
+            closePipelinePanel();
+        }
         var dr = document.getElementById('date-range-wrap');
         if (dr && !dr.contains(e.target)) {
             var dm = document.getElementById('date-range-menu');
@@ -4637,6 +5137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var us = document.getElementById('user-switch-menu');
         if (us && !e.target.closest('.p-4.border-t')) us.classList.remove('open');
     });
+    if (typeof refreshPipelinePanel === 'function') refreshPipelinePanel();
     var promoCalResizeTimer;
     window.addEventListener('resize', function() {
         if (crmActiveTab !== 'calendar' || !document.getElementById('promo-calendar-grid')) return;

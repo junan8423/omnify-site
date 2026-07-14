@@ -1560,6 +1560,109 @@
                 refreshOpsTab: refreshOpsTab
             });
         }
+        if (typeof AdminAccess !== 'undefined' && AdminAccess.wire) {
+            AdminAccess.wire();
+            var roleSel = $('admin-role-select');
+            if (roleSel) {
+                roleSel.addEventListener('change', function () {
+                    if (activeTab === 'ops' && !AdminAccess.can('ops')) {
+                        switchTab('basic');
+                    }
+                });
+            }
+        }
+        if (typeof OmnifyCs !== 'undefined') {
+            wireCsInbox();
+        }
         hydrateFromServer();
     });
+
+    function escapeCs(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+    }
+
+    function wireCsInbox() {
+        function filtered() {
+            var st = ($('cs-filter-status') || {}).value || '';
+            var cat = ($('cs-filter-cat') || {}).value || '';
+            return OmnifyCs.list().filter(function (t) {
+                if (st && t.status !== st) return false;
+                if (cat && t.category !== cat) return false;
+                return true;
+            });
+        }
+
+        function renderCsInbox() {
+            var body = $('cs-inbox-body');
+            var meta = $('cs-inbox-meta');
+            if (!body) return;
+            var rows = filtered();
+            var openN = OmnifyCs.list().filter(function (t) {
+                return t.status === 'open' || t.status === 'reviewing';
+            }).length;
+            if (meta) meta.textContent = '미처리 ' + openN + ' · 표시 ' + rows.length + '건';
+            if (!rows.length) {
+                body.innerHTML = '<tr><td colspan="6" class="muted">조건에 맞는 접수가 없습니다.</td></tr>';
+                return;
+            }
+            body.innerHTML = rows.map(function (t) {
+                var cat = OmnifyCs.CAT[t.category] || OmnifyCs.CAT.other;
+                var st = OmnifyCs.STATUS[t.status] || OmnifyCs.STATUS.open;
+                var when = '';
+                try { when = new Date(t.createdAt).toLocaleString('ko-KR'); } catch (e) { when = t.createdAt || ''; }
+                return '<tr data-cs-id="' + escapeCs(t.id) + '">' +
+                    '<td style="white-space:nowrap;font-size:11px;color:#9ca3af">' + escapeCs(when) + '</td>' +
+                    '<td><span class="cs-pill ' + cat.cls + '">' + escapeCs(cat.label) + '</span></td>' +
+                    '<td><strong>' + escapeCs(t.title) + '</strong>' +
+                    '<div class="cs-detail">' + escapeCs(t.body) + '</div>' +
+                    (t.view || t.page ? '<p class="muted" style="margin:.25rem 0 0">화면: ' + escapeCs(t.view || '') + ' ' + escapeCs(t.page || '') + '</p>' : '') +
+                    '</td>' +
+                    '<td style="font-size:11px">' +
+                    escapeCs(t.company || '-') + '<br>' +
+                    '<span class="muted">' + escapeCs(t.contact || t.userName || '-') + '</span></td>' +
+                    '<td><span class="cs-pill ' + st.cls + '">' + escapeCs(st.label) + '</span></td>' +
+                    '<td>' +
+                    '<select data-cs-status="' + escapeCs(t.id) + '" style="font-size:11px;margin-bottom:.35rem">' +
+                    ['open', 'reviewing', 'done', 'closed'].map(function (k) {
+                        return '<option value="' + k + '"' + (t.status === k ? ' selected' : '') + '>' +
+                            escapeCs((OmnifyCs.STATUS[k] || {}).label || k) + '</option>';
+                    }).join('') +
+                    '</select>' +
+                    '<button type="button" class="btn ghost" data-cs-save="' + escapeCs(t.id) + '" style="font-size:11px;padding:.25rem .5rem">저장</button>' +
+                    '</td></tr>';
+            }).join('');
+
+            body.querySelectorAll('[data-cs-save]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var id = btn.getAttribute('data-cs-save');
+                    var sel = body.querySelector('select[data-cs-status="' + id + '"]');
+                    var status = sel ? sel.value : 'open';
+                    OmnifyCs.updateStatus(id, status, '').then(function () {
+                        toast('CS 상태 저장: ' + ((OmnifyCs.STATUS[status] || {}).label || status), 'info');
+                        renderCsInbox();
+                    });
+                });
+            });
+        }
+
+        function refreshCs() {
+            OmnifyCs.hydrate().then(function () {
+                renderCsInbox();
+                toast('CS 목록을 불러왔습니다.', 'info');
+            }).catch(function () {
+                renderCsInbox();
+            });
+        }
+
+        var refreshBtn = $('btn-refresh-cs');
+        if (refreshBtn) refreshBtn.addEventListener('click', refreshCs);
+        var stFilter = $('cs-filter-status');
+        var catFilter = $('cs-filter-cat');
+        if (stFilter) stFilter.addEventListener('change', renderCsInbox);
+        if (catFilter) catFilter.addEventListener('change', renderCsInbox);
+
+        OmnifyCs.hydrate().then(renderCsInbox).catch(renderCsInbox);
+    }
 })();

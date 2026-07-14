@@ -237,6 +237,48 @@
         }
         .tax-status.ok { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
         .tax-status.warn { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+        .cs-inbox-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+        .cs-inbox-table th, .cs-inbox-table td {
+            border-bottom: 1px solid var(--border); padding: .5rem .45rem; text-align: left; vertical-align: top;
+        }
+        .cs-inbox-table th { color: var(--muted); font-size: var(--fs-2xs); font-weight: 700; }
+        .cs-pill {
+            display: inline-block; font-size: 10px; font-weight: 800; padding: .12rem .4rem;
+            border-radius: .3rem; border: 1px solid var(--border);
+        }
+        .cs-pill.bug { background: rgba(239,68,68,.12); color: #fca5a5; }
+        .cs-pill.improve { background: rgba(59,130,246,.12); color: #93c5fd; }
+        .cs-pill.cs { background: rgba(245,158,11,.12); color: #fcd34d; }
+        .cs-pill.other { background: rgba(148,163,184,.12); color: #cbd5e1; }
+        .cs-pill.open { background: rgba(239,68,68,.15); color: #fca5a5; }
+        .cs-pill.reviewing { background: rgba(245,158,11,.15); color: #fcd34d; }
+        .cs-pill.done { background: rgba(16,185,129,.15); color: #6ee7b7; }
+        .cs-pill.closed { background: rgba(100,116,139,.2); color: #94a3b8; }
+        .cs-detail {
+            margin-top: .35rem; font-size: var(--fs-xs); color: #cbd5e1; white-space: pre-wrap;
+            max-height: 4.5rem; overflow: auto; line-height: 1.4;
+        }
+        .admin-copyright {
+            position: fixed;
+            left: 50%;
+            bottom: 0.65rem;
+            transform: translateX(-50%);
+            z-index: 50;
+            margin: 0;
+            padding: 0.35rem 0.9rem;
+            border: 1px solid rgba(55,65,81,.65);
+            border-radius: 999px;
+            background: rgba(3,7,18,.78);
+            backdrop-filter: blur(8px);
+            font-size: var(--fs-2xs);
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.35;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .admin-copyright strong { color: #d1d5db; }
+        body { padding-bottom: 2.5rem; }
         .tax-status.bad { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
         .tax-ready { margin: .35rem 0 0; color: #047857; font-weight: 700; }
         .tax-miss { margin: .35rem 0 0; color: #c2410c; font-weight: 650; }
@@ -324,7 +366,19 @@
                     ① 현황 보드 → ② 계약·상업 → ③ 커스텀 → ④ 구축·산출<br>
                     키 ID를 직접 입력 → 폴더명·프로젝트 식별자로 사용 · 이메일은 연락처</p>
             </div>
-            <div class="actions">
+            <div class="actions" style="align-items:center;flex-wrap:wrap">
+                <label class="field" style="margin:0;min-width:140px" data-admin-perm="all">
+                    <span>접근 역할 (데모)</span>
+                    <select id="admin-role-select">
+                        <option value="ceo">대표</option>
+                        <option value="ops">구축·운영</option>
+                        <option value="sales">영업</option>
+                    </select>
+                </label>
+                <div style="font-size:var(--fs-xs);color:var(--muted);line-height:1.35">
+                    <strong id="admin-role-label">대표 권한</strong><br>
+                    <span id="admin-role-hint">전체 + 영업이익 특수항목</span>
+                </div>
                 <a class="btn ghost" href="index.html">랜딩</a>
                 <a class="btn ghost" href="margin-calculator.html" target="_blank" rel="noopener">마진 시뮬레이터</a>
                 <a class="btn ghost" href="demo-dashboard.html" target="_blank" rel="noopener">공통 데모</a>
@@ -388,13 +442,63 @@
             </div>
         </section>
 
+        <section class="card" id="cs-inbox-section">
+            <div style="display:flex;flex-wrap:wrap;gap:.75rem;justify-content:space-between;align-items:flex-end;margin-bottom:.65rem">
+                <div>
+                    <h2 style="margin:0">CS · 기능오류 접수</h2>
+                    <p class="muted" style="margin:.35rem 0 0">대시보드 플로팅「기능오류/CS」에서 접수된 목록입니다. 확인·처리 상태를 갱신하세요.</p>
+                </div>
+                <div class="actions" style="margin:0">
+                    <span class="muted" id="cs-inbox-meta">0건</span>
+                    <button type="button" class="btn ghost" id="btn-refresh-cs">새로고침</button>
+                </div>
+            </div>
+            <div class="portfolio-filters" style="margin-bottom:.55rem">
+                <label class="field"><span>상태</span>
+                    <select id="cs-filter-status">
+                        <option value="">전체</option>
+                        <option value="open">접수</option>
+                        <option value="reviewing">확인중</option>
+                        <option value="done">처리완료</option>
+                        <option value="closed">종료</option>
+                    </select>
+                </label>
+                <label class="field"><span>유형</span>
+                    <select id="cs-filter-cat">
+                        <option value="">전체</option>
+                        <option value="bug">기능 오류</option>
+                        <option value="improve">개선 요청</option>
+                        <option value="cs">CS · 문의</option>
+                        <option value="other">기타</option>
+                    </select>
+                </label>
+            </div>
+            <div class="portfolio-table-wrap">
+                <table class="cs-inbox-table">
+                    <thead>
+                        <tr>
+                            <th>접수시각</th>
+                            <th>유형</th>
+                            <th>제목 · 내용</th>
+                            <th>고객사 / 연락</th>
+                            <th>상태</th>
+                            <th>처리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cs-inbox-body">
+                        <tr><td colspan="6" class="muted">접수 내역이 없습니다.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <div class="grid">
             <section class="card">
                 <h2 id="form-title">신규 계약 등록</h2>
                 <div class="tabs" role="tablist">
                     <button type="button" class="tab-btn active" data-tab="basic" id="tab-btn-basic">1. 계약 · 수집</button>
                     <button type="button" class="tab-btn" data-tab="custom" id="tab-btn-custom">2. 커스텀</button>
-                    <button type="button" class="tab-btn" data-tab="ops" id="tab-btn-ops">3. 구축 · 산출</button>
+                    <button type="button" class="tab-btn" data-tab="ops" id="tab-btn-ops" data-admin-perm="ops">3. 구축 · 산출</button>
                 </div>
 
                 <div id="tab-basic" class="tab-panel active">
@@ -479,7 +583,7 @@
                             </select>
                         </label>
                     </div>
-                    <label class="checkline"><input id="f-special" type="checkbox"> 특수가격 (청구≠서비스)</label>
+                    <label class="checkline" data-admin-perm="special_profit"><input id="f-special" type="checkbox"> 특수가격 (청구≠서비스) · <strong>대표용</strong></label>
 
                     <div class="row2">
                         <label class="field"><span>작업 좌석 수</span><input id="f-seats" type="number" min="1" max="99" value="10"></label>
@@ -509,14 +613,20 @@
                     <p class="pipe-help">API 등급 — A 직접연동 · A/B 공개+심사 · B 파트너심사 · C 입점/EDI/사방넷 · D 수기·비권장</p>
                     <div class="channel-grid" id="channel-grid"></div>
 
-                    <div class="section-block">
-                        <p class="section-title">상업 · 연간 최적화 (AOP)</p>
+                    <div class="section-block" data-admin-perm="special_profit" id="ceo-special-profit">
+                        <p class="section-title">영업이익 특수항목 <span class="muted" style="font-weight:600">(대표 전용)</span></p>
+                        <p class="hint">구축·영업 역할에서는 숨깁니다. 대표만 할인·리베이트·일시 조정 등 영업이익 특수 처리를 입력합니다.</p>
+                        <div class="row2">
+                            <label class="field"><span>채널 리베이트(월, 만원)</span><input id="f-rebate" type="number" min="0" step="0.1" value="0"></label>
+                            <label class="field"><span>일시 지원·조정(만원)</span><input id="f-profit-adj" type="number" step="0.1" value="0"></label>
+                        </div>
+                        <label class="field"><span>특수항목 사유</span><textarea id="f-profit-special-note" placeholder="예: 1차 온보딩 지원, 채널 MD 리베이트 반영…"></textarea></label>
                         <div class="row2">
                             <label class="field"><span>월 유지비(만원)</span><input id="f-monthly-fee" type="number" min="0" step="0.5" value="30"></label>
                             <label class="field"><span>초기 구축비(만원)</span><input id="f-setup-fee" type="number" min="0" step="1" placeholder="별도면 비움"></label>
                         </div>
                         <div class="row2">
-                            <label class="field"><span>일시납</span>
+                            <label class="field"><span>일시납 (AOP)</span>
                                 <select id="f-prepaid">
                                     <option value="none" selected>월납 (일시납 없음)</option>
                                     <option value="6">6개월 · 5%</option>
@@ -624,7 +734,7 @@
                     </div>
                 </div>
 
-                <div id="tab-ops" class="tab-panel">
+                <div id="tab-ops" class="tab-panel" data-admin-perm="ops">
                     <p class="hint">테넌트 저장 후 체크리스트·견적·백업을 관리합니다. Phase1 모듈은 대시보드 메뉴를 실제로 제한합니다.</p>
 
                     <div class="section-block">
@@ -750,13 +860,17 @@
         </div>
     </div>
 
+    <p class="admin-copyright">© <strong>OMNIFY_JK글로벌컴퍼니</strong> · All rights reserved.</p>
+
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
+    <script src="js/admin-access.js?v=20260715-perm1"></script>
+    <script src="js/cs-tickets.js?v=20260715-cs1"></script>
     <script src="js/margin-calc-engine.js?v=20260715"></script>
     <script src="js/quote-pdf.js?v=20260715-tax"></script>
     <script src="js/contract-pdf.js?v=20260715-tax"></script>
     <script src="js/tenant-registry.js?v=20260715-tax"></script>
     <script src="js/taxinvoice-admin.js?v=20260715-tax"></script>
-    <script src="js/admin-app.js?v=20260715-tax"></script>
+    <script src="js/admin-app.js?v=20260715-cs1"></script>
 </body>
 </html>

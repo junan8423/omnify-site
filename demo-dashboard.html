@@ -462,28 +462,99 @@
             z-index: 30;
             pointer-events: none;
         }
-        .admin-quicklink:hover .ql-tip { display: block; }
-        .header-quick-btn {
-            width: 34px; height: 34px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(139,92,246,0.15); color: #c4b5fd;
-            border: 1px solid rgba(139,92,246,0.3);
-            transition: all 0.15s; position: relative;
+        .admin-quicklink:hover .ql-tip { display: none !important; }
+        .header-quick-btn .ql-tip { display: none !important; }
+        .header-quick-btn:hover .ql-tip { display: none !important; }
+        .dg-tooltip { display: none !important; visibility: hidden !important; }
+        .home-detail-modal {
+            display: none; position: fixed; inset: 0; z-index: 70;
+            align-items: flex-start; justify-content: center;
+            padding: 5vh 1rem 2rem; background: rgba(0,0,0,.72);
         }
-        .header-quick-btn:hover { transform: translateY(-1px); background: rgba(139,92,246,0.25); }
-        .header-quick-btn .ql-tip {
-            display: none; position: absolute; top: calc(100% + 6px); left: 50%;
-            transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 600;
-            padding: 3px 8px; border-radius: 6px; background: #1f2937; border: 1px solid #374151;
-            color: #e5e7eb; z-index: 30; pointer-events: none;
+        .home-detail-modal.open { display: flex; }
+        .home-detail-sheet {
+            width: min(720px, 100%); max-height: 88vh; overflow: auto;
+            border-radius: 1rem; border: 1px solid rgba(55,65,81,.9);
         }
-        .header-quick-btn:hover .ql-tip { display: block; }
+        .home-promo-split {
+            display: grid; grid-template-columns: 1fr; gap: 0.85rem;
+        }
+        @media (min-width: 900px) {
+            .home-promo-split { grid-template-columns: 1.05fr 1fr; align-items: stretch; }
+        }
+        .home-promo-mini-cal {
+            border: 1px solid rgba(55,65,81,.8); border-radius: 0.65rem;
+            overflow: hidden; background: rgba(15,23,42,.45);
+        }
+        .home-promo-mini-cal .dow {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 1px; background: rgba(55,65,81,.5); font-size: 0.62rem;
+            color: #9ca3af; text-align: center; font-weight: 700;
+        }
+        .home-promo-mini-cal .dow span { background: #0f172a; padding: 0.35rem 0; }
+        .home-promo-mini-cal .days {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px;
+            background: rgba(55,65,81,.45);
+        }
+        .home-promo-mini-cal .day {
+            min-height: 3.1rem; background: #111827; padding: 0.25rem;
+            font-size: 0.65rem; color: #d1d5db;
+        }
+        .home-promo-mini-cal .day.muted { color: #6b7280; background: #0b1220; }
+        .home-promo-mini-cal .day .dnum { font-weight: 700; margin-bottom: 0.15rem; }
+        .home-promo-mini-cal .pill {
+            display: block; font-size: 0.58rem; font-weight: 700;
+            padding: 0.1rem 0.25rem; border-radius: 0.2rem; margin-top: 0.12rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            background: rgba(59,130,246,.2); color: #93c5fd;
+        }
+        .home-promo-mini-cal .pill.plan { background: rgba(168,85,247,.2); color: #e9d5ff; }
+        .home-promo-mini-cal .pill.done { background: rgba(16,185,129,.18); color: #a7f3d0; }
+        .home-detail-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .home-detail-table th, .home-detail-table td {
+            border-bottom: 1px solid rgba(55,65,81,.7); padding: 0.45rem 0.5rem; text-align: left;
+        }
+        .home-detail-table th { color: #9ca3af; font-size: 0.7rem; font-weight: 700; }
         .header-quick-btn .hq-badge {
             position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px;
             background: #8b5cf6; border-radius: 8px; font-size: 13px; font-weight: 700;
             display: flex; align-items: center; justify-content: center; color: #fff;
             border: 2px solid #111827;
         }
+        .header-quick-btn.pipe-ok { background: rgba(16,185,129,0.12); color: #6ee7b7; border-color: rgba(16,185,129,0.35); }
+        .header-quick-btn.pipe-warn { background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(245,158,11,0.4); }
+        .pipeline-panel {
+            display: none; position: absolute; top: 4rem; right: 1rem;
+            width: min(22rem, calc(100vw - 1.5rem)); z-index: 50;
+            border-radius: 0.85rem; overflow: hidden;
+        }
+        .pipeline-panel.open { display: block; }
+        .pipeline-dot { width: 0.45rem; height: 0.45rem; border-radius: 999px; background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+        .pipeline-dot.warn { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); }
+        .home-ops-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-top: 0.35rem;
+        }
+        .home-ops-cell {
+            background: rgba(15,23,42,0.55); border: 1px solid rgba(55,65,81,0.7);
+            border-radius: 0.55rem; padding: 0.45rem 0.55rem;
+        }
+        .home-ops-cell .lab { font-size: 0.65rem; color: #9ca3af; font-weight: 650; }
+        .home-ops-cell .val { font-size: 1rem; font-weight: 800; color: #f9fafb; letter-spacing: -0.02em; margin-top: 0.1rem; }
+        .home-ops-cell .delta { font-size: 0.65rem; margin-top: 0.15rem; }
+        .home-inv-alert {
+            display: flex; flex-direction: column; min-height: 100%;
+        }
+        .home-inv-alert .home-inv-list { flex: 1; min-height: 0; overflow-y: auto; }
+        .home-chart-row { align-items: stretch; }
+        @media (min-width: 1280px) {
+            .home-inv-alert { min-height: 380px; }
+        }
+        .home-promo-card .promo-chip {
+            font-size: 0.65rem; font-weight: 800; padding: 0.12rem 0.4rem; border-radius: 0.3rem;
+            background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3);
+        }
+        .home-promo-card .promo-chip.done { background: rgba(16,185,129,0.12); color: #6ee7b7; border-color: rgba(16,185,129,0.3); }
+        .home-promo-card .promo-chip.plan { background: rgba(168,85,247,0.12); color: #d8b4fe; border-color: rgba(168,85,247,0.3); }
         .archive-dropzone {
             border: 2px dashed rgba(139,92,246,0.35); border-radius: 12px;
             transition: all 0.2s; background: rgba(139,92,246,0.05);
@@ -531,6 +602,61 @@
         .activity-item.type-success::before { border-color: #10b981; }
         .datahub-period-btn.active { background: #1f2937; color: #fff; border-color: rgba(59,130,246,0.4); }
         .datahub-channel-btn.active { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.35); }
+        .datahub-chart-row { align-items: stretch; }
+        .datahub-chart-row > .chart-card {
+            display: flex; flex-direction: column; min-height: 100%;
+        }
+        .datahub-chart-row .datahub-canvas-grow {
+            flex: 1 1 auto;
+            min-height: 280px;
+            height: auto !important;
+        }
+        .datahub-share-card .datahub-canvas-grow { min-height: 240px; }
+        .datahub-share-card .datahub-share-body {
+            display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 0.65rem;
+        }
+        .datahub-share-card .datahub-share-pie {
+            flex: 1 1 auto;
+            min-height: 280px;
+            height: auto !important;
+            position: relative;
+        }
+        .datahub-channel-legend-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-rows: repeat(4, auto);
+            grid-auto-flow: column;
+            gap: 0.3rem 0.45rem;
+            flex-shrink: 0;
+            padding-top: 0.15rem;
+        }
+        .datahub-channel-legend-item {
+            display: flex; align-items: center; gap: 0.3rem; min-width: 0;
+            font-size: 10px; line-height: 1.25; color: #d1d5db;
+        }
+        .datahub-channel-legend-item .dot {
+            width: 7px; height: 7px; border-radius: 9999px; flex-shrink: 0;
+        }
+        .datahub-channel-legend-item .name {
+            min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+        }
+        .datahub-channel-legend-item .pct {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            color: #9ca3af; flex-shrink: 0; font-size: 9px;
+        }
+        @media (max-width: 640px) {
+            .datahub-channel-legend-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-rows: none;
+                grid-auto-flow: row;
+            }
+            .datahub-share-card .datahub-share-pie { min-height: 220px; }
+        }
+        .datahub-kpi-delta {
+            font-size: 11px; font-weight: 800; letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+        .datahub-kpi-card .text-lg { letter-spacing: -0.02em; }
         .db-table th { position: sticky; top: 0; background: #111827; z-index: 1; }
         .db-table tbody tr:hover { background: rgba(31,41,55,0.6); }
         .settings-tab-btn.active { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.35); }
@@ -772,33 +898,134 @@
             100% { transform: scale(1.18); opacity: 0; }
         }
         body.dg-modal-open .dg-guide-fab { opacity: 0.55; pointer-events: none; transform: scale(0.92); }
+        body.dg-modal-open .cs-fab { opacity: 0.55; pointer-events: none; transform: scale(0.92); }
         @media (max-width: 640px) {
             .dg-guide-fab { right: 1rem; bottom: 1rem; width: 3.1rem; height: 3.1rem; }
+            .cs-fab { right: 1rem; bottom: calc(1rem + 3.1rem + 0.55rem); width: 3.1rem; height: 3.1rem; }
         }
-        .dg-has-guide { position: relative; cursor: help; }
-        .dg-has-guide::after {
-            content: '?';
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 18px;
-            height: 18px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 800;
-            line-height: 18px;
+        .cs-fab {
+            position: fixed;
+            right: 1.35rem;
+            bottom: calc(1.35rem + 3.35rem + 0.65rem);
+            z-index: 9976;
+            width: 3.35rem;
+            height: 3.35rem;
+            border-radius: 50%;
+            border: 1px solid rgba(251, 146, 60, 0.45);
+            background: linear-gradient(145deg, rgba(249,115,22,0.95), rgba(234,88,12,0.9));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 28px rgba(234, 88, 12, 0.35);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+        }
+        .cs-fab:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 14px 32px rgba(234, 88, 12, 0.45); }
+        .cs-fab svg { width: 1.35rem; height: 1.35rem; }
+        .cs-fab-badge {
+            position: absolute; top: -2px; right: -2px; min-width: 1.1rem; height: 1.1rem;
+            padding: 0 4px; border-radius: 999px; background: #ef4444; color: #fff;
+            font-size: 9px; font-weight: 800; display: none; align-items: center; justify-content: center;
+            border: 2px solid #0b1220;
+        }
+        .cs-fab-badge.show { display: flex; }
+        .omnify-copyright {
+            position: fixed;
+            left: 50%;
+            bottom: 0.55rem;
+            transform: translateX(-50%);
+            z-index: 9960;
+            width: max-content;
+            max-width: min(70vw, 420px);
+            padding: 0.35rem 0.85rem;
             text-align: center;
-            color: #93c5fd;
-            background: rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(59, 130, 246, 0.35);
-            opacity: 0;
-            transform: scale(0.85);
-            transition: opacity 0.2s, transform 0.2s;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            line-height: 1.35;
+            color: rgba(156, 163, 175, 0.9);
+            background: rgba(3, 7, 18, 0.72);
+            border: 1px solid rgba(55, 65, 81, 0.55);
+            border-radius: 999px;
+            backdrop-filter: blur(8px);
             pointer-events: none;
-            z-index: 5;
+            user-select: none;
+            white-space: nowrap;
         }
-        .dg-has-guide:hover::after, .dg-has-guide:focus-within::after { opacity: 1; transform: scale(1); }
-        .nav-item.dg-has-guide::after { top: 6px; right: 6px; }
+        .omnify-copyright strong { color: rgba(229, 231, 235, 0.95); font-weight: 700; }
+        .omnify-copyright br { display: none; }
+        @media (max-width: 640px) {
+            .omnify-copyright {
+                bottom: 0.45rem;
+                font-size: 9px;
+                max-width: calc(100vw - 6.5rem);
+                white-space: normal;
+                padding: 0.3rem 0.65rem;
+                border-radius: 0.65rem;
+            }
+            .omnify-copyright br { display: none; }
+        }
+        #main-content { padding-bottom: 2.75rem; }
+        .profit-chart-row { align-items: stretch; }
+        .profit-chart-row > .chart-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 100%;
+        }
+        .profit-chart-row .profit-canvas-grow {
+            flex: 1 1 auto;
+            align-self: stretch;
+            min-height: 280px;
+            height: auto !important;
+            flex-shrink: 1 !important;
+        }
+        .profit-margin-card .profit-insight {
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+        @media (max-width: 768px) {
+            .profit-chart-row .profit-canvas-grow { min-height: 220px; }
+        }
+        .cs-modal {
+            display: none; position: fixed; inset: 0; z-index: 99980;
+            background: rgba(0,0,0,.72); align-items: flex-start; justify-content: center;
+            padding: 6vh 1rem 2rem;
+        }
+        .cs-modal.open { display: flex; }
+        .cs-sheet {
+            width: min(520px, 100%); max-height: 88vh; overflow: auto;
+            background: #0f172a; border: 1px solid #334155; border-radius: 14px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.5); color: #e5e7eb;
+        }
+        .cs-sheet-head {
+            display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;
+            padding: 1rem 1.1rem; border-bottom: 1px solid #1f2937; position: sticky; top: 0;
+            background: rgba(15,23,42,.96); z-index: 1;
+        }
+        .cs-sheet-head h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+        .cs-sheet-head p { margin: 0.3rem 0 0; font-size: 0.75rem; color: #94a3b8; line-height: 1.4; }
+        .cs-sheet-body { padding: 1rem 1.1rem 1.2rem; }
+        .cs-field { display: block; margin-bottom: 0.75rem; }
+        .cs-field > span { display: block; font-size: 0.7rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.3rem; }
+        .cs-field input, .cs-field select, .cs-field textarea {
+            width: 100%; padding: 0.55rem 0.65rem; border-radius: 0.5rem;
+            border: 1px solid #334155; background: #020617; color: #e5e7eb; font: inherit; font-size: 0.85rem;
+        }
+        .cs-field textarea { min-height: 110px; resize: vertical; }
+        .cs-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.5rem; }
+        .cs-actions button {
+            padding: 0.55rem 0.9rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+        }
+        .cs-actions .ghost { background: transparent; border: 1px solid #334155; color: #cbd5e1; }
+        .cs-actions .primary { background: #ea580c; border: 0; color: #fff; }
+        .cs-hp { position: absolute; left: -9999px; opacity: 0; height: 0; width: 0; overflow: hidden; }
+        /* 정식 대시보드: 가이드 호버 표시(help 커서·? 배지) 비활성 */
+        .dg-has-guide { position: relative; cursor: inherit; }
+        .dg-has-guide::after { display: none !important; content: none !important; }
+        .dg-has-guide:hover::after, .dg-has-guide:focus-within::after { display: none !important; }
+        .nav-item.dg-has-guide::after { display: none !important; }
         .dg-tooltip {
             position: fixed;
             z-index: 9998;
@@ -984,7 +1211,7 @@
 <!-- Sidebar -->
 <aside id="mobile-sidebar" class="fixed md:static inset-y-0 left-0 w-72 bg-panel border-r border-border flex flex-col z-50 md:z-20 shrink-0">
     <div class="h-16 flex items-center justify-between px-5 border-b border-border">
-        <button onclick="goHome()" class="brand-btn flex items-center gap-2.5 text-left" title="홈으로 이동">
+        <button onclick="goHome()" class="brand-btn flex items-center gap-2.5 text-left">
             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
                 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
@@ -1109,7 +1336,7 @@
                 <p class="text-sm font-semibold truncate" id="sidebar-user-name">김지현 대표</p>
                 <p class="text-[11px] text-gray-500 truncate" id="sidebar-user-role">(주)SAMPLE · 대표</p>
             </div>
-            <button class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors" title="설정" onclick="navigateTo('view-settings')">
+            <button class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white transition-colors" onclick="navigateTo('view-settings')" aria-label="설정">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </button>
         </div>
@@ -1150,10 +1377,15 @@
                 <button class="admin-quicklink ql-coupang" onclick="openAdminLink('쿠팡 Wing','https://wing.coupang.com/')">CP<span class="ql-tip">쿠팡 Wing</span></button>
                 <button class="admin-quicklink ql-ably" onclick="openAdminLink('에이블리 셀러','https://seller.a-bly.com/')">AB<span class="ql-tip">에이블리</span></button>
             </div>
-            <button class="hide-mobile header-quick-btn" onclick="navigateTo('view-archive')" title="자료실">
+            <button class="hide-mobile header-quick-btn" onclick="navigateTo('view-archive')" aria-label="자료실">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>
                 <span class="hq-badge" id="archive-header-badge">6</span>
                 <span class="ql-tip">자료실</span>
+            </button>
+            <button type="button" id="pipeline-btn" class="hide-mobile header-quick-btn pipe-ok" onclick="togglePipelinePanel(event)" aria-label="데이터 파이프라인" aria-expanded="false" aria-controls="pipeline-panel">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h4l2 3h10M4 17h4l2-3h10M8 7v10M16 10v4"/></svg>
+                <span class="hq-badge" id="pipeline-header-badge" style="background:#10b981">OK</span>
+                <span class="ql-tip">데이터 파이프라인</span>
             </button>
             <div class="hide-mobile relative" id="date-range-wrap">
                 <button type="button" class="date-range-btn" onclick="toggleDateRangeMenu(event)" id="date-range-btn">
@@ -1168,7 +1400,7 @@
                 검색
                 <kbd class="px-1.5 py-0.5 bg-dark rounded text-[10px] font-mono border border-border">⌘K</kbd>
             </button>
-            <div class="hide-mobile demo-mode-badge" id="demo-mode-badge" title="실데이터 연동 전 데모 시연 모드">
+            <div class="hide-mobile demo-mode-badge" id="demo-mode-badge">
                 <span class="status-dot pulse-live"></span>
                 <span>데모 모드</span>
             </div>
@@ -1180,7 +1412,7 @@
                 <p id="live-date" class="text-xs font-medium">2026. 07. 10 (금)</p>
                 <p id="live-time" class="text-[11px] text-gray-500 font-mono">22:34:12 KST</p>
             </div>
-            <button onclick="showToast('리포트 생성을 시작합니다...', 'info')" class="bg-primary hover:bg-blue-600 text-white text-xs font-semibold px-3 sm:px-4 py-2 rounded-lg transition-all shadow-lg shadow-primary/25 flex items-center gap-1.5">
+            <button type="button" onclick="typeof OmnifyReportPrint!=='undefined'?OmnifyReportPrint.openReport('auto'):showToast('리포트 모듈 로딩 중…','info')" class="bg-primary hover:bg-blue-600 text-white text-xs font-semibold px-3 sm:px-4 py-2 rounded-lg transition-all shadow-lg shadow-primary/25 flex items-center gap-1.5" aria-label="리포트 출력">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <span class="hide-mobile">리포트</span>
             </button>
@@ -1194,6 +1426,30 @@
             <button class="text-xs text-primary hover:underline" onclick="markAllNotificationsRead()">모두 읽음</button>
         </div>
         <div class="max-h-80 overflow-y-auto divide-y divide-border" id="notif-list"></div>
+    </div>
+
+    <!-- Data pipeline popover (header) -->
+    <div id="pipeline-panel" class="pipeline-panel glass-strong shadow-2xl border border-border" role="dialog" aria-label="데이터 파이프라인" onclick="event.stopPropagation()">
+        <div class="p-3.5 border-b border-border flex items-center justify-between gap-2">
+            <div>
+                <p class="text-sm font-bold">데이터 파이프라인</p>
+                <p class="text-[10px] text-gray-500 mt-0.5">웹훅·동기화 → 정규화 → 적재 → 브리핑</p>
+            </div>
+            <span id="pipeline-status-chip" class="text-[10px] font-mono bg-success/10 text-success px-2 py-0.5 rounded border border-success/20 shrink-0">정상</span>
+        </div>
+        <div class="px-3.5 pt-3 pb-2">
+            <div class="flex items-center gap-1 overflow-x-auto text-center" id="pipeline-flow">
+                <!-- filled by JS -->
+            </div>
+        </div>
+        <div class="px-3.5 pb-2">
+            <p class="text-[10px] text-gray-500 mb-1.5 font-semibold">최근 동기화</p>
+            <div id="pipeline-sync-list" class="space-y-1.5 max-h-40 overflow-y-auto text-xs"></div>
+        </div>
+        <div class="p-3 border-t border-border flex gap-2">
+            <button type="button" class="flex-1 text-xs font-semibold py-2 rounded-lg bg-surface border border-border hover:border-primary/40" onclick="closePipelinePanel(); navigateTo('view-api')">API · 이력</button>
+            <button type="button" class="flex-1 text-xs font-semibold py-2 rounded-lg bg-primary text-white" onclick="syncOrdersDemo(); refreshPipelinePanel();">수동 동기화</button>
+        </div>
     </div>
 
     <!-- Content -->
@@ -1307,12 +1563,83 @@
 
 <div class="toast-container" id="toast-container"></div>
 
+<!-- 홈 KPI · 프로모션 상세 팝업 -->
+<div id="home-detail-modal" class="home-detail-modal" role="dialog" aria-modal="true" aria-labelledby="home-detail-title" onclick="if(event.target===this)closeHomeDetailPopup()">
+    <div class="home-detail-sheet glass-strong shadow-2xl" onclick="event.stopPropagation()">
+        <div class="p-4 border-b border-border flex items-start justify-between gap-3 sticky top-0 bg-[#0f172a]/95 z-10">
+            <div class="min-w-0">
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">상세 내역</p>
+                <h3 id="home-detail-title" class="text-base font-bold truncate">—</h3>
+                <p id="home-detail-sub" class="text-[11px] text-gray-500 mt-0.5"></p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" id="home-detail-print" class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-surface border border-border hover:border-primary/40" onclick="typeof OmnifyReportPrint!=='undefined'&&OmnifyReportPrint.openReport(document.getElementById('home-detail-modal').dataset.report||'dashboard')">출력</button>
+                <button type="button" class="p-1.5 rounded-lg hover:bg-surface text-gray-400 hover:text-white" onclick="closeHomeDetailPopup()" aria-label="닫기">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+        <div id="home-detail-body" class="p-4"></div>
+    </div>
+</div>
+
+<!-- 저작권 고정 고지 -->
+<footer class="omnify-copyright" aria-label="저작권">
+    © <strong>OMNIFY_JK글로벌컴퍼니</strong> · All rights reserved.
+</footer>
+
+<!-- 기능오류 / CS 접수 플로팅 -->
+<button type="button" id="btn-open-cs" class="cs-fab" aria-label="기능오류·CS 접수">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-1.414 1.414A8 8 0 105.636 18.364l1.414-1.414M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+    </svg>
+    <span class="cs-fab-badge" id="cs-fab-badge">0</span>
+</button>
+
 <!-- 사용가이드 플로팅 버튼 -->
-<button type="button" id="btn-open-guide" class="dg-guide-fab" aria-label="사용가이드 열기" title="사용가이드 (FAQ 검색)">
+<button type="button" id="btn-open-guide" class="dg-guide-fab" aria-label="사용가이드 열기">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
     </svg>
 </button>
+
+<!-- CS 접수 모달 -->
+<div id="cs-modal" class="cs-modal" role="dialog" aria-modal="true" aria-labelledby="cs-modal-title" aria-hidden="true">
+    <div class="cs-sheet" onclick="event.stopPropagation()">
+        <div class="cs-sheet-head">
+            <div>
+                <h3 id="cs-modal-title">기능오류 / CS 접수</h3>
+                <p>오류·개선·문의 내용을 남겨 주시면 Omnify 어드민에 전달됩니다.</p>
+            </div>
+            <button type="button" id="cs-modal-close" class="p-1.5 rounded-lg hover:bg-surface text-gray-400" aria-label="닫기" style="border:0;background:transparent;font-size:1.25rem;cursor:pointer;color:#94a3b8">×</button>
+        </div>
+        <form class="cs-sheet-body" id="cs-form">
+            <label class="cs-hp" aria-hidden="true">leave blank<input type="text" name="hp" tabindex="-1" autocomplete="off"></label>
+            <label class="cs-field"><span>유형 *</span>
+                <select id="cs-category" required>
+                    <option value="bug">기능 오류</option>
+                    <option value="improve">개선 요청</option>
+                    <option value="cs">CS · 문의</option>
+                    <option value="other">기타</option>
+                </select>
+            </label>
+            <label class="cs-field"><span>제목 *</span>
+                <input id="cs-title" type="text" maxlength="120" required placeholder="예: 주문 동기화 버튼 무응답">
+            </label>
+            <label class="cs-field"><span>상세 내용 *</span>
+                <textarea id="cs-body" maxlength="4000" required placeholder="재현 경로, 기대 동작, 문의 사항 등을 적어 주세요."></textarea>
+            </label>
+            <label class="cs-field"><span>연락처 (선택)</span>
+                <input id="cs-contact" type="text" maxlength="120" placeholder="이메일 또는 연락처">
+            </label>
+            <p class="text-[10px] text-gray-500 mb-2" id="cs-context-hint"></p>
+            <div class="cs-actions">
+                <button type="button" class="ghost" id="cs-cancel">취소</button>
+                <button type="submit" class="primary" id="cs-submit">접수하기</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- 사용가이드 모달 -->
 <div id="dg-guide-modal" class="dg-guide-modal" aria-hidden="true" role="dialog" aria-labelledby="dg-guide-title">
@@ -1322,7 +1649,7 @@
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
             <h2 id="dg-guide-title">사용가이드</h2>
-            <p>메뉴·카드별 FAQ를 검색하세요. 카드에 마우스를 올려도 요약 툴팁이 표시됩니다.</p>
+            <p>메뉴·기능별 FAQ를 검색하세요. 우측 하단 가이드 버튼으로 언제든 열 수 있습니다.</p>
             <div class="dg-guide-search-wrap">
                 <div class="dg-search-field">
                     <svg class="dg-search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -1362,8 +1689,93 @@
 </script>
 <script src="js/inventory-policy.js?v=20260714-inv3"></script>
     <script src="js/data-schema.js?v=20260715-schema01"></script>
-    <script src="js/dashboard-app.js?v=20260715-schema01"></script>
-    <script src="js/dashboard-tier.js?v=20260714-admin3"></script>
-    <script src="js/dashboard-guide.js?v=20260714-arch1"></script>
+    <script src="js/report-print.js?v=20260715-report4"></script>
+    <script src="js/cs-tickets.js?v=20260715-cs1"></script>
+    <script src="js/dashboard-app.js?v=20260715-ux7"></script>
+    <script src="js/dashboard-tier.js?v=20260715-ux2"></script>
+    <script src="js/dashboard-guide.js?v=20260715-ux3"></script>
+    <script>
+    (function () {
+        function wireCsDashboard() {
+            if (typeof OmnifyCs === 'undefined') return;
+            var modal = document.getElementById('cs-modal');
+            var openBtn = document.getElementById('btn-open-cs');
+            var form = document.getElementById('cs-form');
+            if (!modal || !openBtn || !form) return;
+
+            function refreshBadge() {
+                var badge = document.getElementById('cs-fab-badge');
+                if (!badge) return;
+                var n = OmnifyCs.openCount();
+                badge.textContent = n > 9 ? '9+' : String(n);
+                badge.classList.toggle('show', n > 0);
+            }
+
+            function closeModal() {
+                modal.classList.remove('open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+
+            function openModal() {
+                var hint = document.getElementById('cs-context-hint');
+                var view = (window.App && App.currentView) || '';
+                var company = (window.App && App.brandName) || '';
+                if (hint) {
+                    hint.textContent = '현재 화면: ' + (view || 'dashboard') + (company ? ' · ' + company : '') +
+                        ' · 접수 내용은 어드민 CS 목록으로 전달됩니다.';
+                }
+                modal.classList.add('open');
+                modal.setAttribute('aria-hidden', 'false');
+                var title = document.getElementById('cs-title');
+                if (title) setTimeout(function () { title.focus(); }, 50);
+            }
+
+            openBtn.addEventListener('click', openModal);
+            document.getElementById('cs-modal-close').addEventListener('click', closeModal);
+            document.getElementById('cs-cancel').addEventListener('click', closeModal);
+            modal.addEventListener('click', function (ev) { if (ev.target === modal) closeModal(); });
+            document.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Escape' && modal.classList.contains('open')) closeModal();
+            });
+
+            form.addEventListener('submit', function (ev) {
+                ev.preventDefault();
+                var hp = (form.querySelector('input[name="hp"]') || {}).value;
+                if (hp) { closeModal(); return; }
+                var btn = document.getElementById('cs-submit');
+                if (btn) { btn.disabled = true; btn.textContent = '접수 중…'; }
+                var user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+                var tenant = window.__OMNIFY_TENANT__ || null;
+                OmnifyCs.submit({
+                    category: document.getElementById('cs-category').value,
+                    title: document.getElementById('cs-title').value,
+                    body: document.getElementById('cs-body').value,
+                    contact: document.getElementById('cs-contact').value,
+                    company: (window.App && App.brandName) || (tenant && tenant.companyName) || '',
+                    tenantKey: (tenant && (tenant.keyId || tenant.id)) || '',
+                    view: (window.App && App.currentView) || '',
+                    page: location.pathname + location.search,
+                    userName: user ? (user.name + ' · ' + user.role) : ''
+                }).then(function () {
+                    form.reset();
+                    closeModal();
+                    refreshBadge();
+                    if (typeof showToast === 'function') showToast('접수가 완료되었습니다. 어드민 CS 목록에 반영됩니다.', 'success');
+                }).catch(function (err) {
+                    if (typeof showToast === 'function') showToast(err.message || '접수에 실패했습니다.', 'warning');
+                }).finally(function () {
+                    if (btn) { btn.disabled = false; btn.textContent = '접수하기'; }
+                });
+            });
+
+            refreshBadge();
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function () { setTimeout(wireCsDashboard, 400); });
+        } else {
+            setTimeout(wireCsDashboard, 400);
+        }
+    })();
+    </script>
 </body>
 </html>

@@ -166,20 +166,20 @@ function renderStarterDashboard() {
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill" onclick="drillDownKpi('revenue')" title="클릭하여 상세">
+        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill" onclick="drillDownKpi('revenue')">
             <p class="kpi-label">오늘 통합 매출</p>
             <p class="kpi-value text-white">${m.dailyRevenueFormatted}</p>
-            <div class="kpi-footer"><span class="text-success font-bold">▲ ${m.dailyRevenueChange}</span><span class="text-gray-500">${App.globalDateRange.label}</span></div>
+            <div class="kpi-footer"><span class="text-success font-bold">▲ ${m.dailyRevenueChange}</span><span class="text-gray-500">${App.globalDateRange.label} · 클릭→상세</span></div>
         </div>
-        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill" onclick="drillDownKpi('margin')" title="클릭하여 상세">
+        <div class="glass rounded-xl kpi-card kpi-glow kpi-drill" onclick="drillDownKpi('ops')">
             <p class="kpi-label">통합 마진율</p>
             <p class="kpi-value text-white">${m.marginGlobal}%</p>
-            <div class="kpi-footer"><span class="${m.marginUp ? 'text-success' : 'text-warning'} font-bold">${m.marginUp ? '▲' : '●'} ${m.marginDelta}%p</span><span class="text-gray-500">목표 ${m.targetMargin}%</span></div>
+            <div class="kpi-footer"><span class="${m.marginUp ? 'text-success' : 'text-warning'} font-bold">${m.marginUp ? '▲' : '●'} ${m.marginDelta}%p</span><span class="text-gray-500">목표 ${m.targetMargin}% · 클릭→상세</span></div>
         </div>
-        <div class="glass rounded-xl kpi-card kpi-glow-danger kpi-drill border-l-4 border-l-warning" onclick="drillDownKpi('actions')" title="클릭하여 상세">
+        <div class="glass rounded-xl kpi-card kpi-glow-danger kpi-drill border-l-4 border-l-warning" onclick="drillDownKpi('actions')">
             <p class="kpi-label">미처리 주문</p>
             <p class="kpi-value text-white">${m.pendingShipments}건</p>
-            <div class="kpi-footer"><span class="text-warning font-bold">발주대기 ${App.orders.filter(function(o){return o.status==='pending';}).length}건</span><span class="text-gray-500">클릭→주문</span></div>
+            <div class="kpi-footer"><span class="text-warning font-bold">발주대기 ${App.orders.filter(function(o){return o.status==='pending';}).length}건</span><span class="text-gray-500">클릭→상세</span></div>
         </div>
     </div>
 
@@ -449,12 +449,6 @@ function injectTierDemoSwitcher() {
 
 function drillDownKpiStarter(type) {
     if (!App.isStarter) return false;
-    App.pendingDrillDown = { type: type };
-    if (type === 'revenue' || type === 'margin') {
-        navigateTo('view-briefing');
-    } else if (type === 'actions') {
-        App.pendingDrillDown.ordersFilter = '발주대기';
-        navigateTo('view-orders');
-    }
+    openHomeDetailPopup(type === 'margin' ? 'ops' : type);
     return true;
 }

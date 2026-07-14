@@ -1,5 +1,6 @@
-/* Omnify Demo Dashboard — 사용가이드 · 카드 툴팁 */
+/* Omnify Demo Dashboard — 사용가이드 · FAQ 검색 (정식 대시보드 호버 툴팁 비활성) */
 var DashboardGuide = (function () {
+    var TOOLTIPS_ENABLED = false;
     var tooltipEl = null;
     var tooltipHideTimer = null;
     var activeView = 'view-dashboard';
@@ -11,9 +12,10 @@ var DashboardGuide = (function () {
             summary: '옴니채널 핵심 KPI·차트·경보를 한 화면에서 확인하는 홈입니다.',
             keywords: ['홈', '대시보드', 'KPI', '매출', '요약', '통합'],
             faq: [
-                { q: '이 화면에서 무엇을 확인할 수 있나요?', a: '금일 매출·마진율·AI 예상 마감·미처리 액션, 채널별 매출 차트, 위험 재고, API 상태, 주문 파이프라인, CRM 요약을 한눈에 볼 수 있습니다.' },
-                { q: 'KPI 카드를 클릭하면 어떻게 되나요?', a: '각 KPI는 관련 상세 화면(데이터 DB, 수익성 분석, 주문 등)으로 드릴다운됩니다. 카드에 마우스를 올리면 툴팁으로 기능 설명이 표시됩니다.' },
-                { q: '데모 데이터인가요?', a: '네. 이 페이지는 체험용 목업 데이터입니다. 실제 도입 시 연동 채널 API에서 실시간으로 수집됩니다.' }
+                { q: '이 화면에서 무엇을 확인할 수 있나요?', a: '채널통합매출, 오늘의 운영 요약(주문·객단가·신규·반품), AI 예상 마감, 미처리 액션, 채널 매출 차트, 위험 재고, 프로모션 써머리·스케줄 축소판을 봅니다.' },
+                { q: 'KPI 카드를 클릭하면 어떻게 되나요?', a: '다른 메뉴로 이동하지 않고 상세 내역 팝업이 열립니다. 채널 분해·발주 대기·목표 대비 등을 확인한 뒤 「출력」으로 인쇄할 수 있습니다.' },
+                { q: '호버 툴팁이 없나요?', a: '정식 대시보드에서는 마우스 오버 툴팁을 제거했습니다. 기능 안내는 우측 하단 사용가이드(FAQ 검색)를 이용하세요.' },
+                { q: '데모 데이터인가요?', a: '네. 체험용 목업입니다. 도입 시 채널 API·사방넷에서 수집한 정규화 데이터가 같은 레이아웃에 채워집니다.' }
             ]
         },
         'dash-briefing': {
@@ -26,21 +28,31 @@ var DashboardGuide = (function () {
             ]
         },
         'dash-kpi-revenue': {
-            view: 'view-dashboard', menu: '통합 대시보드', title: '옴니채널 통합 매출 KPI',
-            summary: '선택한 기간 기준 전 채널 합산 매출입니다.',
+            view: 'view-dashboard', menu: '통합 대시보드', title: '채널통합매출 KPI',
+            summary: '고객사명 기준 전 채널 합산 금일 매출입니다.',
             keywords: ['매출', '통합매출', '금일', 'KPI', '채널'],
             faq: [
-                { q: '클릭하면 어디로 이동하나요?', a: '「누적 데이터 DB」 화면으로 이동해 채널·기간별 상세 매출을 조회할 수 있습니다.' },
-                { q: '기간은 어떻게 바꾸나요?', a: '상단 헤더의 날짜 범위 버튼(최근 7일 등)에서 변경하면 KPI와 차트가 함께 갱신됩니다.' }
+                { q: '클릭하면 어디로 가나요?', a: '메뉴 이동 없이 채널별 매출·비중·마진 표가 담긴 상세 팝업이 열립니다.' },
+                { q: '기간은 어떻게 바꾸나요?', a: '헤더 날짜 범위(최근 7일 등)에서 변경하면 KPI·차트·팝업 수치가 함께 갱신됩니다.' },
+                { q: '출력은?', a: '팝업 「출력」 또는 헤더 「리포트」로 A4 샘플 양식을 인쇄·PDF 저장할 수 있습니다.' }
+            ]
+        },
+        'dash-kpi-ops': {
+            view: 'view-dashboard', menu: '통합 대시보드', title: '오늘의 운영 요약',
+            summary: '주문건수 · 객단가 · 신규회원 · 반품율을 한 카드에 요약한 운영 지표입니다.',
+            keywords: ['주문', '객단가', '신규', '반품', 'AOV'],
+            faq: [
+                { q: '마진율은 어디에 있나요?', a: '홈 KPI에서는 제외했습니다. 「AI 수익성 분석」에서 확인하세요.' },
+                { q: '클릭하면?', a: '운영 지표와 파이프라인(수집·발주대기·출고) 요약이 팝업으로 열립니다.' },
+                { q: '반품율 ▼ 표시는?', a: '비교 기간 대비 개선입니다. 원인 분석은 채널 CS·반품 사유와 함께 보세요.' }
             ]
         },
         'dash-kpi-margin': {
-            view: 'view-dashboard', menu: '통합 대시보드', title: '통합 실시간 마진율',
-            summary: '채널 수수료·원가·광고비를 반영한 실마진율입니다.',
+            view: 'view-profit', menu: 'AI 수익성 분석', title: '통합 마진율',
+            summary: '마진율은 홈 대신 수익성 분석 화면의 핵심 지표로 둡니다.',
             keywords: ['마진', '마진율', '수익', '실마진'],
             faq: [
-                { q: '마진율은 어떻게 계산되나요?', a: '채널별 매출에서 플랫폼 수수료, 원가, 배송·광고 비용을 차감해 산출합니다. 「AI 수익성 분석」에서 채널별 상세를 볼 수 있습니다.' },
-                { q: '목표 마진은 어디서 설정하나요?', a: '「설정」 메뉴의 KPI 탭에서 목표 마진율을 지정하면 대시보드와 알림에 반영됩니다.' }
+                { q: '홈에서 사라졌나요?', a: '네. 홈은 운영 요약(주문·객단가·신규·반품) 중심으로 재구성했습니다.' }
             ]
         },
         'dash-kpi-target': {
@@ -57,8 +69,8 @@ var DashboardGuide = (function () {
             summary: '발주 대기·긴급 처리가 필요한 업무 건수입니다.',
             keywords: ['미처리', '발주', '대기', '긴급', '액션'],
             faq: [
-                { q: '어떤 항목이 포함되나요?', a: '송장 미전송, 발주 승인 대기, 재고 부족으로 인한 출고 지연 등 운영자가 처리해야 할 작업입니다.' },
-                { q: '클릭 시 동작은?', a: '「주문 · 발주」 화면으로 이동하며 미처리 필터가 적용됩니다.' }
+                { q: '어떤 항목이 포함되나요?', a: '송장 미전송, 발주 승인 대기, 재고 부족 출고 지연, 위험 재고 등 운영자가 처리할 작업입니다.' },
+                { q: '클릭 시 동작은?', a: '발주 대기 주문 샘플 표가 팝업으로 열립니다. 실제 발주 확정은 사방넷/채널에서 합니다.' }
             ]
         },
         'dash-chart': {
@@ -72,27 +84,45 @@ var DashboardGuide = (function () {
         },
         'dash-inventory-alert': {
             view: 'view-dashboard', menu: '통합 대시보드', title: '위험 재고 경보',
-            summary: '안전재고 이하 SKU를 우선 표시합니다.',
+            summary: '안전재고 이하 SKU를 우선 표시합니다. 좌측 차트 카드와 높이를 맞춥니다.',
             keywords: ['재고', '품절', '안전재고', '경보', 'SKU'],
             faq: [
                 { q: 'critical과 warning 차이는?', a: 'critical은 즉시 발주가 필요한 수준, warning은 곧 안전재고 아래로 떨어질 예정인 SKU입니다.' },
-                { q: '상세 재고는?', a: '카드 클릭 또는 「통합 재고」 메뉴에서 채널별 재고를 확인·조정할 수 있습니다.' }
+                { q: '상세 재고는?', a: '카드 클릭 또는 「통합 재고」 메뉴에서 채널별 재고를 확인할 수 있습니다.' }
+            ]
+        },
+        'dash-promo': {
+            view: 'view-dashboard', menu: '통합 대시보드', title: '프로모션 현황',
+            summary: '좌측 기간 써머리 + 우측 스케줄 축소판. CRM 아웃링크 없이 홈에서 확인합니다.',
+            keywords: ['프로모션', 'CRM', '캠페인', '스케줄', '써머리', '캘린더'],
+            faq: [
+                { q: '레이아웃은?', a: '왼쪽: 진행/기획/완료 건수와 목표 대비 매출. 오른쪽: 해당 월 스케줄 축소판.' },
+                { q: '왜 CRM으로 바로 안 가나요?', a: '홈에서는 현황만 요약합니다. 「상세」는 팝업, 편집은 「+ 프로모션」 또는 좌측 CRM 메뉴에서 합니다.' },
+                { q: '출력은?', a: '상세 팝업 「출력」 또는 CRM 「출력 양식」을 사용하세요.' }
             ]
         },
         'dash-api-status': {
-            view: 'view-dashboard', menu: '통합 대시보드', title: '채널 API 상태',
-            summary: '각 쇼핑몰 API 연결·동기화·토큰 만료 현황입니다.',
-            keywords: ['API', '연동', '토큰', '동기화', 'Cafe24', '쿠팡'],
+            view: 'view-api', menu: 'API 연동 상태', title: '채널 API 상태',
+            summary: '홈에서는 제외. API 메뉴·헤더 파이프라인에서 확인합니다.',
+            keywords: ['API', '연동', '토큰', '동기화'],
             faq: [
-                { q: 'warn 상태는 무엇인가요?', a: '토큰 만료가 임박했거나 최근 동기화 지연이 있는 채널입니다. 「API 연동 상태」에서 상세 확인·갱신할 수 있습니다.' }
+                { q: '홈에 없나요?', a: '네. 헤더 파이프라인 아이콘 또는 「API 연동」 메뉴를 이용하세요.' }
             ]
         },
         'dash-pipeline': {
-            view: 'view-dashboard', menu: '통합 대시보드', title: '주문 처리 파이프라인',
-            summary: '수집→대기→처리→발송 단계별 주문 흐름입니다.',
-            keywords: ['주문', '파이프라인', '발송', '처리', '수집'],
+            view: 'view-dashboard', menu: '통합 대시보드', title: '데이터 파이프라인 (헤더)',
+            summary: '상단 헤더 아이콘에서 파이프라인 단계와 최근 동기화를 확인합니다.',
+            keywords: ['파이프라인', '동기화', '헤더'],
             faq: [
-                { q: '수동 동기화는?', a: '상단 「검색」 팔레트(Ctrl+K)에서 「수동 데이터 동기화」를 실행하거나 주문 화면의 동기화 버튼을 사용합니다.' }
+                { q: '여는 방법?', a: '헤더의 파이프라인(흐름) 아이콘을 누르면 팝오버가 열립니다.' }
+            ]
+        },
+        'dash-pipeline-live': {
+            view: 'view-dashboard', menu: '통합 대시보드', title: '데이터 파이프라인 (헤더)',
+            summary: '상단 헤더 아이콘에서 파이프라인 단계와 최근 동기화를 확인합니다.',
+            keywords: ['파이프라인', '동기화', '헤더'],
+            faq: [
+                { q: '여는 방법?', a: '헤더의 파이프라인(흐름) 아이콘을 누르면 팝오버가 열립니다.' }
             ]
         },
         'menu-datahub': {
@@ -161,7 +191,8 @@ var DashboardGuide = (function () {
             keywords: ['수익성', 'AI', '마진', 'ROAS', '분석', 'MoM', 'YoY'],
             faq: [
                 { q: 'AI 인사이트는?', a: '마진 하락 채널, 광고 효율 저하 등 이상 징후를 자동 요약합니다.' },
-                { q: '리포트 다운로드는?', a: '상단 또는 커맨드 팔레트에서 PDF/Excel 리포트 생성(데모: 토스트 안내).' }
+                { q: '리포트 다운로드는?', a: '헤더 「리포트」 또는 화면 「출력 양식」으로 A4 샘플을 인쇄·PDF 저장합니다. (주문/재고/수익/프로모션 양식 포함)' },
+                { q: 'Data Hub Export와 다른가요?', a: '헤더 리포트는 요약 인쇄 양식이고, Data Hub CSV/Excel/PDF는 집계 테이블 Export입니다.' }
             ]
         },
         'menu-api': {
@@ -560,13 +591,13 @@ var DashboardGuide = (function () {
         'view-dashboard': [
             { sel: '.border-l-warning', id: 'dash-briefing' },
             { sel: '.kpi-drill', id: 'dash-kpi-revenue', index: 0 },
-            { sel: '.kpi-drill', id: 'dash-kpi-margin', index: 1 },
+            { sel: '#home-ops-kpi', id: 'dash-kpi-ops' },
             { sel: '.kpi-drill', id: 'dash-kpi-target', index: 2 },
             { sel: '.kpi-drill', id: 'dash-kpi-actions', index: 3 },
             { sel: '.chart-card', id: 'dash-chart', index: 0 },
-            { sel: '#view-dashboard .grid.xl\\:grid-cols-3 > .glass.rounded-xl', id: 'dash-inventory-alert', index: 1 },
-            { sel: '#view-dashboard .grid.lg\\:grid-cols-3 > .glass.rounded-xl', id: 'dash-api-status', index: 0 },
-            { sel: '#view-dashboard .grid.lg\\:grid-cols-3 > .glass.rounded-xl', id: 'dash-pipeline-live', index: 1 },
+            { sel: '.home-inv-alert', id: 'dash-inventory-alert' },
+            { sel: '#home-promo-card', id: 'dash-promo' },
+            { sel: '#pipeline-btn', id: 'dash-pipeline' },
             { sel: '#view-dashboard .glass.rounded-xl.overflow-hidden', id: 'dash-order-feed' }
         ],
         'view-datahub': [
@@ -678,6 +709,7 @@ var DashboardGuide = (function () {
     }
 
     function showTooltip(anchor, guideId) {
+        if (!TOOLTIPS_ENABLED) return;
         var guide = getGuide(guideId);
         if (!guide || !anchor) return;
         var el = ensureTooltip();
@@ -725,13 +757,8 @@ var DashboardGuide = (function () {
     function bindCard(el, guideId) {
         if (!el || el.dataset.dgBound === guideId) return;
         el.dataset.dgBound = guideId;
-        el.classList.add('dg-has-guide');
+        /* 정식 대시보드: 호버 ?/help 커서 표시용 클래스 미사용 */
         el.setAttribute('data-guide-id', guideId);
-        function onEnter() {
-            if (tooltipHideTimer) clearTimeout(tooltipHideTimer);
-            showTooltip(el, guideId);
-        }
-        function onLeave() { scheduleHideTooltip(); }
         function onClick(e) {
             if (e.altKey) {
                 e.preventDefault();
@@ -739,10 +766,6 @@ var DashboardGuide = (function () {
                 openModal(guideId);
             }
         }
-        el.addEventListener('mouseenter', onEnter);
-        el.addEventListener('mouseleave', onLeave);
-        el.addEventListener('focus', onEnter);
-        el.addEventListener('blur', onLeave);
         el.addEventListener('click', onClick);
     }
 
@@ -1016,7 +1039,7 @@ var DashboardGuide = (function () {
         if (typeof showToast === 'function' && !sessionStorage.getItem('dg_hint_shown')) {
             sessionStorage.setItem('dg_hint_shown', '1');
             setTimeout(function () {
-                showToast('💡 카드에 마우스를 올리면 기능 안내가 표시됩니다. 우측 하단 가이드 버튼에서 전체 FAQ를 검색하세요.', 'info');
+                showToast('💡 우측 하단 가이드 버튼에서 FAQ를 검색하세요. (카드 호버 툴팁은 정식 대시보드에서 비활성)', 'info');
             }, 1200);
         }
     }
