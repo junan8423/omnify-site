@@ -19,22 +19,22 @@ const App = {
     ],
 
     orders: [
-        { id: 'ORD-20260710-0847', channel: 'cafe24', product: '비건 히알루론산 토너 외 1건', amount: 34000, status: 'pending', time: '22:28:14' },
-        { id: 'ORD-20260710-0846', channel: 'smartstore', product: '시카 리페어 크림 기획세트', amount: 52000, status: 'shipped', time: '22:25:03' },
-        { id: 'ORD-20260710-0845', channel: 'coupang', product: '옴므 올인원 로션 200ml', amount: 28000, status: 'shipped', time: '22:22:41' },
-        { id: 'ORD-20260710-0844', channel: 'ably', product: '글로우 업 세럼 30ml', amount: 45000, status: 'pending', time: '22:18:55' },
-        { id: 'ORD-20260710-0843', channel: 'cafe24', product: '선크림 SPF50+ 60ml', amount: 32000, status: 'processing', time: '22:15:22' },
-        { id: 'ORD-20260710-0842', channel: 'smartstore', product: '비타민C 앰플 20ml', amount: 38000, status: 'shipped', time: '22:10:08' },
-        { id: 'ORD-20260710-0841', channel: 'coupang', product: '클렌징 폼 150ml 2개입', amount: 24000, status: 'shipped', time: '22:05:33' },
-        { id: 'ORD-20260710-0840', channel: 'ably', product: '수분 마스크팩 10매', amount: 19000, status: 'processing', time: '22:01:17' },
+        { id: 'ORD-20260710-0847', channel: 'cafe24', productTitle: '비건 히알루론산 토너 외 1건', amount: 34000, status: 'pending', time: '22:28:14', sourceOrderId: 'C24-0847' },
+        { id: 'ORD-20260710-0846', channel: 'smartstore', productTitle: '시카 리페어 크림 기획세트', amount: 52000, status: 'shipped', time: '22:25:03', sourceOrderId: 'NS-0846' },
+        { id: 'ORD-20260710-0845', channel: 'coupang', productTitle: '옴므 올인원 로션 200ml', amount: 28000, status: 'shipped', time: '22:22:41', sourceOrderId: 'CP-0845' },
+        { id: 'ORD-20260710-0844', channel: 'ably', productTitle: '글로우 업 세럼 30ml', amount: 45000, status: 'pending', time: '22:18:55', sourceOrderId: 'AB-0844' },
+        { id: 'ORD-20260710-0843', channel: 'cafe24', productTitle: '선크림 SPF50+ 60ml', amount: 32000, status: 'processing', time: '22:15:22', sourceOrderId: 'C24-0843' },
+        { id: 'ORD-20260710-0842', channel: 'smartstore', productTitle: '비타민C 앰플 20ml', amount: 38000, status: 'shipped', time: '22:10:08', sourceOrderId: 'NS-0842' },
+        { id: 'ORD-20260710-0841', channel: 'coupang', productTitle: '클렌징 폼 150ml 2개입', amount: 24000, status: 'shipped', time: '22:05:33', sourceOrderId: 'CP-0841' },
+        { id: 'ORD-20260710-0840', channel: 'ably', productTitle: '수분 마스크팩 10매', amount: 19000, status: 'processing', time: '22:01:17', sourceOrderId: 'AB-0840' },
     ],
 
     inventory: [
-        { sku: 'SKU-COS-001', name: '코스메 히트 세럼 50ml', total: 24, cafe24: 10, smartstore: 8, coupang: 4, ably: 2, safety: 50, status: 'critical' },
-        { sku: 'SKU-COS-002', name: '비건 수분 크림 100ml', total: 850, cafe24: 300, smartstore: 280, coupang: 180, ably: 90, safety: 100, status: 'safe' },
-        { sku: 'SKU-COS-003', name: '시카 리페어 크림 50ml', total: 42, cafe24: 15, smartstore: 12, coupang: 10, ably: 5, safety: 60, status: 'warning' },
-        { sku: 'SKU-COS-004', name: '글로우 업 세럼 30ml', total: 320, cafe24: 100, smartstore: 90, coupang: 80, ably: 50, safety: 80, status: 'safe' },
-        { sku: 'SKU-COS-005', name: '선크림 SPF50+ 60ml', total: 156, cafe24: 50, smartstore: 45, coupang: 40, ably: 21, safety: 70, status: 'safe' },
+        { sku: 'SKU-COS-001', name: '코스메 히트 세럼 50ml', qtyWms: 24, qtyByChannel: { cafe24: 10, smartstore: 8, coupang: 4, ably: 2 }, safety: 50 },
+        { sku: 'SKU-COS-002', name: '비건 수분 크림 100ml', qtyWms: 850, qtyByChannel: { cafe24: 300, smartstore: 280, coupang: 180, ably: 90 }, safety: 100 },
+        { sku: 'SKU-COS-003', name: '시카 리페어 크림 50ml', qtyWms: 42, qtyByChannel: { cafe24: 15, smartstore: 12, coupang: 10, ably: 5 }, safety: 60 },
+        { sku: 'SKU-COS-004', name: '글로우 업 세럼 30ml', qtyWms: 320, qtyByChannel: { cafe24: 100, smartstore: 90, coupang: 80, ably: 50 }, safety: 80 },
+        { sku: 'SKU-COS-005', name: '선크림 SPF50+ 60ml', qtyWms: 156, qtyByChannel: { cafe24: 50, smartstore: 45, coupang: 40, ably: 21 }, safety: 70 },
     ],
 
     apiChannels: [
@@ -2435,7 +2435,13 @@ function renderOrders(data) {
     }).join('');
 }
 function filterOrders(f) { const m={발주대기:'pending',처리중:'processing',출고완료:'shipped'}; renderOrders(f==='전체'?App.orders:App.orders.filter(o=>o.status===m[f])); }
-function searchOrders(q) { const l=q.toLowerCase(); renderOrders(App.orders.filter(o=>o.id.toLowerCase().includes(l)||o.product.toLowerCase().includes(l))); }
+function searchOrders(q) {
+    var l = q.toLowerCase();
+    renderOrders(App.orders.filter(function (o) {
+        return String(o.id).toLowerCase().indexOf(l) >= 0 ||
+            String(o.product || o.productTitle || '').toLowerCase().indexOf(l) >= 0;
+    }));
+}
 function openView(targetId, title, group) {
     document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
     var nav = document.querySelector('[data-target="' + targetId + '"]');
@@ -4585,6 +4591,9 @@ function applyTenantChrome(tenant) {
 
 document.addEventListener('DOMContentLoaded', function() {
     var start = function () {
+        if (typeof OmnifySchema !== 'undefined' && OmnifySchema.hydrateAppDemo) {
+            OmnifySchema.hydrateAppDemo(App);
+        }
         var tenantBoot = window.__OMNIFY_TENANT__ || (typeof resolveTenantFromQuery === 'function' ? resolveTenantFromQuery() : null);
         if (tenantBoot && typeof applyTenantToDashboardApp === 'function') {
             applyTenantToDashboardApp(tenantBoot);
