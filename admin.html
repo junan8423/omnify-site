@@ -285,6 +285,7 @@
             </div>
             <div class="actions">
                 <a class="btn ghost" href="index.html">랜딩</a>
+                <a class="btn ghost" href="margin-calculator.html" target="_blank" rel="noopener">마진 시뮬레이터</a>
                 <a class="btn ghost" href="demo-dashboard.html" target="_blank" rel="noopener">공통 데모</a>
             </div>
         </header>
@@ -447,7 +448,7 @@
                     <label class="field"><span>공유 폴더 URL 또는 ID</span><input id="f-drive-url" type="text" placeholder="https://drive.google.com/drive/folders/…"></label>
                     <div class="row2">
                         <label class="field"><span>폴더 소유자 이메일</span><input id="f-drive-owner" type="email" placeholder="ops@customer.com"></label>
-                        <label class="field"><span>Omnify에 공유한 계정</span><input id="f-drive-shared" type="text" placeholder="service@omnify… (고객이 초대)"></label>
+                        <label class="field"><span>Omnify에 공유한 계정</span><input id="f-drive-shared" type="text" value="omnify-drive@omnify-site.iam.gserviceaccount.com" placeholder="omnify-drive@omnify-site.iam.gserviceaccount.com"></label>
                     </div>
                     <p class="muted" style="margin:.15rem 0 .5rem">고객이 Drive 폴더에 Omnify 서비스 계정을 뷰어/편집자로 공유한 뒤 URL을 넣어 주세요.</p>
 
@@ -519,6 +520,10 @@
                             <label class="field"><span>목표 ROAS</span><input id="c-target-roas" type="number" min="0" step="0.1" value="3.5"></label>
                         </div>
                         <label class="field"><span>통합 마진 시드(%)</span><input id="c-margin-global" type="number" min="0" max="100" step="0.1" value="32"></label>
+                        <p class="pipe-help">원가·수수료·광고 기반 객관 산출은 <a href="margin-calculator.html" target="_blank" rel="noopener">마진 시뮬레이터</a> → 「어드민에 반영 준비」 후 아래 버튼.</p>
+                        <div class="actions" style="margin-top:.35rem">
+                            <button type="button" class="btn ghost" id="btn-load-margin-calc">계산기 결과 불러오기</button>
+                        </div>
                     </div>
 
                     <div class="section-block">
@@ -624,7 +629,8 @@
 
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
-    <script src="js/tenant-registry.js?v=20260714-ch1"></script>
-    <script src="js/admin-app.js?v=20260714-ch1"></script>
+    <script src="js/margin-calc-engine.js?v=20260715"></script>
+    <script src="js/tenant-registry.js?v=20260714-ch2"></script>
+    <script src="js/admin-app.js?v=20260715-m"></script>
 </body>
 </html>

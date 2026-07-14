@@ -436,7 +436,9 @@
         $('f-drive-on').checked = t ? !!t.driveEnabled : true;
         $('f-drive-url').value = t ? (t.driveFolderUrl || t.driveFolderId || '') : '';
         $('f-drive-owner').value = t ? (t.driveOwnerEmail || '') : '';
-        $('f-drive-shared').value = t ? (t.driveSharedWith || '') : '';
+        $('f-drive-shared').value = t
+            ? (t.driveSharedWith || (typeof DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL !== 'undefined' ? DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL : ''))
+            : (typeof DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL !== 'undefined' ? DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL : '');
         $('f-notes').value = t ? (t.notes || '') : '';
         document.querySelectorAll('input[name="channel"]').forEach(function (c) {
             c.checked = t ? (t.channels || []).indexOf(c.value) >= 0 : false;
@@ -788,7 +790,9 @@
         $('f-drive-on').dataset.touched = '1';
         $('f-drive-url').value = '';
         $('f-drive-owner').value = '';
-        $('f-drive-shared').value = '';
+        $('f-drive-shared').value = typeof DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL !== 'undefined'
+            ? DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL
+            : 'omnify-drive@omnify-site.iam.gserviceaccount.com';
         $('f-notes').value = '특수관계 · 서비스 Ent급 · 청구 Growth. 채널~10 · 사방넷 읽기만.';
         $('f-prepaid').value = '12';
         $('f-discount').value = 10;
@@ -968,6 +972,50 @@
         });
         $('btn-gotbody').addEventListener('click', preloadGotbody);
         $('btn-save-ops').addEventListener('click', saveOpsOnly);
+        if ($('btn-load-margin-calc')) {
+            $('btn-load-margin-calc').addEventListener('click', function () {
+                var payload = (window.OmnifyMarginCalc && OmnifyMarginCalc.loadApplyPayload)
+                    ? OmnifyMarginCalc.loadApplyPayload()
+                    : null;
+                if (!payload) {
+                    try {
+                        payload = JSON.parse(localStorage.getItem('omnify_margin_calc_apply') || 'null');
+                    } catch (e) { payload = null; }
+                }
+                if (!payload || payload.targetMargin == null) {
+                    toast('시뮬레이터에서 「어드민에 반영 준비」를 먼저 실행하세요.', 'warning');
+                    return;
+                }
+                $('c-target-margin').value = payload.targetMargin;
+                $('c-margin-global').value = payload.globalSeed != null ? payload.globalSeed : (payload.margins && payload.margins.global) || '';
+                if (payload.monthlyRevenue) {
+                    var eok = Math.round((payload.monthlyRevenue / 100000000) * 100) / 100;
+                    if ($('c-current-eok') && !$('c-current-eok').value) $('c-current-eok').value = eok;
+                    if ($('c-gmv') && !$('c-gmv').value) $('c-gmv').value = eok;
+                }
+                var margins = payload.margins || {};
+                var weights = payload.channelWeights || {};
+                Object.keys(margins).forEach(function (id) {
+                    if (id === 'global') return;
+                    var chk = document.querySelector('input[name="channel"][value="' + id + '"]');
+                    if (chk && !chk.checked) chk.checked = true;
+                });
+                syncChannelCustomGrid();
+                Object.keys(margins).forEach(function (id) {
+                    if (id === 'global') return;
+                    var mEl = document.getElementById('cm-' + id);
+                    if (mEl) mEl.value = margins[id];
+                });
+                Object.keys(weights).forEach(function (id) {
+                    var wEl = document.getElementById('cw-' + id);
+                    if (wEl) wEl.value = Math.round(weights[id]);
+                });
+                switchTab('custom');
+                updateCustomChecklist();
+                var basis = payload.targetBasis === 'afterAd' ? '광고 후' : '공헌';
+                toast('계산기 반영: 목표 ' + payload.targetMargin + '% · 시드 ' + (payload.globalSeed || '') + '% (' + basis + ')', 'success');
+            });
+        }
 
         ['f-email', 'f-company', 'f-company-en'].forEach(function (id) {
             var el = $(id);

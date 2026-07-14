@@ -253,6 +253,9 @@ var CHANNEL_CATALOG = [
     { id: 'other', label: '기타', apiTier: 'D', group: 'other' }
 ];
 
+/** Drive 자료실 — 고객이 폴더에 초대할 Omnify 서비스 계정 (기본값) */
+var DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL = 'omnify-drive@omnify-site.iam.gserviceaccount.com';
+
 var API_TIER_META = {
     A: { label: 'A', title: '공개·반공개 셀러 API — 직접 연동 설계 가능' },
     AB: { label: 'A/B', title: '공개 API + 솔루션/앱 심사 필요할 수 있음' },
@@ -445,6 +448,7 @@ function normalizeTenantRecord(t) {
     t.accountOwner = t.accountOwner || 'JK';
     t.contractStart = t.contractStart || '';
     t.contractEnd = t.contractEnd || '';
+    if (!t.driveSharedWith) t.driveSharedWith = DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL;
     if (t.provision && Array.isArray(t.provision.steps)) {
         t.provision.steps.forEach(function (s) {
             if (s.operatorNote == null) s.operatorNote = '';
@@ -929,7 +933,7 @@ function buildTenantDraft(form) {
         driveFolderUrl: form.driveFolderUrl || '',
         driveFolderId: form.driveFolderId || extractDriveFolderId(form.driveFolderUrl || form.driveFolderId),
         driveOwnerEmail: form.driveOwnerEmail || '',
-        driveSharedWith: form.driveSharedWith || '',
+        driveSharedWith: form.driveSharedWith || DEFAULT_OMNIFY_DRIVE_SHARE_EMAIL,
         driveEnabled: !!form.driveEnabled || !!(form.driveFolderUrl || form.driveFolderId),
         notes: form.notes || '',
         commercial: defaultCommercial(form),
