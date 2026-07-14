@@ -3,6 +3,82 @@
  * 실서비스에서는 동일 스키마로 API/Firebase Functions에 이식.
  */
 var OMNIFY_TENANTS_KEY = 'omnify_tenants_v1';
+var OMNIFY_TENANT_STORE_META_KEY = 'omnify_tenant_store_meta_v1';
+
+/** 데이터 계층 — 현재 local, 향후 api로 교체 */
+var TenantStore = {
+    backend: 'local',
+    list: function () { return loadTenants(); },
+    get: function (id) { return getTenantById(id); },
+    save: function (tenant) { return upsertTenant(tenant); },
+    remove: function (id) { deleteTenant(id); },
+    exportBundle: function () {
+        return {
+            version: 2,
+            backend: TenantStore.backend,
+            exportedAt: new Date().toISOString(),
+            tenants: loadTenants()
+        };
+    },
+    importBundle: function (bundle, mode) {
+        mode = mode || 'merge';
+        var incoming = (bundle && bundle.tenants) ? bundle.tenants : (Array.isArray(bundle) ? bundle : null);
+        if (!incoming) throw new Error('invalid bundle');
+        var next = mode === 'replace' ? [] : loadTenants().slice();
+        incoming.forEach(function (t) {
+            if (!t || !t.id) return;
+            var i = next.findIndex(function (x) { return x.id === t.id; });
+            if (i >= 0) next[i] = t;
+            else next.unshift(t);
+        });
+        saveTenants(next);
+        try {
+            localStorage.setItem(OMNIFY_TENANT_STORE_META_KEY, JSON.stringify({
+                lastImportAt: new Date().toISOString(),
+                count: next.length
+            }));
+        } catch (e) { /* ignore */ }
+        return next.length;
+    }
+};
+
+var PLAN_MONTHLY_MAN = { starter: 15, growth: 30, enterprise: 50 };
+var PLAN_SETUP_MAN = { starter: 150, growth: 300, enterprise: null };
+
+var PHASE1_MODULE_VIEWS = {
+    dashboard: ['view-dashboard'],
+    briefing: ['view-briefing'],
+    datahub: ['view-datahub'],
+    orders: ['view-orders'],
+    inventory: ['view-inventory'],
+    archive: ['view-archive'],
+    crm: ['view-crm'],
+    profit: ['view-profit'],
+    comms: ['view-comms'],
+    activity: ['view-activity']
+};
+
+var OPS_CHECKLIST_DEFS = [
+    { id: 'kickoff', label: '킥오프 · 요구사항 확정' },
+    { id: 'tokens', label: '채널 API 토큰 수급' },
+    { id: 'drive_share', label: 'Drive 폴더 공유 확인' },
+    { id: 'briefing_kakao', label: '알림톡 수신자·채널 등록' },
+    { id: 'seed_qa', label: '대시보드 시드 · QA' },
+    { id: 'training', label: '고객 인수인계·교육' },
+    { id: 'golive', label: 'Go-live 확정' }
+];
+
+var CONTRACT_CHECKLIST_DEFS = [
+    { id: 'quote_sent', label: '견적 공유' },
+    { id: 'contract_signed', label: '계약서 서명' },
+    { id: 'setup_paid', label: '구축비 입금 확인' },
+    { id: 'refund_clause', label: '중도해지·환불 조항 명시' },
+    { id: 'aop_terms', label: '일시납(AOP) 조건 합의' },
+    { id: 'sla', label: '장애 대응 SLA 합의' }
+];
+
+var REFUND_POLICY_TEXT =
+    '중도 해지 시 할인 전 정상가(월 이용료)를 기준으로 사용 기간만큼 차감한 뒤 잔액을 환불합니다. 초기 구축비는 환불 대상이 아닙니다.';
 
 var PROVISION_STEPS = [
     { id: 'tenant_ns', label: '테넌트 네임스페이스 생성', detail: 'tenantId · storage prefix' },
@@ -55,10 +131,26 @@ function loadTenants() {
     try {
         var raw = localStorage.getItem(OMNIFY_TENANTS_KEY);
         var list = raw ? JSON.parse(raw) : [];
-        return Array.isArray(list) ? list : [];
+        if (!Array.isArray(list)) return [];
+        return list.map(normalizeTenantRecord);
     } catch (e) {
         return [];
     }
+}
+
+function normalizeTenantRecord(t) {
+    if (!t || typeof t !== 'object') return t;
+    t.commercial = defaultCommercial(Object.assign({}, t, { commercial: t.commercial }));
+    t.opsChecklist = mergeChecklist(OPS_CHECKLIST_DEFS, t.opsChecklist);
+    t.contractChecklist = mergeChecklist(CONTRACT_CHECKLIST_DEFS, t.contractChecklist);
+    t.opsNotes = t.opsNotes || '';
+    if (t.provision && Array.isArray(t.provision.steps)) {
+        t.provision.steps.forEach(function (s) {
+            if (s.operatorNote == null) s.operatorNote = '';
+        });
+    }
+    if (!t.custom) t.custom = defaultCustomConfig(t);
+    return t;
 }
 
 function saveTenants(list) {
@@ -80,6 +172,120 @@ function upsertTenant(tenant) {
 
 function deleteTenant(id) {
     saveTenants(loadTenants().filter(function(t) { return t.id !== id; }));
+}
+
+function defaultCommercial(form) {
+    form = form || {};
+    var plan = form.billingPlan || form.serviceTier || 'growth';
+    var prepaid = form.commercial && form.commercial.prepaidTerm
+        ? form.commercial.prepaidTerm
+        : 'none';
+    var discount = 0;
+    if (prepaid === '12') discount = 10;
+    else if (prepaid === '6') discount = 5;
+    if (form.commercial && form.commercial.discountPct != null && form.commercial.prepaidTerm === prepaid) {
+        discount = Number(form.commercial.discountPct) || discount;
+    }
+    return {
+        setupFeeMan: PLAN_SETUP_MAN[plan] != null ? PLAN_SETUP_MAN[plan] : null,
+        monthlyFeeMan: Number((form.commercial && form.commercial.monthlyFeeMan) != null
+            ? form.commercial.monthlyFeeMan
+            : (PLAN_MONTHLY_MAN[plan] || 30)),
+        prepaidTerm: prepaid,
+        discountPct: discount,
+        aopEnabled: prepaid === '6' || prepaid === '12',
+        refundPolicyKey: 'normal_deduct',
+        refundPolicyText: REFUND_POLICY_TEXT,
+        notes: (form.commercial && form.commercial.notes) || ''
+    };
+}
+
+function calcPrepaidTotals(commercial) {
+    commercial = commercial || defaultCommercial({});
+    var months = commercial.prepaidTerm === '12' ? 12 : commercial.prepaidTerm === '6' ? 6 : 0;
+    var monthly = Number(commercial.monthlyFeeMan) || 0;
+    var pct = Number(commercial.discountPct) || 0;
+    var listTotal = months ? monthly * months : 0;
+    var payTotal = months ? Math.round(listTotal * (100 - pct)) / 100 : 0;
+    return {
+        months: months,
+        listTotal: listTotal,
+        payTotal: payTotal,
+        save: Math.round((listTotal - payTotal) * 100) / 100
+    };
+}
+
+function defaultChecklistState(defs) {
+    var o = {};
+    (defs || []).forEach(function (d) { o[d.id] = false; });
+    return o;
+}
+
+function mergeChecklist(defs, saved) {
+    var base = defaultChecklistState(defs);
+    if (!saved || typeof saved !== 'object') return base;
+    Object.keys(base).forEach(function (k) {
+        if (saved[k] != null) base[k] = !!saved[k];
+    });
+    return base;
+}
+
+function checklistProgress(defs, state) {
+    state = mergeChecklist(defs, state);
+    var total = defs.length;
+    var done = defs.filter(function (d) { return state[d.id]; }).length;
+    return { done: done, total: total, pct: total ? Math.round(done / total * 100) : 0 };
+}
+
+function phase1ModulesToViews(modules) {
+    var map = { 'view-settings': true, 'view-api': true };
+    (modules || []).forEach(function (mod) {
+        var views = PHASE1_MODULE_VIEWS[mod] || [];
+        views.forEach(function (v) { map[v] = true; });
+    });
+    return map;
+}
+
+function getPhase1AllowedViews(tenant) {
+    if (!tenant || !tenant.custom || !tenant.custom.biz) return null;
+    var mods = tenant.custom.biz.phase1Modules;
+    if (!mods || !mods.length) return null;
+    return phase1ModulesToViews(mods);
+}
+
+function buildQuoteText(tenant) {
+    if (!tenant) return '';
+    var c = tenant.custom || {};
+    var com = tenant.commercial || defaultCommercial(tenant);
+    var prepaid = calcPrepaidTotals(com);
+    var lines = [];
+    lines.push('[Omnify 견적 요약]');
+    lines.push('고객사: ' + (tenant.companyName || '-'));
+    lines.push('청구 플랜: ' + tenant.billingPlan + (tenant.specialPricing ? ' (특가 · 서비스 ' + tenant.serviceTier + ')' : ''));
+    lines.push('서비스 티어: ' + tenant.serviceTier);
+    lines.push('작업 좌석: ' + tenant.seats + ' · 알림톡 수신: ' + tenant.briefingRecipients);
+    lines.push('채널: ' + (tenant.channels || []).join(', '));
+    if (com.setupFeeMan != null) lines.push('초기 구축비: ' + com.setupFeeMan + '만원');
+    else lines.push('초기 구축비: 별도 견적');
+    lines.push('월 유지비(정상가): ' + com.monthlyFeeMan + '만원');
+    if (prepaid.months) {
+        lines.push('일시납: ' + prepaid.months + '개월 · 할인 ' + com.discountPct + '%');
+        lines.push('일시납 정상합: ' + prepaid.listTotal + '만원 → 결제 ' + prepaid.payTotal + '만원 (절약 ' + prepaid.save + '만원)');
+    } else {
+        lines.push('결제 주기: 월납');
+    }
+    if (c.biz && c.biz.goLiveDate) lines.push('Go-live 목표: ' + c.biz.goLiveDate);
+    lines.push('');
+    lines.push('[중도 해지 · 환불]');
+    lines.push(com.refundPolicyText || REFUND_POLICY_TEXT);
+    if (c.biz && c.biz.customRequests) {
+        lines.push('');
+        lines.push('[커스텀 요청]');
+        lines.push(c.biz.customRequests);
+    }
+    lines.push('');
+    lines.push('미리보기: ' + ((tenant.infra && tenant.infra.previewPath) || '-'));
+    return lines.join('\n');
 }
 
 function defaultBriefingLimit(serviceTier) {
@@ -389,11 +595,15 @@ function buildTenantDraft(form) {
         driveSharedWith: form.driveSharedWith || '',
         driveEnabled: !!form.driveEnabled || !!(form.driveFolderUrl || form.driveFolderId),
         notes: form.notes || '',
+        commercial: defaultCommercial(form),
+        opsChecklist: mergeChecklist(OPS_CHECKLIST_DEFS, form.opsChecklist),
+        contractChecklist: mergeChecklist(CONTRACT_CHECKLIST_DEFS, form.contractChecklist),
+        opsNotes: form.opsNotes || '',
         custom: mergeCustomConfig(defaultCustomConfig(form), form.custom || null),
         provision: {
             status: 'pending',
             steps: PROVISION_STEPS.map(function(s) {
-                return { id: s.id, label: s.label, detail: s.detail, status: 'pending', at: null, message: '' };
+                return { id: s.id, label: s.label, detail: s.detail, status: 'pending', at: null, message: '', operatorNote: '' };
             }),
             lastError: null
         },

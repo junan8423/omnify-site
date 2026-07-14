@@ -153,6 +153,20 @@
         }
         .completeness strong { color: #6ee7b7; }
         .pipe-help { font-size: .7rem; color: var(--muted); margin: -.35rem 0 .65rem; line-height: 1.4; }
+        .quote-box {
+            margin: 0; padding: .75rem .85rem; border-radius: .6rem;
+            border: 1px solid var(--border); background: rgba(3,7,18,.55);
+            font-size: .72rem; line-height: 1.5; white-space: pre-wrap; color: #d1d5db;
+            max-height: 220px; overflow: auto;
+        }
+        .check-list { display: flex; flex-direction: column; gap: .35rem; }
+        .check-list label {
+            display: flex; gap: .5rem; align-items: flex-start;
+            font-size: .82rem; color: #d1d5db; padding: .4rem .5rem;
+            border-radius: .45rem; border: 1px solid transparent;
+        }
+        .check-list label:hover { background: rgba(3,7,18,.4); }
+        .check-list input { margin-top: .15rem; }
     </style>
 </head>
 <body>
@@ -160,9 +174,9 @@
         <header class="admin-top">
             <div>
                 <h1>Omnify 구축 어드민</h1>
-                <p>내부 전용 · 외부 비공개 (배포 시 Basic Auth)<br>
-                    ① 계약·기본 → ② 대시보드 커스텀 → 초안·인프라 구축<br>
-                    데모 구조를 뼈대로 두고, 고객 KPI·채널·브리핑·팀을 입력값으로 객관화합니다.</p>
+                <p>내부 전용 · Basic Auth<br>
+                    ① 계약·상업 → ② 커스텀 → ③ 구축·산출 → 초안 URL<br>
+                    Phase1 모듈은 대시보드 메뉴를 제한하고, 견적·체크리스트·JSON 백업을 지원합니다.</p>
             </div>
             <div class="actions">
                 <a class="btn ghost" href="index.html">랜딩</a>
@@ -175,7 +189,8 @@
                 <h2 id="form-title">신규 계약 등록</h2>
                 <div class="tabs" role="tablist">
                     <button type="button" class="tab-btn active" data-tab="basic" id="tab-btn-basic">1. 계약 · 기본</button>
-                    <button type="button" class="tab-btn" data-tab="custom" id="tab-btn-custom">2. 대시보드 커스텀</button>
+                    <button type="button" class="tab-btn" data-tab="custom" id="tab-btn-custom">2. 커스텀</button>
+                    <button type="button" class="tab-btn" data-tab="ops" id="tab-btn-ops">3. 구축 · 산출</button>
                 </div>
 
                 <div id="tab-basic" class="tab-panel active">
@@ -237,6 +252,27 @@
                     <p class="muted" style="margin:0 0 .4rem">판매 채널 *</p>
                     <div class="channel-grid" id="channel-grid"></div>
 
+                    <div class="section-block">
+                        <p class="section-title">상업 · 연간 최적화 (AOP)</p>
+                        <div class="row2">
+                            <label class="field"><span>월 유지비(만원)</span><input id="f-monthly-fee" type="number" min="0" step="0.5" value="30"></label>
+                            <label class="field"><span>초기 구축비(만원)</span><input id="f-setup-fee" type="number" min="0" step="1" placeholder="별도면 비움"></label>
+                        </div>
+                        <div class="row2">
+                            <label class="field"><span>일시납</span>
+                                <select id="f-prepaid">
+                                    <option value="none" selected>월납 (일시납 없음)</option>
+                                    <option value="6">6개월 · 5%</option>
+                                    <option value="12">12개월 · 10%</option>
+                                </select>
+                            </label>
+                            <label class="field"><span>할인율(%)</span><input id="f-discount" type="number" min="0" max="100" value="0"></label>
+                        </div>
+                        <p class="muted" id="prepaid-summary">일시납 없음 · 월납</p>
+                        <label class="field"><span>상업 메모</span><textarea id="f-commercial-notes" placeholder="특가 사유, 입금 일정…"></textarea></label>
+                        <p class="pipe-help">환불: 중도 해지 시 할인 전 정상가 기준 사용분 차감 후 잔액 환불 · 구축비 비환불</p>
+                    </div>
+
                     <label class="field" style="margin-top:.9rem"><span>메모</span><textarea id="f-notes" placeholder="특수관계, 1차 채널 범위, 일정…"></textarea></label>
                 </div>
 
@@ -261,8 +297,9 @@
                             <label class="field"><span>평균 객단가(원)</span><input id="c-aov" type="number" min="0" step="1000" placeholder="45000"></label>
                         </div>
                         <label class="field"><span>오픈(Go-live) 목표일</span><input id="c-golive" type="date"></label>
-                        <p class="muted" style="margin:0 0 .4rem">1차 오픈 모듈 (Phase 1)</p>
+                        <p class="muted" style="margin:0 0 .4rem">1차 오픈 모듈 (Phase 1) — 대시보드 메뉴 실제 제한</p>
                         <div class="module-grid" id="phase1-grid"></div>
+                        <p class="pipe-help">선택한 모듈 + 설정·API만 노출됩니다. (티어 허용 범위 ∩ Phase1)</p>
                         <label class="field" style="margin-top:.85rem"><span>커스텀 요청 (개발 백로그)</span><textarea id="c-requests" class="tall" placeholder="예: 채널별 정산 탭 추가, 사방넷 발주 상태 컬럼, 브리핑에 반품률…"></textarea></label>
                         <label class="field"><span>구축 메모</span><textarea id="c-build-notes" placeholder="킥오프 일정, 권한자, 데이터 샘플 수급…"></textarea></label>
                     </div>
@@ -320,6 +357,41 @@
                     </div>
                 </div>
 
+                <div id="tab-ops" class="tab-panel">
+                    <p class="hint">테넌트 저장 후 체크리스트·견적·백업을 관리합니다. Phase1 모듈은 대시보드 메뉴를 실제로 제한합니다.</p>
+
+                    <div class="section-block">
+                        <p class="section-title">견적 요약</p>
+                        <pre id="quote-preview" class="quote-box">테넌트를 저장·선택하면 견적이 표시됩니다.</pre>
+                        <div class="actions" style="margin-top:.5rem">
+                            <button type="button" class="btn ghost" id="btn-copy-quote">견적 복사</button>
+                            <button type="button" class="btn ghost" id="btn-refresh-quote">견적 새로고침</button>
+                        </div>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">계약 체크리스트</p>
+                        <div id="contract-checklist" class="check-list"></div>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">구축 실행 체크리스트</p>
+                        <div id="ops-checklist" class="check-list"></div>
+                        <label class="field" style="margin-top:.75rem"><span>운영 메모 (JK)</span><textarea id="f-ops-notes" class="tall" placeholder="차단 이슈, 대기 중 토큰, 고객 피드백…"></textarea></label>
+                        <button type="button" class="btn ghost" id="btn-save-ops" style="margin-top:.35rem">체크리스트 · 메모 저장</button>
+                    </div>
+
+                    <div class="section-block">
+                        <p class="section-title">데이터 백업 (TenantStore)</p>
+                        <p class="pipe-help">현재 백엔드: localStorage. JSON Export/Import로 기기 간 이전. 향후 Firebase/API로 동일 스키마 이식.</p>
+                        <div class="actions">
+                            <button type="button" class="btn ghost" id="btn-export-tenants">전체 Export</button>
+                            <button type="button" class="btn ghost" id="btn-import-tenants">Import 병합</button>
+                            <input id="import-file" type="file" accept="application/json,.json" class="hidden">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="actions">
                     <button type="button" class="btn primary" id="btn-submit">초안 생성 · 인프라 자동 구축</button>
                     <button type="button" class="btn ghost" id="btn-reset">초기화</button>
@@ -347,7 +419,7 @@
 
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
-    <script src="js/tenant-registry.js?v=20260714-admin2"></script>
-    <script src="js/admin-app.js?v=20260714-admin2"></script>
+    <script src="js/tenant-registry.js?v=20260714-admin3"></script>
+    <script src="js/admin-app.js?v=20260714-admin3"></script>
 </body>
 </html>

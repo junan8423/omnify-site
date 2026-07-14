@@ -39,6 +39,137 @@
             syncChannelCustomGrid();
             updateCustomChecklist();
         }
+        if (tab === 'ops') {
+            refreshOpsTab();
+        }
+    }
+
+    function syncPrepaidDefaults() {
+        var term = $('f-prepaid').value;
+        if (term === '12') $('f-discount').value = 10;
+        else if (term === '6') $('f-discount').value = 5;
+        else $('f-discount').value = 0;
+        updatePrepaidSummary();
+    }
+
+    function updatePrepaidSummary() {
+        var commercial = {
+            monthlyFeeMan: parseFloat($('f-monthly-fee').value) || 0,
+            prepaidTerm: $('f-prepaid').value,
+            discountPct: parseFloat($('f-discount').value) || 0
+        };
+        var calc = calcPrepaidTotals(commercial);
+        var el = $('prepaid-summary');
+        if (!el) return;
+        if (!calc.months) {
+            el.textContent = '일시납 없음 · 월 ' + commercial.monthlyFeeMan + '만원';
+            return;
+        }
+        el.textContent = calc.months + '개월 · 정상 ' + calc.listTotal + '만원 → 결제 ' + calc.payTotal + '만원 (절약 ' + calc.save + '만원)';
+    }
+
+    function syncFeesFromBilling() {
+        var plan = $('f-billing').value;
+        if (!$('f-monthly-fee').dataset.touched) {
+            $('f-monthly-fee').value = PLAN_MONTHLY_MAN[plan] != null ? PLAN_MONTHLY_MAN[plan] : 30;
+        }
+        if (!$('f-setup-fee').dataset.touched) {
+            var setup = PLAN_SETUP_MAN[plan];
+            $('f-setup-fee').value = setup != null ? setup : '';
+        }
+        updatePrepaidSummary();
+    }
+
+    function readCommercialForm() {
+        var setupRaw = $('f-setup-fee').value.trim();
+        return {
+            monthlyFeeMan: parseFloat($('f-monthly-fee').value) || 0,
+            setupFeeMan: setupRaw === '' ? null : (parseFloat(setupRaw) || 0),
+            prepaidTerm: $('f-prepaid').value || 'none',
+            discountPct: parseFloat($('f-discount').value) || 0,
+            aopEnabled: $('f-prepaid').value === '6' || $('f-prepaid').value === '12',
+            refundPolicyKey: 'normal_deduct',
+            refundPolicyText: typeof REFUND_POLICY_TEXT !== 'undefined' ? REFUND_POLICY_TEXT : '',
+            notes: $('f-commercial-notes').value.trim()
+        };
+    }
+
+    function fillCommercialForm(com, billingPlan) {
+        com = com || defaultCommercial({ billingPlan: billingPlan || 'growth' });
+        $('f-monthly-fee').value = com.monthlyFeeMan != null ? com.monthlyFeeMan : '';
+        $('f-setup-fee').value = com.setupFeeMan != null ? com.setupFeeMan : '';
+        $('f-prepaid').value = com.prepaidTerm || 'none';
+        $('f-discount').value = com.discountPct != null ? com.discountPct : 0;
+        $('f-commercial-notes').value = com.notes || '';
+        updatePrepaidSummary();
+    }
+
+    function renderChecklist(containerId, defs, state, nameAttr) {
+        var box = $(containerId);
+        if (!box) return;
+        state = mergeChecklist(defs, state);
+        box.innerHTML = defs.map(function (d) {
+            return '<label><input type="checkbox" name="' + nameAttr + '" value="' + d.id + '"' +
+                (state[d.id] ? ' checked' : '') + '> ' + escapeHtml(d.label) + '</label>';
+        }).join('');
+    }
+
+    function readChecklist(nameAttr, defs) {
+        var state = defaultChecklistState(defs);
+        document.querySelectorAll('input[name="' + nameAttr + '"]').forEach(function (el) {
+            state[el.value] = el.checked;
+        });
+        return state;
+    }
+
+    function refreshQuotePreview(tenant) {
+        var el = $('quote-preview');
+        if (!el) return;
+        if (!tenant) {
+            el.textContent = '테넌트를 저장·선택하면 견적이 표시됩니다.';
+            return;
+        }
+        el.textContent = buildQuoteText(tenant);
+    }
+
+    function refreshOpsTab() {
+        var t = editingId ? getTenantById(editingId) : null;
+        if (t) {
+            renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, t.contractChecklist, 'contract-check');
+            renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, t.opsChecklist, 'ops-check');
+            $('f-ops-notes').value = t.opsNotes || '';
+            refreshQuotePreview(t);
+        } else {
+            renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, {}, 'contract-check');
+            renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, {}, 'ops-check');
+            $('f-ops-notes').value = '';
+            var draft = null;
+            try {
+                var form = readForm();
+                if (form.companyName) {
+                    draft = buildTenantDraft(form);
+                    draft.id = '(draft)';
+                }
+            } catch (e) { /* ignore */ }
+            refreshQuotePreview(draft);
+        }
+    }
+
+    function saveOpsOnly() {
+        if (!editingId) {
+            toast('먼저 테넌트를 생성·저장하세요.', 'warning');
+            return;
+        }
+        var t = getTenantById(editingId);
+        if (!t) return;
+        t.contractChecklist = readChecklist('contract-check', CONTRACT_CHECKLIST_DEFS);
+        t.opsChecklist = readChecklist('ops-check', OPS_CHECKLIST_DEFS);
+        t.opsNotes = $('f-ops-notes').value.trim();
+        t.updatedAt = new Date().toISOString();
+        upsertTenant(t);
+        renderList();
+        refreshOpsTab();
+        toast('체크리스트 저장됨', 'success');
     }
 
     function readCustomForm() {
@@ -231,6 +362,14 @@
             driveOwnerEmail: $('f-drive-owner').value.trim(),
             driveSharedWith: $('f-drive-shared').value.trim(),
             notes: $('f-notes').value.trim(),
+            commercial: readCommercialForm(),
+            opsChecklist: document.querySelectorAll('input[name="ops-check"]').length
+                ? readChecklist('ops-check', OPS_CHECKLIST_DEFS)
+                : undefined,
+            contractChecklist: document.querySelectorAll('input[name="contract-check"]').length
+                ? readChecklist('contract-check', CONTRACT_CHECKLIST_DEFS)
+                : undefined,
+            opsNotes: $('f-ops-notes') ? $('f-ops-notes').value.trim() : '',
             custom: custom
         };
     }
@@ -263,7 +402,11 @@
         $('btn-submit').textContent = t ? '저장 후 재구축 실행' : '초안 생성 · 인프라 자동 구축';
         syncDefaultsFromTier(false);
         syncDriveSection();
+        fillCommercialForm(t && t.commercial ? t.commercial : null, t ? t.billingPlan : $('f-billing').value);
+        if ($('f-ops-notes')) $('f-ops-notes').value = t ? (t.opsNotes || '') : '';
         fillCustomForm(t && t.custom ? t.custom : null, t ? t.channels : selectedChannels());
+        if (activeTab === 'ops') refreshOpsTab();
+        else refreshQuotePreview(t);
     }
 
     function syncDefaultsFromTier(force) {
@@ -317,9 +460,10 @@
                 (t.specialPricing ? ' · 특수가격' : '') + '</p></div>' +
                 statusBadge(t.status) +
                 '</div>' +
-                '<p class="meta">채널 ' + ch + ' · 좌석 ' + t.seats + ' · 알림톡 ' + t.briefingRecipients +
-                ' · Drive ' + (t.driveEnabled && (t.driveFolderUrl || t.driveFolderId) ? '연결' : t.driveEnabled ? '대기' : 'off') +
-                ' · 커스텀 ' + comp.pct + '%</p>' +
+                '<p class="meta">채널 ' + ch + ' · 좌석 ' + t.seats +
+                ' · 커스텀 ' + comp.pct + '%' +
+                (t.commercial && t.commercial.aopEnabled ? ' · AOP ' + t.commercial.prepaidTerm + 'm' : '') +
+                ' · 구축 ' + checklistProgress(OPS_CHECKLIST_DEFS, t.opsChecklist).pct + '%</p>' +
                 '<div class="tenant-actions">' +
                 '<button type="button" class="btn-sm" data-act="open">대시보드</button>' +
                 '<button type="button" class="btn-sm" data-act="edit">수정</button>' +
@@ -393,13 +537,17 @@
                 driveOwnerEmail: form.driveOwnerEmail,
                 driveSharedWith: form.driveSharedWith,
                 notes: form.notes,
+                commercial: defaultCommercial(form),
+                opsChecklist: mergeChecklist(OPS_CHECKLIST_DEFS, form.opsChecklist || tenant.opsChecklist),
+                contractChecklist: mergeChecklist(CONTRACT_CHECKLIST_DEFS, form.contractChecklist || tenant.contractChecklist),
+                opsNotes: form.opsNotes != null ? form.opsNotes : (tenant.opsNotes || ''),
                 custom: mergeCustomConfig(defaultCustomConfig(form), form.custom),
                 updatedAt: new Date().toISOString(),
                 status: 'draft',
                 provision: {
                     status: 'pending',
                     steps: PROVISION_STEPS.map(function (s) {
-                        return { id: s.id, label: s.label, detail: s.detail, status: 'pending', at: null, message: '' };
+                        return { id: s.id, label: s.label, detail: s.detail, status: 'pending', at: null, message: '', operatorNote: '' };
                     }),
                     lastError: null
                 },
@@ -429,6 +577,7 @@
             toast('대시보드 초안 구축 완료', 'success');
             $('btn-submit').disabled = false;
             fillForm(t);
+            refreshOpsTab();
         }).catch(function () {
             toast('구축 중 오류', 'warning');
             $('btn-submit').disabled = false;
@@ -454,6 +603,12 @@
         $('f-drive-owner').value = '';
         $('f-drive-shared').value = '';
         $('f-notes').value = '특수관계 · 서비스 Ent급 · 청구 Growth. 채널~10 · 사방넷 읽기만.';
+        $('f-prepaid').value = '12';
+        $('f-discount').value = 10;
+        $('f-monthly-fee').value = 30;
+        $('f-setup-fee').value = 300;
+        $('f-commercial-notes').value = '연간 최적화 12개월 일시납 검토';
+        updatePrepaidSummary();
         ['cafe24', 'smartstore', 'coupang', 'ably', 'zigzag', 'musinsa', 'elevenst', 'gmarket', 'auction', 'other'].forEach(function (id) {
             var el = document.querySelector('input[name="channel"][value="' + id + '"]');
             if (el) el.checked = true;
@@ -519,12 +674,21 @@
         });
 
         $('f-service').addEventListener('change', function () { syncDefaultsFromTier(true); });
+        $('f-billing').addEventListener('change', function () { syncFeesFromBilling(); });
         $('f-seats').addEventListener('input', function () { this.dataset.touched = '1'; });
         $('f-briefing').addEventListener('input', function () { this.dataset.touched = '1'; });
         $('f-drive-on').addEventListener('change', function () {
             this.dataset.touched = '1';
             syncDriveSection();
         });
+        $('f-prepaid').addEventListener('change', syncPrepaidDefaults);
+        $('f-monthly-fee').addEventListener('input', function () {
+            this.dataset.touched = '1';
+            updatePrepaidSummary();
+        });
+        $('f-setup-fee').addEventListener('input', function () { this.dataset.touched = '1'; });
+        $('f-discount').addEventListener('input', updatePrepaidSummary);
+
         $('f-company').addEventListener('input', function () {
             if (!$('c-display').dataset.touched) $('c-display').value = this.value;
             updateCustomChecklist();
@@ -558,12 +722,66 @@
             $('f-briefing').dataset.touched = '';
             $('f-drive-on').dataset.touched = '';
             $('c-display').dataset.touched = '';
+            $('f-monthly-fee').dataset.touched = '';
+            $('f-setup-fee').dataset.touched = '';
             syncDefaultsFromTier(true);
+            syncFeesFromBilling();
             fillCustomForm(null, []);
             switchTab('basic');
             renderProvision(null);
         });
         $('btn-gotbody').addEventListener('click', preloadGotbody);
+        $('btn-save-ops').addEventListener('click', saveOpsOnly);
+        $('btn-copy-quote').addEventListener('click', function () {
+            var text = $('quote-preview').textContent || '';
+            if (!text || text.indexOf('테넌트를 저장') === 0) {
+                toast('복사할 견적이 없습니다.', 'warning');
+                return;
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    toast('견적 요약이 복사되었습니다.', 'success');
+                }).catch(function () {
+                    toast('복사 실패 — 수동 선택하세요.', 'warning');
+                });
+            } else {
+                toast('클립보드를 지원하지 않는 환경입니다.', 'warning');
+            }
+        });
+        $('btn-refresh-quote').addEventListener('click', function () {
+            refreshOpsTab();
+            toast('견적 갱신', 'info');
+        });
+        $('btn-export-tenants').addEventListener('click', function () {
+            var bundle = TenantStore.exportBundle();
+            var blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'omnify-tenants-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            toast('Export 완료', 'success');
+        });
+        $('btn-import-tenants').addEventListener('click', function () {
+            $('import-file').click();
+        });
+        $('import-file').addEventListener('change', function () {
+            var file = this.files && this.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function () {
+                try {
+                    var data = JSON.parse(reader.result);
+                    var n = TenantStore.importBundle(data, 'merge');
+                    renderList();
+                    toast(n + '건 병합 Import 완료', 'success');
+                } catch (err) {
+                    toast('Import 실패: JSON을 확인하세요.', 'warning');
+                }
+                $('import-file').value = '';
+            };
+            reader.readAsText(file);
+        });
 
         $('tenant-list').addEventListener('click', function (e) {
             var btn = e.target.closest('[data-act]');
@@ -598,8 +816,11 @@
 
         fillForm(null);
         syncDefaultsFromTier(true);
+        syncFeesFromBilling();
         renderList();
         renderProvision(null);
         updateCustomChecklist();
+        renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, {}, 'contract-check');
+        renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, {}, 'ops-check');
     });
 })();

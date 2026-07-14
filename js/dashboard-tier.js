@@ -111,8 +111,15 @@ function tierAtLeast(minTier) {
 
 function getAllowedViewsForTier(tier) {
     tier = normalizeTierId(tier);
-    if (tier === 'enterprise') return null;
-    return TIER_ALLOWED_VIEWS[tier] || TIER_ALLOWED_VIEWS.starter;
+    var base = tier === 'enterprise' ? null : (TIER_ALLOWED_VIEWS[tier] || TIER_ALLOWED_VIEWS.starter);
+    var phaseMap = null;
+    if (typeof getPhase1AllowedViews === 'function' && typeof App !== 'undefined' && App.tenantMeta) {
+        phaseMap = getPhase1AllowedViews(App.tenantMeta);
+    }
+    if (!phaseMap) return base;
+    var phaseList = Object.keys(phaseMap);
+    if (!base) return phaseList;
+    return base.filter(function(v) { return !!phaseMap[v]; });
 }
 
 function getNavGroupsForTier() {
