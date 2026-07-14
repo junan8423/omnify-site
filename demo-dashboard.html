@@ -36,15 +36,34 @@
             --glass-border: rgba(55, 65, 81, 0.6);
             --glow-primary: rgba(59, 130, 246, 0.15);
             --glow-accent: rgba(139, 92, 246, 0.12);
+            /* 데모 대시보드 가독성 스케일 */
+            --fs-micro: 11px;
+            --fs-caption: 12px;
+            --fs-small: 13px;
+            --fs-body: 14px;
+            --muted-strong: #a8b0bc;
+            --muted-soft: #c4CAD4;
         }
         * { box-sizing: border-box; }
         body {
             background: var(--dark, #030712);
             color: #f9fafb;
             font-family: 'Pretendard', sans-serif;
+            font-size: var(--fs-body);
+            line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             overflow: hidden;
         }
+        /* Tailwind 마이크로 유틸 → 최소 가독 크기 (대시보드 JS 전반) */
+        .text-\[9px\] { font-size: var(--fs-micro) !important; line-height: 1.45 !important; }
+        .text-\[10px\] { font-size: var(--fs-caption) !important; line-height: 1.45 !important; }
+        .text-\[11px\] { font-size: var(--fs-small) !important; line-height: 1.45 !important; }
+        .text-xs { font-size: var(--fs-small) !important; line-height: 1.45 !important; }
+        .text-sm { font-size: var(--fs-body) !important; line-height: 1.5 !important; }
+        /* 어두웠던 보조 텍스트 대비 강화 */
+        .text-gray-500 { color: var(--muted-strong) !important; }
+        .text-gray-400 { color: var(--muted-soft) !important; }
+        .text-gray-600 { color: #8b939e !important; }
         .glass {
             background: var(--glass);
             backdrop-filter: blur(16px);
@@ -119,9 +138,9 @@
             align-items: center;
             gap: 6px;
             padding: 4px 8px 8px;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 700;
-            color: #6b7280;
+            color: #9ca3af;
             letter-spacing: 0.04em;
             text-transform: none;
         }
@@ -137,10 +156,10 @@
         .breadcrumb-home:hover { color: #60a5fa; }
         .breadcrumb-sep { color: #4b5563; font-size: 12px; margin: 0 6px; }
         .breadcrumb-current { color: #f3f4f6; font-size: 13px; font-weight: 600; }
-        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.02em; }
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
         .demo-pill {
             display: inline-flex; align-items: center; gap: 4px;
-            padding: 1px 7px; border-radius: 5px; font-size: 9px; font-weight: 800;
+            padding: 1px 7px; border-radius: 5px; font-size: 13px; font-weight: 800;
             letter-spacing: 0.04em; text-transform: uppercase;
             background: rgba(245,158,11,0.15); color: #fbbf24;
             border: 1px solid rgba(245,158,11,0.35); vertical-align: middle; margin-right: 4px;
@@ -151,10 +170,10 @@
             background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25);
         }
         .demo-mode-badge .status-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
-        .demo-mode-badge span { font-size: 11px; font-family: ui-monospace, monospace; color: #fbbf24; font-weight: 700; }
+        .demo-mode-badge span { font-size: 13px; font-family: ui-monospace, monospace; color: #fbbf24; font-weight: 700; }
         .date-range-btn {
             display: flex; align-items: center; gap: 6px;
-            padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 600;
             background: rgba(31,41,55,0.8); border: 1px solid rgba(55,65,81,0.8);
             color: #d1d5db; transition: border-color 0.15s, color 0.15s;
         }
@@ -168,13 +187,13 @@
         .date-range-menu.open { display: block; }
         .date-range-menu button {
             display: block; width: 100%; text-align: left; padding: 8px 12px;
-            font-size: 11px; color: #9ca3af; transition: background 0.12s;
+            font-size: 13px; color: #9ca3af; transition: background 0.12s;
         }
         .date-range-menu button:hover { background: rgba(59,130,246,0.12); color: #fff; }
         .date-range-menu button.active { color: #93c5fd; background: rgba(59,130,246,0.15); }
         .kpi-drill { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
         .kpi-drill:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.12); }
-        .kpi-drill-hint { font-size: 9px; color: #6b7280; margin-top: 2px; }
+        .kpi-drill-hint { font-size: 12px; color: #9ca3af; margin-top: 2px; }
         .notif-item { cursor: pointer; transition: opacity 0.15s, background 0.15s; }
         .notif-item.read { opacity: 0.55; }
         .notif-item:not(.read):hover { background: rgba(31,41,55,0.6); }
@@ -187,7 +206,7 @@
         .mention-dropdown.open { display: block; }
         .mention-item {
             display: flex; align-items: center; gap: 8px; padding: 8px 10px;
-            font-size: 11px; cursor: pointer; transition: background 0.12s;
+            font-size: 13px; cursor: pointer; transition: background 0.12s;
         }
         .mention-item:hover { background: rgba(59,130,246,0.12); }
         .user-switch-menu {
@@ -199,7 +218,7 @@
         .user-switch-menu.open { display: block; }
         .user-switch-item {
             display: flex; align-items: center; gap: 8px; width: 100%;
-            padding: 8px 12px; font-size: 11px; text-align: left;
+            padding: 8px 12px; font-size: 13px; text-align: left;
             transition: background 0.12s;
         }
         .user-switch-item:hover { background: rgba(59,130,246,0.12); }
@@ -208,7 +227,7 @@
         .db-sort-btn:hover { color: #93c5fd; }
         .db-sort-btn.active { color: #60a5fa; }
         .briefing-toggle { cursor: pointer; }
-        .crm-tab-btn { padding: 8px 16px; font-size: 12px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
+        .crm-tab-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; color: #9ca3af; border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
         .crm-tab-btn:hover { color: #d1d5db; }
         .crm-tab-btn.active { color: #93c5fd; border-bottom-color: #3b82f6; }
         .promo-cal-grid { display: grid; gap: 1px; background: rgba(55,65,81,0.5); border-radius: 12px; overflow: hidden; border: 1px solid rgba(55,65,81,0.6); }
@@ -236,10 +255,10 @@
             display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
             padding: 10px 12px; border-radius: 10px;
             background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2);
-            font-size: 11px; color: #9ca3af;
+            font-size: 13px; color: #9ca3af;
         }
         .promo-cal-week-summary strong { color: #e5e7eb; font-weight: 700; font-size: 12px; line-height: 1.35; }
-        .promo-cal-week-summary-count { color: #93c5fd; font-weight: 700; font-size: 11px; }
+        .promo-cal-week-summary-count { color: #93c5fd; font-weight: 700; font-size: 13px; }
         .promo-cal-week-list { display: flex; flex-direction: column; gap: 10px; }
         /* 모바일 주간 — 완전 세로형 (요일 헤더 → 일정 스택) */
         .promo-cal-week-list-wrap .promo-cal-week-row {
@@ -261,16 +280,16 @@
         }
         .promo-cal-week-list-wrap .promo-cal-week-row.today .promo-cal-week-head { background: rgba(59,130,246,0.12); }
         .promo-cal-week-list-wrap .promo-cal-week-head-left { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
-        .promo-cal-week-list-wrap .promo-cal-weekday { font-size: 11px; font-weight: 800; color: #d1d5db; line-height: 1.2; }
-        .promo-cal-week-list-wrap .promo-cal-week-daynum { font-size: 11px; font-weight: 600; color: #9ca3af; line-height: 1.2; }
+        .promo-cal-week-list-wrap .promo-cal-weekday { font-size: 13px; font-weight: 800; color: #d1d5db; line-height: 1.2; }
+        .promo-cal-week-list-wrap .promo-cal-week-daynum { font-size: 13px; font-weight: 600; color: #9ca3af; line-height: 1.2; }
         .promo-cal-week-list-wrap .promo-cal-week-row.today .promo-cal-weekday { color: #93c5fd; }
         .promo-cal-week-list-wrap .promo-cal-week-row.today .promo-cal-week-daynum { color: #bfdbfe; }
         .promo-cal-week-list-wrap .promo-cal-week-today-pill {
-            font-size: 9px; font-weight: 800; color: #93c5fd;
+            font-size: 13px; font-weight: 800; color: #93c5fd;
             background: rgba(59,130,246,0.2); padding: 2px 7px; border-radius: 999px; line-height: 1.2;
         }
         .promo-cal-week-list-wrap .promo-cal-week-add-btn {
-            flex-shrink: 0; font-size: 10px; font-weight: 700; color: #93c5fd;
+            flex-shrink: 0; font-size: 12px; font-weight: 700; color: #93c5fd;
             padding: 4px 8px; border-radius: 6px;
             border: 1px solid rgba(59,130,246,0.35); background: rgba(59,130,246,0.08);
         }
@@ -292,23 +311,23 @@
         .promo-cal-week-list-wrap .promo-cal-week-event-card.type-bundle { border-left: 3px solid #f97316; }
         .promo-cal-week-list-wrap .promo-cal-week-event-title { font-size: 12px; font-weight: 700; color: #f3f4f6; line-height: 1.4; word-break: keep-all; }
         .promo-cal-week-list-wrap .promo-cal-week-event-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 5px; }
-        .promo-cal-week-list-wrap .promo-cal-week-event-chip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 999px; }
-        .promo-cal-week-list-wrap .promo-cal-week-event-period { font-size: 9px; color: #6b7280; width: 100%; margin-top: 1px; }
+        .promo-cal-week-list-wrap .promo-cal-week-event-chip { font-size: 13px; font-weight: 700; padding: 2px 6px; border-radius: 999px; }
+        .promo-cal-week-list-wrap .promo-cal-week-event-period { font-size: 13px; color: #6b7280; width: 100%; margin-top: 1px; }
         .promo-cal-week-list-wrap .promo-cal-week-empty {
             width: 100%; padding: 6px 4px; text-align: center;
-            font-size: 11px; color: #6b7280;
+            font-size: 13px; color: #6b7280;
         }
         .promo-cal-week-list-wrap .promo-cal-week-row:active .promo-cal-week-head { background: rgba(31,41,55,0.75); }
         .promo-cal-week-list-wrap .promo-cal-week-event-card:active { background: rgba(31,41,55,0.75); }
-        .promo-cal-head { background: rgba(17,24,39,0.9); padding: 8px 4px; text-align: center; font-size: 10px; font-weight: 700; color: #9ca3af; }
+        .promo-cal-head { background: rgba(17,24,39,0.9); padding: 8px 4px; text-align: center; font-size: 12px; font-weight: 700; color: #9ca3af; }
         .promo-cal-cell { background: rgba(17,24,39,0.65); min-height: 88px; padding: 6px; cursor: pointer; transition: background 0.15s; position: relative; }
         .promo-cal-cell.week-cell { min-height: 280px; }
         .promo-cal-cell:hover { background: rgba(31,41,55,0.85); }
         .promo-cal-cell.other-month { opacity: 0.35; }
         .promo-cal-cell.today { box-shadow: inset 0 0 0 1px rgba(59,130,246,0.55); background: rgba(59,130,246,0.06); }
-        .promo-cal-day-num { font-size: 11px; font-weight: 700; color: #9ca3af; margin-bottom: 4px; }
+        .promo-cal-day-num { font-size: 13px; font-weight: 700; color: #9ca3af; margin-bottom: 4px; }
         .promo-cal-cell.today .promo-cal-day-num { color: #93c5fd; }
-        .promo-cal-event { font-size: 9px; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-weight: 600; }
+        .promo-cal-event { font-size: 13px; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-weight: 600; }
         .promo-cal-event.type-season { background: rgba(59,130,246,0.25); color: #93c5fd; border-left: 2px solid #3b82f6; }
         .promo-cal-event.type-flash { background: rgba(239,68,68,0.2); color: #fca5a5; border-left: 2px solid #ef4444; }
         .promo-cal-event.type-coupon { background: rgba(139,92,246,0.2); color: #c4b5fd; border-left: 2px solid #8b5cf6; }
@@ -363,7 +382,7 @@
         .sparkline { display: block; width: 72px !important; height: 28px !important; max-width: 72px; max-height: 28px; }
         .kpi-card { position: relative; padding: 1rem; }
         .kpi-label {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 500;
             color: #9ca3af;
             line-height: 1.4;
@@ -400,7 +419,7 @@
             flex-wrap: wrap;
             gap: 4px 8px;
             margin-top: 8px;
-            font-size: 11px;
+            font-size: 13px;
         }
         .admin-quicklinks {
             display: flex;
@@ -418,7 +437,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: -0.02em;
             transition: all 0.15s;
@@ -433,7 +452,7 @@
             left: 50%;
             transform: translateX(-50%);
             white-space: nowrap;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 600;
             padding: 3px 8px;
             border-radius: 6px;
@@ -454,14 +473,14 @@
         .header-quick-btn:hover { transform: translateY(-1px); background: rgba(139,92,246,0.25); }
         .header-quick-btn .ql-tip {
             display: none; position: absolute; top: calc(100% + 6px); left: 50%;
-            transform: translateX(-50%); white-space: nowrap; font-size: 10px; font-weight: 600;
+            transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 600;
             padding: 3px 8px; border-radius: 6px; background: #1f2937; border: 1px solid #374151;
             color: #e5e7eb; z-index: 30; pointer-events: none;
         }
         .header-quick-btn:hover .ql-tip { display: block; }
         .header-quick-btn .hq-badge {
             position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px;
-            background: #8b5cf6; border-radius: 8px; font-size: 9px; font-weight: 700;
+            background: #8b5cf6; border-radius: 8px; font-size: 13px; font-weight: 700;
             display: flex; align-items: center; justify-content: center; color: #fff;
             border: 2px solid #111827;
         }
@@ -520,7 +539,7 @@
             padding: 8px 12px; font-size: 13px; outline: none; color: #fff;
         }
         .settings-input:focus { border-color: rgba(59,130,246,0.5); }
-        .settings-label { font-size: 11px; color: #9ca3af; margin-bottom: 4px; display: block; }
+        .settings-label { font-size: 13px; color: #9ca3af; margin-bottom: 4px; display: block; }
         .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         @media (max-width: 640px) { .settings-row { grid-template-columns: 1fr; } }
         .tab-btn.active { background: #1f2937; color: #fff; }
@@ -549,7 +568,7 @@
             text-overflow: ellipsis;
         }
         .chart-unit-badge {
-            font-size: 10px;
+            font-size: 12px;
             color: #6b7280;
             background: rgba(31,41,55,0.8);
             border: 1px solid rgba(55,65,81,0.6);
@@ -564,7 +583,7 @@
             align-items: center;
             gap: 4px 14px;
             margin-bottom: 8px;
-            font-size: 10px;
+            font-size: 12px;
             color: #9ca3af;
         }
         .chart-legend-item {
@@ -607,18 +626,18 @@
             .view-section.space-y-5 > * + * { margin-top: 1rem; }
             /* KPI cards */
             .kpi-card { padding: 0.875rem; }
-            .kpi-label { font-size: 10px; margin-bottom: 6px; }
+            .kpi-label { font-size: 12px; margin-bottom: 6px; }
             .kpi-value { font-size: 1.25rem; }
             .kpi-spark-wrap { width: 56px; height: 24px; }
             .sparkline { width: 56px !important; height: 24px !important; max-width: 56px; max-height: 24px; }
-            .kpi-footer { font-size: 10px; gap: 3px 6px; }
+            .kpi-footer { font-size: 12px; gap: 3px 6px; }
             /* Charts */
             .chart-card-header { flex-wrap: wrap; align-items: flex-start; gap: 8px; }
             .chart-card-title h2 { font-size: 13px; white-space: normal; }
             .chart-canvas-wrap { height: 200px; }
             .chart-canvas-wrap.tall { height: 220px; }
             .chart-canvas-wrap.short { height: 140px; }
-            .chart-legend-row { gap: 3px 10px; font-size: 9px; }
+            .chart-legend-row { gap: 3px 10px; font-size: 13px; }
             /* Briefing banner */
             #view-dashboard .border-l-warning button.shrink-0 { width: 100%; justify-content: center; }
             #view-dashboard .border-l-warning .flex.items-start.gap-4 { gap: 0.75rem; }
@@ -673,9 +692,9 @@
                 border-radius: 10px;
             }
             .promo-cal-grid.month { border-radius: 10px; }
-            .promo-cal-grid.month .promo-cal-head { padding: 5px 2px; font-size: 9px; }
+            .promo-cal-grid.month .promo-cal-head { padding: 5px 2px; font-size: 13px; }
             .promo-cal-grid.month .promo-cal-cell { min-height: 0; aspect-ratio: 1 / 1; padding: 3px 2px; overflow: hidden; }
-            .promo-cal-grid.month .promo-cal-day-num { font-size: 10px; margin-bottom: 2px; line-height: 1.1; }
+            .promo-cal-grid.month .promo-cal-day-num { font-size: 12px; margin-bottom: 2px; line-height: 1.1; }
             .promo-cal-grid.month .promo-cal-event { font-size: 7px; padding: 1px 2px; margin-bottom: 1px; border-left-width: 1px; line-height: 1.15; border-radius: 2px; }
             .promo-cal-grid.month .promo-cal-more { font-size: 7px; line-height: 1; margin-top: 1px; }
             .promo-cal-grid.week:not(.promo-cal-week-list) { min-height: 0; }
@@ -683,7 +702,7 @@
             .promo-cal-week-list { gap: 8px; }
             .promo-cal-week-list-wrap .promo-cal-week-head { padding: 8px 10px; }
             .promo-cal-week-list-wrap .promo-cal-week-body { padding: 7px 8px 9px; }
-            .promo-cal-week-list-wrap .promo-cal-week-event-title { font-size: 11px; }
+            .promo-cal-week-list-wrap .promo-cal-week-event-title { font-size: 13px; }
             .promo-cal-week-list-wrap .promo-cal-week-event-card { padding: 8px 9px; }
             .promo-cal-grid.month .promo-cal-cell:active { background: rgba(31,41,55,0.85); }
             /* Disable hover lift on touch */
@@ -765,7 +784,7 @@
             width: 18px;
             height: 18px;
             border-radius: 9999px;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 800;
             line-height: 18px;
             text-align: center;
@@ -795,9 +814,9 @@
             transition: opacity 0.15s ease, transform 0.15s ease;
         }
         .dg-tooltip.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .dg-tooltip-title { font-size: 0.8125rem; font-weight: 700; color: #f3f4f6; margin-bottom: 0.35rem; }
-        .dg-tooltip-body { font-size: 0.75rem; line-height: 1.55; color: #a8b4c4; }
-        .dg-tooltip-foot { margin-top: 0.5rem; font-size: 0.6875rem; color: #60a5fa; cursor: pointer; }
+        .dg-tooltip-title { font-size: 0.875rem; font-weight: 700; color: #f3f4f6; margin-bottom: 0.35rem; }
+        .dg-tooltip-body { font-size: 0.8125rem; line-height: 1.55; color: #b4bac4; }
+        .dg-tooltip-foot { margin-top: 0.5rem; font-size: 0.75rem; color: #60a5fa; cursor: pointer; }
         .dg-guide-modal {
             position: fixed;
             inset: 0;
@@ -832,7 +851,7 @@
             flex-shrink: 0;
         }
         .dg-guide-head h2 { font-size: 1.125rem; font-weight: 800; margin-bottom: 0.25rem; }
-        .dg-guide-head p { font-size: 0.75rem; color: #9ca3af; }
+        .dg-guide-head p { font-size: 0.8125rem; color: #b4bac4; line-height: 1.45; }
         .dg-guide-search-wrap {
             display: flex;
             gap: 0.5rem;
@@ -899,18 +918,18 @@
             overflow: hidden;
         }
         .dg-guide-card-head { padding: 0.875rem 1rem; border-bottom: 1px solid rgba(31, 41, 55, 0.6); }
-        .dg-guide-menu { font-size: 0.6875rem; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.04em; }
+        .dg-guide-menu { font-size: 0.75rem; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.04em; }
         .dg-guide-card h4 { font-size: 0.9375rem; font-weight: 700; margin: 0.25rem 0; color: #f3f4f6; }
-        .dg-guide-summary { font-size: 0.75rem; color: #9ca3af; line-height: 1.55; margin-top: 0.25rem; }
+        .dg-guide-summary { font-size: 0.8125rem; color: #b4bac4; line-height: 1.55; margin-top: 0.25rem; }
         .dg-go-btn {
             margin-top: 0.625rem;
-            font-size: 0.6875rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #93c5fd;
             background: rgba(59, 130, 246, 0.12);
             border: 1px solid rgba(59, 130, 246, 0.3);
             border-radius: 0.5rem;
-            padding: 0.35rem 0.625rem;
+            padding: 0.4rem 0.7rem;
             cursor: pointer;
         }
         .dg-go-btn:hover { background: rgba(59, 130, 246, 0.22); color: #fff; }
@@ -924,7 +943,7 @@
         .dg-faq-item summary {
             cursor: pointer;
             padding: 0.625rem 0.75rem;
-            font-size: 0.8125rem;
+            font-size: 0.875rem;
             font-weight: 600;
             color: #e5e7eb;
             list-style: none;
@@ -932,9 +951,9 @@
         .dg-faq-item summary::-webkit-details-marker { display: none; }
         .dg-faq-item p {
             padding: 0 0.75rem 0.75rem;
-            font-size: 0.75rem;
+            font-size: 0.8125rem;
             line-height: 1.6;
-            color: #9ca3af;
+            color: #b4bac4;
         }
         .dg-guide-empty {
             text-align: center;
@@ -1326,7 +1345,7 @@
 <script>
     window.DASHBOARD_TIER = window.DASHBOARD_TIER || 'enterprise';
 </script>
-<script src="js/tenant-registry.js?v=20260714-fb1"></script>
+<script src="js/tenant-registry.js?v=20260714-pf3"></script>
 <script>
     (function () {
         window.__OMNIFY_BOOT__ = (typeof resolveTenantFromQueryAsync === 'function'
