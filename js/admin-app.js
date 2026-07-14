@@ -864,8 +864,31 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         var chBox = $('channel-grid');
-        chBox.innerHTML = CHANNEL_CATALOG.map(function (c) {
-            return '<label class="chk"><input type="checkbox" name="channel" value="' + c.id + '"> ' + c.label + '</label>';
+        var groupOrder = [
+            { id: 'core', label: '핵심' },
+            { id: 'market', label: '종합몰 · 오픈마켓' },
+            { id: 'vertical', label: '패션 · 뷰티' },
+            { id: 'department', label: '백화점 · 프리미엄' },
+            { id: 'lifestyle', label: '장보기 · 리빙 · 소셜' },
+            { id: 'special', label: '글로벌 · 홈쇼핑 · 소셜커머스' },
+            { id: 'other', label: '기타' }
+        ];
+        chBox.innerHTML = groupOrder.map(function (g) {
+            var items = CHANNEL_CATALOG.filter(function (c) { return (c.group || 'other') === g.id; });
+            if (!items.length) return '';
+            return '<div class="channel-group">' +
+                '<p class="channel-group-title">' + g.label + '</p>' +
+                '<div class="channel-group-list">' +
+                items.map(function (c) {
+                    var tier = c.apiTier || 'D';
+                    var meta = typeof channelApiTierMeta === 'function' ? channelApiTierMeta(tier) : { label: tier, title: '' };
+                    return '<label class="chk" title="' + escapeHtml(meta.title || '') + '">' +
+                        '<input type="checkbox" name="channel" value="' + c.id + '">' +
+                        '<span class="chk-label-text">' + escapeHtml(c.label) + '</span>' +
+                        '<span class="api-tier api-tier-' + tier + '">API ' + escapeHtml(meta.label) + '</span>' +
+                        '</label>';
+                }).join('') +
+                '</div></div>';
         }).join('');
 
         $('phase1-grid').innerHTML = CUSTOM_MODULE_OPTIONS.map(function (m) {

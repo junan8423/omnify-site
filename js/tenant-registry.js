@@ -214,18 +214,56 @@ var PROVISION_STEPS = [
 ];
 
 var CHANNEL_CATALOG = [
-    { id: 'cafe24', label: 'Cafe24(자사몰)' },
-    { id: 'smartstore', label: '네이버 스마트스토어' },
-    { id: 'coupang', label: '쿠팡' },
-    { id: 'ably', label: '에이블리' },
-    { id: 'zigzag', label: '지그재그' },
-    { id: 'musinsa', label: '무신사' },
-    { id: 'elevenst', label: '11번가' },
-    { id: 'gmarket', label: 'G마켓' },
-    { id: 'auction', label: '옥션' },
-    { id: 'other', label: '기타' }
+    /* Tier S — 핵심 */
+    { id: 'cafe24', label: 'Cafe24(자사몰)', apiTier: 'A', group: 'core' },
+    { id: 'smartstore', label: '네이버 스마트스토어', apiTier: 'AB', group: 'core' },
+    { id: 'coupang', label: '쿠팡', apiTier: 'A', group: 'core' },
+    /* 종합몰 · 오픈마켓 */
+    { id: 'gmarket', label: 'G마켓', apiTier: 'B', group: 'market' },
+    { id: 'elevenst', label: '11번가', apiTier: 'B', group: 'market' },
+    { id: 'auction', label: '옥션', apiTier: 'B', group: 'market' },
+    { id: 'ssg', label: 'SSG닷컴', apiTier: 'C', group: 'market' },
+    { id: 'lotteon', label: '롯데온', apiTier: 'C', group: 'market' },
+    { id: 'interpark', label: '인터파크', apiTier: 'C', group: 'market' },
+    /* 패션 · 뷰티 버티컬 */
+    { id: 'ably', label: '에이블리', apiTier: 'B', group: 'vertical' },
+    { id: 'musinsa', label: '무신사', apiTier: 'B', group: 'vertical' },
+    { id: 'oliveyoung', label: '올리브영', apiTier: 'C', group: 'vertical' },
+    { id: 'zigzag', label: '지그재그', apiTier: 'B', group: 'vertical' },
+    { id: 'cm29', label: '29CM', apiTier: 'C', group: 'vertical' },
+    { id: 'brandi', label: '브랜디', apiTier: 'C', group: 'vertical' },
+    { id: 'wconcept', label: 'W컨셉', apiTier: 'C', group: 'vertical' },
+    /* 백화점 · 프리미엄 */
+    { id: 'hyundai_hmall', label: '현대Hmall', apiTier: 'C', group: 'department' },
+    { id: 'galleria', label: '갤러리아몰', apiTier: 'C', group: 'department' },
+    { id: 'akmall', label: 'AK몰', apiTier: 'C', group: 'department' },
+    /* 장보기 · 리빙 · 소셜 */
+    { id: 'kurly', label: '컬리', apiTier: 'C', group: 'lifestyle' },
+    { id: 'ohouse', label: '오늘의집', apiTier: 'C', group: 'lifestyle' },
+    { id: 'kakao_store', label: '카카오톡스토어', apiTier: 'B', group: 'lifestyle' },
+    { id: 'toss', label: '토스쇼핑', apiTier: 'C', group: 'lifestyle' },
+    /* 글로벌 · 홈쇼핑 · 소셜 */
+    { id: 'aliexpress', label: '알리익스프레스', apiTier: 'B', group: 'special' },
+    { id: 'temu', label: '테무', apiTier: 'D', group: 'special' },
+    { id: 'gsshop', label: 'GS샵', apiTier: 'C', group: 'special' },
+    { id: 'cjonstyle', label: 'CJ온스타일', apiTier: 'C', group: 'special' },
+    { id: 'nsshop', label: 'NS홈쇼핑', apiTier: 'C', group: 'special' },
+    { id: 'youtube_shop', label: '유튜브쇼핑', apiTier: 'D', group: 'special' },
+    { id: 'instagram_shop', label: '인스타샵', apiTier: 'D', group: 'special' },
+    { id: 'other', label: '기타', apiTier: 'D', group: 'other' }
 ];
 
+var API_TIER_META = {
+    A: { label: 'A', title: '공개·반공개 셀러 API — 직접 연동 설계 가능' },
+    AB: { label: 'A/B', title: '공개 API + 솔루션/앱 심사 필요할 수 있음' },
+    B: { label: 'B', title: '파트너·솔루션 심사/계약 후 연동' },
+    C: { label: 'C', title: '입점·EDI·사방넷 등 중개/전용 연동이 일반적' },
+    D: { label: 'D', title: '공개 API 약함 · 수기·정책 의존 (비권장)' }
+};
+
+function channelApiTierMeta(tier) {
+    return API_TIER_META[tier] || API_TIER_META.D;
+}
 function extractDriveFolderId(urlOrId) {
     var s = String(urlOrId || '').trim();
     if (!s) return '';
@@ -585,12 +623,33 @@ var CHANNEL_ADMIN_URL_DEFAULTS = {
     cafe24: 'https://eclogin.cafe24.com/Shop/',
     smartstore: 'https://sell.smartstore.naver.com/',
     coupang: 'https://wing.coupang.com/',
-    ably: 'https://seller.a-bly.com/',
-    zigzag: 'https://shop.zigzag.kr/',
-    musinsa: 'https://www.musinsa.com/',
-    elevenst: 'https://soffice.11st.co.kr/',
     gmarket: 'https://www.esmplus.com/',
+    elevenst: 'https://soffice.11st.co.kr/',
     auction: 'https://www.esmplus.com/',
+    ssg: 'https://po.ssgadm.com/',
+    lotteon: 'https://SO.lotteon.com/',
+    interpark: 'https://shop.interpark.com/',
+    ably: 'https://seller.a-bly.com/',
+    musinsa: 'https://www.musinsa.com/',
+    oliveyoung: 'https://www.oliveyoung.co.kr/',
+    zigzag: 'https://shop.zigzag.kr/',
+    cm29: 'https://www.29cm.co.kr/',
+    brandi: 'https://www.brandi.co.kr/',
+    wconcept: 'https://www.wconcept.co.kr/',
+    hyundai_hmall: 'https://www.hmall.com/',
+    galleria: 'https://www.galleria.co.kr/',
+    akmall: 'https://www.akmall.com/',
+    kurly: 'https://www.kurly.com/',
+    ohouse: 'https://ohouse.kr/',
+    kakao_store: 'https://shopping-sell.kakao.com/',
+    toss: 'https://toss.im/',
+    aliexpress: 'https://sell.aliexpress.com/',
+    temu: 'https://seller.temu.com/',
+    gsshop: 'https://www.gsshop.com/',
+    cjonstyle: 'https://display.cjonstyle.com/',
+    nsshop: 'https://www.nsmall.com/',
+    youtube_shop: 'https://studio.youtube.com/',
+    instagram_shop: 'https://business.facebook.com/',
     other: ''
 };
 
