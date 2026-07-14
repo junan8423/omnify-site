@@ -1326,20 +1326,23 @@
 <script>
     window.DASHBOARD_TIER = window.DASHBOARD_TIER || 'enterprise';
 </script>
-<script src="js/tenant-registry.js?v=20260714-admin3"></script>
+<script src="js/tenant-registry.js?v=20260714-fb1"></script>
 <script>
     (function () {
-        try {
-            var t = typeof resolveTenantFromQuery === 'function' ? resolveTenantFromQuery() : null;
+        window.__OMNIFY_BOOT__ = (typeof resolveTenantFromQueryAsync === 'function'
+            ? resolveTenantFromQueryAsync()
+            : Promise.resolve(typeof resolveTenantFromQuery === 'function' ? resolveTenantFromQuery() : null)
+        ).then(function (t) {
             if (t) {
                 window.__OMNIFY_TENANT__ = t;
-                window.DASHBOARD_TIER = t.serviceTier || 'enterprise';
+                window.DASHBOARD_TIER = t.serviceTier || window.DASHBOARD_TIER || 'enterprise';
             }
-        } catch (e) { /* ignore */ }
+            return t;
+        });
     })();
 </script>
 <script src="js/inventory-policy.js?v=20260714-inv3"></script>
-<script src="js/dashboard-app.js?v=20260714-admin3"></script>
+<script src="js/dashboard-app.js?v=20260714-fb1"></script>
 <script src="js/dashboard-tier.js?v=20260714-admin3"></script>
 <script src="js/dashboard-guide.js?v=20260714-inv3"></script>
 </body>

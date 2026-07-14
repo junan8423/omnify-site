@@ -4431,32 +4431,33 @@ function applyTenantChrome(tenant) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var tenantBoot = window.__OMNIFY_TENANT__ || (typeof resolveTenantFromQuery === 'function' ? resolveTenantFromQuery() : null);
-    if (tenantBoot && typeof applyTenantToDashboardApp === 'function') {
-        applyTenantToDashboardApp(tenantBoot);
-    }
-    loadTeamMembers();
-    if (typeof applyTenantCustomAfterLoad === 'function') applyTenantCustomAfterLoad();
-    if (typeof initDashboardTier === 'function') initDashboardTier();
-    if (App.tenantMeta) applyTenantChrome(App.tenantMeta);
-    App.demoLastRefresh = new Date();
-    loadGlobalDateRange();
-    loadNotificationReadState();
-    loadCurrentUser();
-    loadBriefingConfig();
-    if (App.tierAtLeast && App.tierAtLeast('growth')) loadPromoPlans();
-    loadArchive();
-    if (App.tierAtLeast && App.tierAtLeast('enterprise')) {
-        loadComms();
-    }
-    loadSettings();
-    if (typeof applyTenantCustomAfterLoad === 'function') applyTenantCustomAfterLoad();
-    initDateRangePicker();
-    updateCurrentUserUI();
-    renderNotifications();
-    initNavigation();
-    initClock();
-    initKeyboard();
+    var start = function () {
+        var tenantBoot = window.__OMNIFY_TENANT__ || (typeof resolveTenantFromQuery === 'function' ? resolveTenantFromQuery() : null);
+        if (tenantBoot && typeof applyTenantToDashboardApp === 'function') {
+            applyTenantToDashboardApp(tenantBoot);
+        }
+        loadTeamMembers();
+        if (typeof applyTenantCustomAfterLoad === 'function') applyTenantCustomAfterLoad();
+        if (typeof initDashboardTier === 'function') initDashboardTier();
+        if (App.tenantMeta) applyTenantChrome(App.tenantMeta);
+        App.demoLastRefresh = new Date();
+        loadGlobalDateRange();
+        loadNotificationReadState();
+        loadCurrentUser();
+        loadBriefingConfig();
+        if (App.tierAtLeast && App.tierAtLeast('growth')) loadPromoPlans();
+        loadArchive();
+        if (App.tierAtLeast && App.tierAtLeast('enterprise')) {
+            loadComms();
+        }
+        loadSettings();
+        if (typeof applyTenantCustomAfterLoad === 'function') applyTenantCustomAfterLoad();
+        initDateRangePicker();
+        updateCurrentUserUI();
+        renderNotifications();
+        initNavigation();
+        initClock();
+        initKeyboard();
     refreshDemoUI();
     if (typeof DashboardGuide !== 'undefined') DashboardGuide.init();
     switchView('view-dashboard');
@@ -4480,4 +4481,12 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(promoCalResizeTimer);
         promoCalResizeTimer = setTimeout(renderPromoCalendar, 150);
     });
+    };
+
+    var boot = window.__OMNIFY_BOOT__;
+    if (boot && typeof boot.then === 'function') {
+        boot.then(start).catch(start);
+    } else {
+        start();
+    }
 });

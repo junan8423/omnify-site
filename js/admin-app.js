@@ -578,6 +578,13 @@
             $('btn-submit').disabled = false;
             fillForm(t);
             refreshOpsTab();
+            if (TenantStore._pendingSync) {
+                TenantStore._pendingSync.then(function () {
+                    setStoreStatus('Firestore 저장됨 · ' + t.id, true);
+                }).catch(function (err) {
+                    setStoreStatus('로컬 저장됨 · 서버 동기화 실패: ' + (err && err.message ? err.message : err), false);
+                });
+            }
         }).catch(function () {
             toast('구축 중 오류', 'warning');
             $('btn-submit').disabled = false;
@@ -649,6 +656,25 @@
         fillCustomForm(custom, selectedChannels());
         switchTab('custom');
         toast('갓바디 계약·커스텀 예시가 채워졌습니다.', 'info');
+    }
+
+    function setStoreStatus(msg, ok) {
+        var el = $('store-status');
+        if (!el) return;
+        el.textContent = msg;
+        el.style.color = ok === false ? '#f59e0b' : ok === true ? '#34d399' : '';
+    }
+
+    function hydrateFromServer() {
+        setStoreStatus('Firestore에서 불러오는 중…');
+        return TenantStore.hydrate().then(function (list) {
+            setStoreStatus('Firestore 연결됨 · ' + list.length + '건 · ' + new Date().toLocaleTimeString());
+            renderList();
+            return list;
+        }).catch(function (err) {
+            setStoreStatus('서버 연결 실패 (로컬 캐시 사용): ' + (err && err.message ? err.message : err), false);
+            renderList();
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -765,6 +791,14 @@
         $('btn-import-tenants').addEventListener('click', function () {
             $('import-file').click();
         });
+        var syncBtn = $('btn-sync-tenants');
+        if (syncBtn) {
+            syncBtn.addEventListener('click', function () {
+                hydrateFromServer().then(function () {
+                    toast('서버 목록 갱신', 'success');
+                });
+            });
+        }
         $('import-file').addEventListener('change', function () {
             var file = this.files && this.files[0];
             if (!file) return;
@@ -774,7 +808,13 @@
                     var data = JSON.parse(reader.result);
                     var n = TenantStore.importBundle(data, 'merge');
                     renderList();
-                    toast(n + '건 병합 Import 완료', 'success');
+                    toast(n + '건 병합 Import · 서버 동기화 중', 'success');
+                    setStoreStatus('Import 후 서버 동기화 중…');
+                    TenantStore.pushAll().then(function (count) {
+                        setStoreStatus('Firestore 동기화 완료 · ' + count + '건', true);
+                    }).catch(function (err) {
+                        setStoreStatus('서버 동기화 실패: ' + (err && err.message ? err.message : err), false);
+                    });
                 } catch (err) {
                     toast('Import 실패: JSON을 확인하세요.', 'warning');
                 }
@@ -811,6 +851,13 @@
                 }
                 renderList();
                 toast('삭제됨', 'info');
+                if (TenantStore._pendingSync) {
+                    TenantStore._pendingSync.then(function () {
+                        setStoreStatus('Firestore에서 삭제됨', true);
+                    }).catch(function (err) {
+                        setStoreStatus('삭제 서버 반영 실패: ' + (err && err.message ? err.message : err), false);
+                    });
+                }
             }
         });
 
@@ -822,5 +869,6 @@
         updateCustomChecklist();
         renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, {}, 'contract-check');
         renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, {}, 'ops-check');
+        hydrateFromServer();
     });
 })();

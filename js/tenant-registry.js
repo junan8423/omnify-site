@@ -5,13 +5,123 @@
 var OMNIFY_TENANTS_KEY = 'omnify_tenants_v1';
 var OMNIFY_TENANT_STORE_META_KEY = 'omnify_tenant_store_meta_v1';
 
-/** 데이터 계층 — 현재 local, 향후 api로 교체 */
+/**
+ * 데이터 계층 — api(Firestore) + localStorage 캐시
+ * 쓰기는 로컬 즉시 반영 후 /api/tenants 동기화
+ */
 var TenantStore = {
-    backend: 'local',
+    backend: 'api',
+    apiBase: '/api/tenants',
+    lastError: null,
+    lastSyncAt: null,
+    online: null,
+
     list: function () { return loadTenants(); },
     get: function (id) { return getTenantById(id); },
     save: function (tenant) { return upsertTenant(tenant); },
-    remove: function (id) { deleteTenant(id); },
+    remove: function (id) { return deleteTenant(id); },
+
+    _apiFetch: function (opts) {
+        opts = opts || {};
+        var url = TenantStore.apiBase + (opts.query || '');
+        return fetch(url, {
+            method: opts.method || 'GET',
+            credentials: 'same-origin',
+            headers: Object.assign(
+                { Accept: 'application/json' },
+                opts.body ? { 'Content-Type': 'application/json' } : {},
+                opts.headers || {}
+            ),
+            body: opts.body ? JSON.stringify(opts.body) : undefined
+        }).then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (data) {
+                if (!res.ok) {
+                    var err = new Error((data && data.error) || ('HTTP ' + res.status));
+                    err.status = res.status;
+                    err.data = data;
+                    throw err;
+                }
+                return data;
+            });
+        });
+    },
+
+    /** 서버 목록 → localStorage 캐시 교체 (어드민 부팅) */
+    hydrate: function () {
+        return TenantStore._apiFetch({ method: 'GET' }).then(function (data) {
+            var list = (data && data.tenants) ? data.tenants : [];
+            saveTenants(list.map(normalizeTenantRecord));
+            TenantStore.online = true;
+            TenantStore.lastError = null;
+            TenantStore.lastSyncAt = new Date().toISOString();
+            try {
+                localStorage.setItem(OMNIFY_TENANT_STORE_META_KEY, JSON.stringify({
+                    backend: 'api',
+                    lastHydrateAt: TenantStore.lastSyncAt,
+                    count: list.length
+                }));
+            } catch (e) { /* ignore */ }
+            return list;
+        }).catch(function (err) {
+            TenantStore.online = false;
+            TenantStore.lastError = String(err && err.message ? err.message : err);
+            throw err;
+        });
+    },
+
+    pushOne: function (tenant) {
+        if (!tenant || !tenant.id) return Promise.resolve();
+        return TenantStore._apiFetch({
+            method: 'PUT',
+            body: { tenant: tenant }
+        }).then(function (data) {
+            TenantStore.online = true;
+            TenantStore.lastError = null;
+            TenantStore.lastSyncAt = new Date().toISOString();
+            return data;
+        }).catch(function (err) {
+            TenantStore.online = false;
+            TenantStore.lastError = String(err && err.message ? err.message : err);
+            throw err;
+        });
+    },
+
+    pushAll: function () {
+        var list = loadTenants();
+        var chain = Promise.resolve();
+        list.forEach(function (t) {
+            chain = chain.then(function () { return TenantStore.pushOne(t); });
+        });
+        return chain.then(function () { return list.length; });
+    },
+
+    removeRemote: function (id) {
+        return TenantStore._apiFetch({
+            method: 'DELETE',
+            query: '?id=' + encodeURIComponent(id)
+        }).then(function (data) {
+            TenantStore.online = true;
+            TenantStore.lastError = null;
+            return data;
+        }).catch(function (err) {
+            TenantStore.online = false;
+            TenantStore.lastError = String(err && err.message ? err.message : err);
+            throw err;
+        });
+    },
+
+    /** 공개: 단건 조회 (대시보드 ?tenant=) */
+    fetchOne: function (id) {
+        return TenantStore._apiFetch({
+            method: 'GET',
+            query: '?id=' + encodeURIComponent(id)
+        }).then(function (data) {
+            var t = data && data.tenant ? normalizeTenantRecord(data.tenant) : null;
+            if (t) upsertTenantLocalOnly(t);
+            return t;
+        });
+    },
+
     exportBundle: function () {
         return {
             version: 2,
@@ -20,6 +130,7 @@ var TenantStore = {
             tenants: loadTenants()
         };
     },
+
     importBundle: function (bundle, mode) {
         mode = mode || 'merge';
         var incoming = (bundle && bundle.tenants) ? bundle.tenants : (Array.isArray(bundle) ? bundle : null);
@@ -28,8 +139,8 @@ var TenantStore = {
         incoming.forEach(function (t) {
             if (!t || !t.id) return;
             var i = next.findIndex(function (x) { return x.id === t.id; });
-            if (i >= 0) next[i] = t;
-            else next.unshift(t);
+            if (i >= 0) next[i] = normalizeTenantRecord(t);
+            else next.unshift(normalizeTenantRecord(t));
         });
         saveTenants(next);
         try {
@@ -38,9 +149,21 @@ var TenantStore = {
                 count: next.length
             }));
         } catch (e) { /* ignore */ }
+        if (TenantStore.backend === 'api') {
+            TenantStore.pushAll().catch(function () { /* lastError set */ });
+        }
         return next.length;
     }
 };
+
+function upsertTenantLocalOnly(tenant) {
+    var list = loadTenants();
+    var i = list.findIndex(function (t) { return t.id === tenant.id; });
+    if (i >= 0) list[i] = tenant;
+    else list.unshift(tenant);
+    saveTenants(list);
+    return tenant;
+}
 
 var PLAN_MONTHLY_MAN = { starter: 15, growth: 30, enterprise: 50 };
 var PLAN_SETUP_MAN = { starter: 150, growth: 300, enterprise: null };
@@ -162,16 +285,18 @@ function getTenantById(id) {
 }
 
 function upsertTenant(tenant) {
-    var list = loadTenants();
-    var i = list.findIndex(function(t) { return t.id === tenant.id; });
-    if (i >= 0) list[i] = tenant;
-    else list.unshift(tenant);
-    saveTenants(list);
+    upsertTenantLocalOnly(tenant);
+    if (TenantStore.backend === 'api') {
+        TenantStore._pendingSync = TenantStore.pushOne(tenant);
+    }
     return tenant;
 }
 
 function deleteTenant(id) {
     saveTenants(loadTenants().filter(function(t) { return t.id !== id; }));
+    if (TenantStore.backend === 'api') {
+        TenantStore._pendingSync = TenantStore.removeRemote(id);
+    }
 }
 
 function defaultCommercial(form) {
@@ -625,7 +750,7 @@ function runProvisionPipeline(tenantId, onProgress) {
 
     tenant.provision.status = 'running';
     tenant.updatedAt = new Date().toISOString();
-    upsertTenant(tenant);
+    upsertTenantLocalOnly(tenant);
     if (onProgress) onProgress(tenant);
 
     function delay(ms) {
@@ -682,7 +807,7 @@ function runProvisionPipeline(tenantId, onProgress) {
             st.at = new Date().toISOString();
             t.provision.status = 'running';
             t.updatedAt = st.at;
-            upsertTenant(t);
+            upsertTenantLocalOnly(t);
             if (onProgress) onProgress(t);
             return t;
         });
@@ -782,5 +907,18 @@ function resolveTenantFromQuery() {
         return getTenantById(q);
     } catch (e) {
         return null;
+    }
+}
+
+/** 로컬 캐시 → 없으면 API 단건 조회 */
+function resolveTenantFromQueryAsync() {
+    try {
+        var q = new URLSearchParams(window.location.search).get('tenant');
+        if (!q) return Promise.resolve(null);
+        var local = getTenantById(q);
+        if (local) return Promise.resolve(local);
+        return TenantStore.fetchOne(q).catch(function () { return null; });
+    } catch (e) {
+        return Promise.resolve(null);
     }
 }

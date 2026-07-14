@@ -383,10 +383,12 @@
 
                     <div class="section-block">
                         <p class="section-title">데이터 백업 (TenantStore)</p>
-                        <p class="pipe-help">현재 백엔드: localStorage. JSON Export/Import로 기기 간 이전. 향후 Firebase/API로 동일 스키마 이식.</p>
+                        <p class="pipe-help" id="store-help">백엔드: Firestore API · 로컬 캐시 병행. Export/Import는 백업용.</p>
+                        <p class="muted" id="store-status">서버 상태 확인 중…</p>
                         <div class="actions">
                             <button type="button" class="btn ghost" id="btn-export-tenants">전체 Export</button>
                             <button type="button" class="btn ghost" id="btn-import-tenants">Import 병합</button>
+                            <button type="button" class="btn ghost" id="btn-sync-tenants">서버에서 다시 불러오기</button>
                             <input id="import-file" type="file" accept="application/json,.json" class="hidden">
                         </div>
                     </div>
@@ -419,7 +421,7 @@
 
     <div id="admin-toast" class="admin-toast" role="status"></div>
 
-    <script src="js/tenant-registry.js?v=20260714-admin3"></script>
-    <script src="js/admin-app.js?v=20260714-admin3"></script>
+    <script src="js/tenant-registry.js?v=20260714-fb1"></script>
+    <script src="js/admin-app.js?v=20260714-fb1"></script>
 </body>
 </html>
