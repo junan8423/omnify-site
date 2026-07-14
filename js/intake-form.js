@@ -96,15 +96,40 @@
             return;
         }
         box.innerHTML = ids.map(function (id) {
+            var anchor = channelGuideAnchor(id);
             return '<div class="api-card" data-ch="' + id + '">' +
                 '<p class="api-title">' + channelLabel(id) + ' API ' + reqMark() + '</p>' +
-                tip('셀러센터·파트너센터에서 「API / 개발자」 메뉴의 키·토큰을 복사해 붙여넣으세요. 잘 모르면 <strong>발급 화면 캡처 + 담당자 연락처</strong>만 적어도 됩니다.') +
+                '<div class="tip-row">' +
+                tip('셀러센터·파트너센터에서 「API / 개발자」 메뉴의 키·토큰을 복사하세요. 막히면 가이드를 따라 하세요.') +
+                '<a class="btn-guide" href="guides/channel-api.html' + anchor + '" target="_blank" rel="noopener">가이드 확인</a>' +
+                '</div>' +
                 '<label class="field"><span>Mall / Vendor / 판매자 ID</span><input type="text" data-f="sellerId" placeholder="예: mall_id / A00123456"></label>' +
                 '<label class="field"><span>API Key 또는 Client ID</span><input type="text" data-f="apiKey" placeholder="발급받은 키"></label>' +
                 '<label class="field"><span>Secret / Access Token</span><input type="text" data-f="secret" placeholder="시크릿 또는 액세스 토큰"></label>' +
                 '<label class="field"><span>메모 (선택)</span><input type="text" data-f="note" placeholder="예: 유효기간 2026-12, 담당 김OO"></label>' +
                 '</div>';
         }).join('');
+    }
+
+    function channelGuideAnchor(id) {
+        var map = {
+            cafe24: '#cafe24',
+            smartstore: '#smartstore',
+            coupang: '#coupang',
+            gmarket: '#market',
+            auction: '#market',
+            elevenst: '#market',
+            ably: '#market',
+            musinsa: '#market',
+            zigzag: '#market',
+            kakao_store: '#market',
+            aliexpress: '#market'
+        };
+        if (map[id]) return map[id];
+        var hit = (typeof CHANNEL_CATALOG !== 'undefined' ? CHANNEL_CATALOG : [])
+            .filter(function (c) { return c.id === id; })[0];
+        if (hit && (hit.apiTier === 'C' || hit.apiTier === 'D')) return '#tier-c';
+        return '#common';
     }
 
     function readChannelApis() {
@@ -153,6 +178,8 @@
             },
             wms: {
                 useSabangnet: $('wms-yes').checked,
+                shopId: $('wms-shop-id') ? $('wms-shop-id').value.trim() : '',
+                apiKey: $('wms-api-key') ? $('wms-api-key').value.trim() : '',
                 note: $('wms-note').value.trim()
             },
             kpi: {
@@ -187,6 +214,11 @@
             if (!data.drive.folderUrl) return 'Drive 폴더 URL/ID를 입력해 주세요.';
             if (!data.drive.sharedOk) return 'Omnify 계정을 폴더에 공유했는지 체크해 주세요.';
         }
+        if (data.wms.useSabangnet) {
+            if (!data.wms.shopId && !data.wms.apiKey && !data.wms.note) {
+                return '사방넷 사용 시 샵 ID·연동키(또는 메모)를 입력해 주세요. 가이드를 참고하세요.';
+            }
+        }
         if (!data.briefing.recipients) return '알림톡 수신자(최소 1명)를 입력해 주세요.';
         return '';
     }
@@ -200,7 +232,11 @@
         $('bizno').value = intake.businessNo || '';
         (intake.channels || []).forEach(function (id) {
             var el = document.querySelector('input[name="channel"][value="' + id + '"]');
-            if (el) el.checked = true;
+            if (el) {
+                el.checked = true;
+                var item = el.closest('.ch-item');
+                if (item) item.classList.add('is-on');
+            }
         });
         syncChannelApiBlocks();
         fillChannelApis(intake.channelApis);
@@ -214,7 +250,10 @@
         if (intake.wms) {
             $('wms-yes').checked = !!intake.wms.useSabangnet;
             $('wms-no').checked = !intake.wms.useSabangnet;
+            if ($('wms-shop-id')) $('wms-shop-id').value = intake.wms.shopId || '';
+            if ($('wms-api-key')) $('wms-api-key').value = intake.wms.apiKey || '';
             $('wms-note').value = intake.wms.note || '';
+            toggleWms();
         }
         if (intake.kpi) {
             $('kpi-revenue').value = intake.kpi.monthlyRevenueEok || '';
@@ -235,6 +274,12 @@
 
     function toggleDrive() {
         $('drive-fields').classList.toggle('hidden', !$('drive-on').checked);
+    }
+
+    function toggleWms() {
+        var on = $('wms-yes') && $('wms-yes').checked;
+        var box = $('wms-api');
+        if (box) box.classList.toggle('hidden', !on);
     }
 
     function setStatus(html, cls) {
@@ -265,13 +310,8 @@
                 $('form-wrap').classList.remove('hidden');
                 $('heading-co').textContent = meta.companyName || '고객사';
                 $('company').value = meta.companyName || '';
-                if (meta.channelsHint && meta.channelsHint.length) {
-                    meta.channelsHint.forEach(function (id) {
-                        var el = document.querySelector('input[name="channel"][value="' + id + '"]');
-                        if (el) el.checked = true;
-                    });
-                    syncChannelApiBlocks();
-                }
+                /* 판매채널은 기본 모두 해제 — channelsHint로 자동 체크하지 않음 */
+                syncChannelApiBlocks();
                 if (x.d.intake && x.d.intake.intake) {
                     applyIntake(x.d.intake.intake);
                     setStatus('이전에 제출하신 내용이 있습니다. 수정 후 다시 저장할 수 있습니다. (제출: ' +
@@ -327,6 +367,9 @@
         syncChannelApiBlocks();
         $('drive-on').addEventListener('change', toggleDrive);
         toggleDrive();
+        if ($('wms-yes')) $('wms-yes').addEventListener('change', toggleWms);
+        if ($('wms-no')) $('wms-no').addEventListener('change', toggleWms);
+        toggleWms();
         $('btn-submit').addEventListener('click', submit);
         load();
     });

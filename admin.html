@@ -374,12 +374,24 @@
             <section class="card">
                 <h2 id="form-title">신규 계약 등록</h2>
                 <div class="tabs" role="tablist">
-                    <button type="button" class="tab-btn active" data-tab="basic" id="tab-btn-basic">1. 계약 · 기본</button>
+                    <button type="button" class="tab-btn active" data-tab="basic" id="tab-btn-basic">1. 계약 · 수집</button>
                     <button type="button" class="tab-btn" data-tab="custom" id="tab-btn-custom">2. 커스텀</button>
                     <button type="button" class="tab-btn" data-tab="ops" id="tab-btn-ops">3. 구축 · 산출</button>
                 </div>
 
                 <div id="tab-basic" class="tab-panel active">
+                    <div class="section-block" style="margin-top:0;padding-top:0;border-top:0">
+                        <p class="section-title">0. 고객 정보 수집 (최우선)</p>
+                        <p class="hint">키 ID·회사명만 넣고 <strong>저장</strong>하면 바로 수집 링크를 복사해 고객에게 보낼 수 있습니다. API·Drive·사방넷은 고객이 폼에서 직접 작성합니다.</p>
+                        <p class="muted" id="intake-status">키 ID·회사명으로 테넌트를 저장한 뒤 수집 링크를 발급할 수 있습니다.</p>
+                        <div class="actions" style="margin-top:.4rem">
+                            <button type="button" class="btn primary" id="btn-copy-intake">수집 링크 복사</button>
+                            <button type="button" class="btn ghost" id="btn-open-intake">링크 미리보기</button>
+                            <button type="button" class="btn ghost" id="btn-view-intake">제출 내용 보기</button>
+                        </div>
+                        <pre id="intake-preview" class="quote-box" style="margin-top:.55rem;min-height:72px;max-height:220px">제출 전입니다.</pre>
+                    </div>
+
                     <div class="rule-box">
                         <strong>네이밍 규칙</strong><br>
                         · <strong>키 ID *</strong> = 등록 시 직접 입력하는 고유값 → <strong>프로젝트/폴더명과 동일</strong>하게 사용<br>
@@ -613,18 +625,6 @@
                     </div>
 
                     <div class="section-block">
-                        <p class="section-title">고객 정보 수집 (온보딩)</p>
-                        <p class="pipe-help">고유 링크를 카카오·이메일로 보내면, 고객이 직접 작성·제출하고 어드민에서 바로 확인합니다.</p>
-                        <p class="muted" id="intake-status">테넌트를 선택하면 수집 링크와 제출 상태가 표시됩니다.</p>
-                        <div class="actions" style="margin-top:.4rem">
-                            <button type="button" class="btn ghost" id="btn-copy-intake">수집 링크 복사</button>
-                            <button type="button" class="btn ghost" id="btn-open-intake">링크 미리보기</button>
-                            <button type="button" class="btn ghost" id="btn-view-intake">제출 내용 보기</button>
-                        </div>
-                        <pre id="intake-preview" class="quote-box" style="margin-top:.55rem;min-height:80px;max-height:260px">제출 전입니다.</pre>
-                    </div>
-
-                    <div class="section-block">
                         <p class="section-title">계약 체크리스트</p>
                         <p class="pipe-help">등록된 청구·서비스·요금·채널 조건으로 표준계약서 PDF를 출력할 수 있습니다. 기명·날인 후 효력 발생.</p>
                         <div id="contract-checklist" class="check-list"></div>
@@ -683,7 +683,7 @@
     <script src="js/margin-calc-engine.js?v=20260715"></script>
     <script src="js/quote-pdf.js?v=20260715e"></script>
     <script src="js/contract-pdf.js?v=20260715"></script>
-    <script src="js/tenant-registry.js?v=20260715-intake"></script>
-    <script src="js/admin-app.js?v=20260715-intake"></script>
+    <script src="js/tenant-registry.js?v=20260715-intake2"></script>
+    <script src="js/admin-app.js?v=20260715-intake2"></script>
 </body>
 </html>

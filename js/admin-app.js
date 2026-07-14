@@ -733,6 +733,7 @@
         if ($('f-ops-notes')) $('f-ops-notes').value = t ? (t.opsNotes || '') : '';
         fillCustomForm(t && t.custom ? t.custom : null, t ? t.channels : selectedChannels());
         updateNamingPreview();
+        refreshIntakePanel(t);
         if (activeTab === 'ops') refreshOpsTab();
         else refreshQuotePreview(t);
     }
@@ -1021,6 +1022,9 @@
             upsertTenant(tenant);
             editingId = tenant.id;
         }
+
+        ensureIntakeToken(tenant);
+        refreshIntakePanel(tenant);
 
         renderList();
         renderProvision(tenant);

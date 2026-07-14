@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive 자료실 가이드 | Omnify</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root { --text:#111827; --muted:#6b7280; --line:#e5e7eb; --bg:#f8fafc; --card:#fff; --blue:#2563eb; }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:Pretendard,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.55}
+        .wrap{max-width:720px;margin:0 auto;padding:1.25rem 1rem 3rem}
+        header{margin-bottom:1rem;padding-bottom:.85rem;border-bottom:1px solid var(--line)}
+        .brand{font-size:.78rem;font-weight:800;color:var(--blue)}
+        h1{margin:.2rem 0 0;font-size:1.4rem}
+        .sub{margin:.35rem 0 0;color:var(--muted);font-size:.9rem}
+        .card{background:var(--card);border:1px solid var(--line);border-radius:.85rem;padding:1rem;margin-bottom:.85rem}
+        .card h2{margin:0 0 .5rem;font-size:1.05rem}
+        ol.steps{margin:.35rem 0;padding-left:1.2rem}
+        ol.steps li{margin:.4rem 0}
+        .sa{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;background:#111827;color:#e5e7eb;padding:.55rem .65rem;border-radius:.45rem;word-break:break-all}
+        .need{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:.5rem;padding:.55rem .65rem;font-size:.86rem;color:#065f46;margin:.5rem 0}
+        .warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:.5rem;padding:.55rem .65rem;font-size:.86rem;color:#9a3412;margin:.5rem 0}
+        .shot{border:1px dashed #cbd5e1;border-radius:.5rem;padding:.75rem;background:#f1f5f9;font-size:.88rem;margin:.5rem 0;color:#334155}
+        .back{display:inline-block;margin-top:.5rem;font-size:.85rem;font-weight:700;color:var(--blue);text-decoration:none}
+        a{color:var(--blue);font-weight:650}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="brand">Omnify 구축 가이드</div>
+        <h1>Google Drive 자료실 설정</h1>
+        <p class="sub">폴더 만들기 → Omnify 계정 공유 → 링크 복사 → 소유자 이메일 확인 순서로 따라 하세요.</p>
+        <a class="back" href="javascript:history.length>1?history.back():window.close()">← 수집 폼으로 돌아가기</a>
+    </header>
+
+    <section class="card">
+        <h2>1) Omnify에 공유할 계정 (복사)</h2>
+        <p>Drive 폴더 공유 대상에 <strong>아래 주소를 그대로</strong> 추가하세요.</p>
+        <div class="sa">omnify-drive@omnify-site.iam.gserviceaccount.com</div>
+        <div class="need">권한은 <strong>뷰어</strong> 이상이면 됩니다. (편집자여도 OK) · 「링크가 있는 모든 사용자」만으로는 부족할 수 있어 <strong>사용자 추가</strong>가 안전합니다.</div>
+    </section>
+
+    <section class="card">
+        <h2>2) 폴더 만들기</h2>
+        <ol class="steps">
+            <li><a href="https://drive.google.com/" target="_blank" rel="noopener">drive.google.com</a>에 회사 Google 계정으로 로그인합니다.</li>
+            <li>왼쪽 <strong>새로 만들기</strong> → <strong>새 폴더</strong>를 클릭합니다.</li>
+            <li>폴더 이름 예: <code>Omnify_회사명_자료실</code> → 만들기를 누릅니다.</li>
+            <li>(선택) 그 안에 <code>계약</code>, <code>API</code>, <code>브리핑</code> 하위 폴더를 만들어도 됩니다.</li>
+        </ol>
+        <div class="shot">📱 모바일 앱에서도 가능하지만, PC 브라우저(Chrome)가 메뉴 찾기가 가장 쉽습니다.</div>
+    </section>
+
+    <section class="card">
+        <h2>3) Omnify 계정에 폴더 공유하기</h2>
+        <ol class="steps">
+            <li>방금 만든 폴더를 <strong>우클릭</strong> → <strong>공유</strong>를 누릅니다.</li>
+            <li>「사용자 및 그룹 추가」칸에 <code>omnify-drive@omnify-site.iam.gserviceaccount.com</code>를 붙여넣습니다.</li>
+            <li>역할을 <strong>뷰어</strong>(또는 편집자)로 두고 <strong>전송/공유</strong>합니다.</li>
+            <li>안내 메일이 “전송 실패”처럼 보여도, Drive에 사용자로 추가만 되면 정상인 경우가 많습니다. (서비스 계정이라 일반처럼 수락하지 않습니다)</li>
+        </ol>
+        <div class="warn">공유 목록에 위 이메일이 <strong>실제로 보이는지</strong> 다시 한 번 확인해 주세요. 안 보이면 Omnify가 폴더를 열 수 없습니다.</div>
+    </section>
+
+    <section class="card">
+        <h2>4) 폴더 링크(URL) 확인·복사</h2>
+        <ol class="steps">
+            <li>폴더를 연 상태에서 주소창 URL 전체를 복사합니다.</li>
+            <li>또는 폴더 우클릭 → <strong>링크 복사</strong> / 공유 → <strong>링크 복사</strong>.</li>
+        </ol>
+        <div class="need">정상 예시:<br><code>https://drive.google.com/drive/folders/xxxxxxxxxxxxxxxxxxxxxxx</code><br>중간 <code>folders/</code> 뒤 긴 영숫자만 있어도 됩니다.</div>
+        <div class="shot">❌ 파일 한 개의 링크(<code>/file/d/…</code>)는 안 됩니다. 반드시 <strong>폴더</strong> 링크여야 합니다.</div>
+    </section>
+
+    <section class="card">
+        <h2>5) 폴더 소유자 이메일 확인</h2>
+        <ol class="steps">
+            <li>폴더 우클릭 → <strong>파일 정보</strong>(또는 공유 상세).</li>
+            <li><strong>소유자</strong>로 표시된 Google 계정이 소유자 이메일입니다.</li>
+            <li>또는 Drive 우측 상단 프로필 아이콘의 로그인 이메일이, 폴더를 만든 계정과 같다면 그 주소를 적으면 됩니다.</li>
+        </ol>
+        <p class="sub">수집 폼 「폴더 소유자 이메일」에 이 값을 넣으면, Omnify가 권한 문제를 빠르게 확인할 수 있습니다.</p>
+    </section>
+
+    <section class="card">
+        <h2>체크리스트</h2>
+        <ol class="steps">
+            <li>□ Omnify 전용 폴더를 만들었다</li>
+            <li>□ <code>omnify-drive@…</code> 계정을 공유했다 (목록에 보임)</li>
+            <li>□ 폴더 URL을 복사했다</li>
+            <li>□ 소유자 이메일을 확인했다</li>
+            <li>□ 수집 폼에서 「공유했습니다」에 체크했다</li>
+        </ol>
+    </section>
+
+    <a class="back" href="javascript:history.length>1?history.back():window.close()">← 수집 폼으로 돌아가기</a>
+</div>
+</body>
+</html>

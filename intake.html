@@ -125,6 +125,17 @@
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast.ok { background: #065f46; }
+        .tip-row { display:flex; flex-wrap:wrap; align-items:flex-start; gap:.45rem; margin:0 0 .75rem; }
+        .tip-row .tip { flex:1; min-width:12rem; margin:0; }
+        .btn-guide {
+            flex-shrink:0; align-self:stretch;
+            border:1px solid #93c5fd; background:#eff6ff; color:#1d4ed8;
+            font:inherit; font-size:.8rem; font-weight:800;
+            padding:.45rem .7rem; border-radius:.5rem; cursor:pointer;
+            white-space:nowrap; text-decoration:none; display:inline-flex; align-items:center;
+        }
+        .btn-guide:hover { background:#dbeafe; }
+        .wms-api.hidden { display:none !important; }
         .center-msg { text-align: center; padding: 3rem 1rem; }
         .sa-box {
             font-family: ui-monospace, Menlo, Consolas, monospace;
@@ -167,18 +178,25 @@
 
             <section class="card">
                 <h2>2. 판매채널 <span class="req">필수</span></h2>
-                <p class="tip"><span class="tip-lab">TIP</span> 지금 실제로 파는 곳만 체크하세요. 나중에 추가해도 됩니다.</p>
+                <p class="tip"><span class="tip-lab">TIP</span> 지금 실제로 파는 곳만 체크하세요. <strong>기본은 모두 해제</strong>되어 있습니다. 나중에 추가해도 됩니다.</p>
                 <div id="ch-grid"></div>
             </section>
 
             <section class="card">
                 <h2>3. 채널 API 정보 <span class="req">필수</span></h2>
+                <div class="tip-row">
+                    <p class="tip"><span class="tip-lab">TIP</span> 채널마다 발급 화면이 다릅니다. 막히면 오른쪽 가이드를 켜고 따라 하세요.</p>
+                    <a class="btn-guide" href="guides/channel-api.html" target="_blank" rel="noopener">가이드 확인</a>
+                </div>
                 <div id="ch-api-blocks"></div>
             </section>
 
             <section class="card">
                 <h2>4. Google Drive 자료실 <span class="req">필수(사용 시)</span></h2>
-                <p class="tip"><span class="tip-lab">TIP</span> Drive에서 폴더 만들고, 아래 계정을 <strong>공유(뷰어 이상)</strong>하세요.</p>
+                <div class="tip-row">
+                    <p class="tip"><span class="tip-lab">TIP</span> 폴더 생성 → Omnify 계정 공유 → 링크 복사 순서입니다.</p>
+                    <a class="btn-guide" href="guides/drive.html" target="_blank" rel="noopener">가이드 확인</a>
+                </div>
                 <label class="checkline"><input id="drive-on" type="checkbox" checked> Drive 자료실을 사용합니다</label>
                 <div id="drive-fields">
                     <p class="muted" style="margin:.2rem 0 .45rem">공유할 Omnify 계정</p>
@@ -191,12 +209,23 @@
 
             <section class="card">
                 <h2>5. 물류(WMS) <span class="req">필수</span></h2>
-                <p class="tip"><span class="tip-lab">TIP</span> Omnify는 <strong>사방넷</strong>만 연동합니다. 이지·셀메이트는 해당 없습니다.</p>
+                <div class="tip-row">
+                    <p class="tip"><span class="tip-lab">TIP</span> Omnify는 <strong>사방넷</strong>만 연동합니다. 사용하면 아래 API 란이 열립니다.</p>
+                    <a class="btn-guide" href="guides/sabangnet.html" target="_blank" rel="noopener">가이드 확인</a>
+                </div>
                 <div class="radio-row">
                     <label class="checkline"><input id="wms-yes" type="radio" name="wms" value="yes"> 사방넷 사용</label>
                     <label class="checkline"><input id="wms-no" type="radio" name="wms" value="no" checked> 사용 안 함</label>
                 </div>
-                <label class="field"><span>사방넷 관련 메모 <span class="opt">선택</span></span><input id="wms-note" type="text" placeholder="예: API 계정은 별도 전달 / 담당 OO"></label>
+                <div id="wms-api" class="wms-api hidden">
+                    <div class="tip-row">
+                        <p class="tip"><span class="tip-lab">TIP</span> 사방넷 <strong>마이페이지 → 서비스 관리 → 연동키 관리</strong>에서 키를 복사하세요.</p>
+                        <a class="btn-guide" href="guides/sabangnet.html" target="_blank" rel="noopener">가이드 확인</a>
+                    </div>
+                    <label class="field"><span>사방넷 로그인 ID (샵 ID)</span><input id="wms-shop-id" type="text" placeholder="사방넷 로그인 아이디"></label>
+                    <label class="field"><span>API 연동키</span><input id="wms-api-key" type="text" placeholder="연동키 / API Key"></label>
+                </div>
+                <label class="field"><span>추가 메모 <span class="opt">선택</span></span><input id="wms-note" type="text" placeholder="예: 담당 물류 OO / 키는 Drive에 업로드"></label>
             </section>
 
             <section class="card">
@@ -246,7 +275,7 @@
 
     <div id="toast" class="toast" role="status"></div>
 
-    <script src="js/tenant-registry.js?v=20260715-intake"></script>
-    <script src="js/intake-form.js?v=20260715"></script>
+    <script src="js/tenant-registry.js?v=20260715-intake2"></script>
+    <script src="js/intake-form.js?v=20260715-guide"></script>
 </body>
 </html>

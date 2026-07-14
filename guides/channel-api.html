@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>판매채널 API 발급 가이드 | Omnify</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root { --text:#111827; --muted:#6b7280; --line:#e5e7eb; --bg:#f8fafc; --card:#fff; --blue:#2563eb; --ok:#059669; }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:Pretendard,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.55}
+        .wrap{max-width:780px;margin:0 auto;padding:1.25rem 1rem 3rem}
+        header{margin-bottom:1rem;padding-bottom:.85rem;border-bottom:1px solid var(--line)}
+        .brand{font-size:.78rem;font-weight:800;color:var(--blue)}
+        h1{margin:.2rem 0 0;font-size:1.4rem;letter-spacing:-.02em}
+        .sub{margin:.35rem 0 0;color:var(--muted);font-size:.9rem}
+        .toc{display:flex;flex-wrap:wrap;gap:.35rem;margin:1rem 0}
+        .toc a{font-size:.78rem;font-weight:700;padding:.35rem .55rem;border:1px solid var(--line);border-radius:.45rem;background:#fff;color:#1e40af;text-decoration:none}
+        .card{background:var(--card);border:1px solid var(--line);border-radius:.85rem;padding:1rem 1.05rem;margin-bottom:.85rem}
+        .card h2{margin:0 0 .55rem;font-size:1.05rem}
+        .card h3{margin:.85rem 0 .35rem;font-size:.92rem;color:#1e3a8a}
+        ol.steps{margin:.4rem 0;padding-left:1.2rem}
+        ol.steps li{margin:.35rem 0}
+        .path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;background:#111827;color:#e5e7eb;padding:.45rem .55rem;border-radius:.4rem;display:block;margin:.4rem 0;word-break:break-all}
+        .need{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:.5rem;padding:.55rem .65rem;font-size:.86rem;color:#065f46;margin:.5rem 0}
+        .warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:.5rem;padding:.55rem .65rem;font-size:.86rem;color:#9a3412;margin:.5rem 0}
+        .ext{font-size:.85rem}
+        .ext a{color:var(--blue);font-weight:650}
+        .back{display:inline-block;margin-top:.5rem;font-size:.85rem;font-weight:700;color:var(--blue);text-decoration:none}
+        .badge{font-size:.68rem;font-weight:800;padding:.1rem .35rem;border-radius:.25rem;background:#eff6ff;color:#1d4ed8}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="brand">Omnify 구축 가이드</div>
+        <h1>판매채널 API 정보 찾는 방법</h1>
+        <p class="sub">아래 순서대로 따라 하면 됩니다. 표를 캡처해 두거나, 값을 메모장에 복사한 뒤 수집 폼에 붙여넣으세요.</p>
+        <a class="back" href="javascript:history.length>1?history.back():window.close()">← 수집 폼으로 돌아가기</a>
+    </header>
+
+    <nav class="toc" aria-label="채널 바로가기">
+        <a href="#cafe24">Cafe24</a>
+        <a href="#smartstore">스마트스토어</a>
+        <a href="#coupang">쿠팡</a>
+        <a href="#market">오픈마켓·기타</a>
+        <a href="#tier-c">백화점·버티컬 (C)</a>
+    </nav>
+
+    <section class="card" id="common">
+        <h2>공통 TIP</h2>
+        <ul>
+            <li>가능하면 <strong>최고관리자(대표) 계정</strong>으로 로그인하세요. 권한이 없으면 메뉴가 안 보입니다.</li>
+            <li>키·시크릿은 <strong>타인에게 메신저로 보내지 말고</strong>, Omnify 수집 폼에만 입력하세요.</li>
+            <li>메뉴 이름이 조금 달라도 “API / 개발자 / OpenAPI / 연동” 키워드를 찾으면 됩니다.</li>
+        </ul>
+    </section>
+
+    <section class="card" id="cafe24">
+        <h2>Cafe24 (자사몰) <span class="badge">Tier A</span></h2>
+        <div class="need"><strong>수집 폼에 적을 값:</strong> Mall ID(관리자 아이디) · Client ID · Client Secret · (가능하면) Access Token</div>
+        <h3>경로 (공식)</h3>
+        <span class="path">developers.cafe24.com → 로그인 → 앱 생성/선택 → 인증(OAuth) → Client ID / Secret Key</span>
+        <ol class="steps">
+            <li><a class="ext" href="https://developers.cafe24.com/ko/" target="_blank" rel="noopener">Cafe24 Developers</a>에 접속해 <strong>쇼핑몰 관리자 계정</strong>으로 로그인합니다.</li>
+            <li><strong>개발사(자) 등록</strong>이 안 되어 있으면 개인/자사 기준으로 등록합니다.</li>
+            <li><strong>앱 생성</strong> 후 앱을 선택합니다. (이미 Omnify용 앱이 있으면 그것을 선택)</li>
+            <li>메뉴 <strong>Oauth 인증 → Client ID/Secret Key 확인</strong>에서 두 값을 복사합니다.</li>
+            <li>Mall ID는 보통 어드민 주소의 <code>https://{mall_id}.cafe24.com</code> 앞부분입니다.</li>
+            <li>Access Token은 OAuth 인증 후 발급됩니다. 어려우면 Client ID/Secret과 Mall ID만 적어도 Omnify가 이어서 안내합니다.</li>
+        </ol>
+        <p class="ext">공식: <a href="https://developers.cafe24.com/ko/app/front/app/develop/oauth/clientid" target="_blank" rel="noopener">Client ID/Secret 확인</a></p>
+        <div class="warn">Front API와 Admin API 권한이 다릅니다. 주문·상품·매출 조회에는 보통 Admin API 스코프가 필요합니다.</div>
+    </section>
+
+    <section class="card" id="smartstore">
+        <h2>네이버 스마트스토어 <span class="badge">Tier A/B</span></h2>
+        <div class="need"><strong>수집 폼에 적을 값:</strong> 애플리케이션 ID · 애플리케이션 시크릿 · (메모에 스토어명)</div>
+        <h3>경로 (공식)</h3>
+        <span class="path">apicenter.commerce.naver.com → 로그인 → 애플리케이션 → 내 스토어 애플리케이션 → 등록/상세</span>
+        <ol class="steps">
+            <li><a class="ext" href="https://apicenter.commerce.naver.com/" target="_blank" rel="noopener">네이버 커머스API센터</a>에 스마트스토어 계정으로 로그인합니다.</li>
+            <li>좌측 <strong>애플리케이션 → 내 스토어 애플리케이션</strong>으로 이동합니다. (통합 매니저 권한 필요)</li>
+            <li><strong>애플리케이션 등록</strong>: 이름(예: Omnify), 설명 입력 후 필요한 API 그룹(상품·주문 판매자 등)을 추가하고 등록합니다.</li>
+            <li>등록된 앱을 눌러 상세에서 <strong>애플리케이션 ID</strong>와 <strong>시크릿(보기 → 복사)</strong>을 확인합니다.</li>
+            <li>스토어는 최대 앱 3개까지 등록 가능합니다. Omnify 전용으로 하나 두는 것을 권장합니다.</li>
+        </ol>
+        <p class="ext">공식 소개: <a href="https://apicenter.commerce.naver.com/docs/introduction" target="_blank" rel="noopener">커머스API 소개</a> · 스토어센터: <a href="https://sell.smartstore.naver.com/" target="_blank" rel="noopener">sell.smartstore.naver.com</a></p>
+        <div class="warn">구버전 ‘오픈API’와 메뉴가 다릅니다. 반드시 <strong>커머스API센터</strong>의 「내 스토어 애플리케이션」을 사용하세요.</div>
+    </section>
+
+    <section class="card" id="coupang">
+        <h2>쿠팡 <span class="badge">Tier A</span></h2>
+        <div class="need"><strong>수집 폼에 적을 값:</strong> 업체코드(Vendor ID) · Access Key · Secret Key</div>
+        <h3>경로 (공식)</h3>
+        <span class="path">wing.coupang.com 로그인 → 우측 상단 판매자ID 클릭 → 판매자정보/추가판매정보 → OPEN API 키 발급</span>
+        <ol class="steps">
+            <li><a class="ext" href="https://wing.coupang.com/" target="_blank" rel="noopener">쿠팡윙(WING)</a>에 로그인합니다. (사업자 인증된 판매자만 발급 가능)</li>
+            <li>우측 상단 <strong>본인 아이디</strong> 클릭 → <strong>판매자 정보</strong> 또는 <strong>추가판매정보</strong>로 이동합니다.</li>
+            <li><strong>OPEN API 키 발급</strong> → 약관 동의 → 발급을 진행합니다.</li>
+            <li>연동업체 / 자체개발 중 하나를 선택합니다. Omnify 연동 시 안내받은 방식(자체개발 IP 또는 지정 연동)으로 진행하세요.</li>
+            <li>발급 후 <strong>업체코드 · Access Key · Secret Key</strong>를 복사해 수집 폼에 붙여넣습니다.</li>
+        </ol>
+        <p class="ext">공식: <a href="https://developers.coupangcorp.com/hc/ko/sections/20299721603481-API-Key-%EB%B0%9C%EA%B8%89" target="_blank" rel="noopener">쿠팡 Open API Key 발급</a></p>
+        <div class="warn">OpenAPI 키는 판매자ID당 원칙적으로 1세트입니다. 유효기간(예: 180일)이 있으니 만료 전 재발급하세요.</div>
+    </section>
+
+    <section class="card" id="market">
+        <h2>G마켓 · 11번가 · 옥션 등 오픈마켓 <span class="badge">Tier B</span></h2>
+        <div class="need"><strong>수집 폼:</strong> 판매자 ID · API/앱 키 · 시크릿(있으면) · 메모에 센터 URL</div>
+        <ol class="steps">
+            <li>각 <strong>판매자센터</strong>에 로그인한 뒤 「API · 연동 · 개발자 · ESM」 메뉴를 찾습니다.</li>
+            <li>G마켓/옥션(ESM): ESM Plus 등 판매자 포털의 API/제휴 연동 안내를 따릅니다.</li>
+            <li>11번가: 셀러오피스에서 Open API 신청·키 발급 메뉴를 사용합니다.</li>
+            <li>메뉴를 못 찾으면 폼 <strong>메모</strong>에 「담당자 연락처 + 판매자센터 URL」만 적어도 Omnify가 대신 확인을 도와드릴 수 있습니다.</li>
+        </ol>
+    </section>
+
+    <section class="card" id="tier-c">
+        <h2>SSG · 롯데온 · 올리브영 · 백화점 등 <span class="badge">Tier C</span></h2>
+        <div class="need">직접 API보다 <strong>입점 EDI / 사방넷 중개</strong>가 흔한 채널입니다.</div>
+        <ol class="steps">
+            <li>자체 공개 API가 약하면, <strong>사방넷에 이미 연동된 채널</strong>인지 먼저 확인하세요.</li>
+            <li>사방넷 경유 시 → 이 폼의 「물류(사방넷)」+ <a href="sabangnet.html">사방넷 가이드</a>를 우선 작성합니다.</li>
+            <li>직접 입점 API가 있으면 파트너사에서 받은 <strong>업체코드·인증키·문서</strong>를 캡처/메모로 첨부(폼 메모란)하세요.</li>
+        </ol>
+        <div class="warn">티어 D(테무·일부 소셜 등)는 공개 API가 약해 CSV 수동 업로드 방식이 될 수 있습니다. Omnify 담당자와 방식을 합의해 주세요.</div>
+    </section>
+
+    <p class="sub">가이드 정보는 2026년 기준 공식·벤더 문서를 참고해 작성했습니다. 메뉴 위치가 바뀌면 공식 ‘API 발급’ 검색어로 확인해 주세요.</p>
+    <a class="back" href="javascript:history.length>1?history.back():window.close()">← 수집 폼으로 돌아가기</a>
+</div>
+</body>
+</html>

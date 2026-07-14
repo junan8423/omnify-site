@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사방넷 API 가이드 | Omnify</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root { --text:#111827; --muted:#6b7280; --line:#e5e7eb; --bg:#f8fafc; --card:#fff; --blue:#2563eb; }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:Pretendard,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.55}
+        .wrap{max-width:720px;margin:0 auto;padding:1.25rem 1rem 3rem}
+        header{margin-bottom:1rem;padding-bottom:.85rem;border-bottom:1px solid var(--line)}
+        .brand{font-size:.78rem;font-weight:800;color:var(--blue)}
+        h1{margin:.2rem 0 0;font-size:1.4rem}
+        .sub{margin:.35rem 0 0;color:var(--muted);font-size:.9rem}
+        .card{background:var(--card);border:1px solid var(--line);border-radius:.85rem;padding:1rem;margin-bottom:.85rem}
+        .card h2{margin:0 0 .5rem;font-size:1.05rem}
+        ol.steps{margin:.35rem 0;padding-left:1.2rem}
+        ol.steps li{margin:.4rem 0}
+        .path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;background:#111827;color:#e5e7eb;padding:.45rem .55rem;border-radius:.4rem;display:block;margin:.4rem 0;word-break:break-all}
+        .need{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:.5rem;padding:.55rem .65rem;font-size:.86rem;color:#065f46;margin:.5rem 0}
+        .warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:.5rem;padding:.55rem .65rem;font-size:.86rem;color:#9a3412;margin:.5rem 0}
+        .back{display:inline-block;margin-top:.5rem;font-size:.85rem;font-weight:700;color:var(--blue);text-decoration:none}
+        a{color:var(--blue);font-weight:650}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="brand">Omnify 구축 가이드</div>
+        <h1>사방넷 API · 연동키 확인</h1>
+        <p class="sub">Omnify 재고/WMS 표준은 <strong>사방넷 읽기</strong>만 지원합니다. 아래 값만 준비하면 됩니다.</p>
+        <a class="back" href="javascript:history.length>1?history.back():window.close()">← 수집 폼으로 돌아가기</a>
+    </header>
+
+    <section class="card">
+        <h2>Omnify에 필요한 값</h2>
+        <div class="need">
+            <strong>1) 사방넷 로그인 ID (샵 ID / 마스터 ID)</strong><br>
+            <strong>2) API 연동키 (API Key / 인증키)</strong><br>
+            (선택) 물류처 ID · 접속 서브도메인
+        </div>
+        <div class="warn">이지어드민·셀메이트는 Omnify 연동 대상이 <strong>아닙니다</strong>. 사방넷만 해당합니다.</div>
+    </section>
+
+    <section class="card">
+        <h2>1) API 서비스 가입 여부 확인</h2>
+        <ol class="steps">
+            <li><a href="https://www.sabangnet.co.kr/" target="_blank" rel="noopener">사방넷</a>에 로그인합니다.</li>
+            <li>API는 보통 <strong>유료 부가서비스(API 서비스)</strong>입니다. 미가입이면 「서비스 신청 / 결제」에서 API 서비스를 신청해야 연동키가 발급됩니다.</li>
+            <li>이미 다른 툴(풀필먼트·자동수집)과 연동 중이면, 대개 키가 이미 발급되어 있습니다.</li>
+        </ol>
+    </section>
+
+    <section class="card">
+        <h2>2) 연동키 확인 경로</h2>
+        <span class="path">사방넷 로그인 → 마이페이지 → 서비스 관리 → 연동키 관리 (또는 API 인증키 관리)</span>
+        <ol class="steps">
+            <li>사방넷 웹에 로그인한 뒤 우측/상단 <strong>마이페이지</strong>로 이동합니다.</li>
+            <li><strong>서비스 관리</strong> 메뉴에서 <strong>연동키 관리</strong> 또는 <strong>API 인증키 관리</strong>를 엽니다.</li>
+            <li>화면에 표시된 <strong>연동키/API Key</strong>를 복사합니다.</li>
+            <li>로그인에 쓰는 <strong>아이디</strong>가 샵 ID입니다. (마스터 계정이면 그 ID를 사용)</li>
+        </ol>
+        <div class="warn">메뉴명이 「API 인증키 관리」로 표기된 버전도 있습니다. 둘 중 하나를 찾으면 됩니다.</div>
+    </section>
+
+    <section class="card">
+        <h2>3) 수집 폼에 어떻게 적을까?</h2>
+        <ol class="steps">
+            <li>물류에서 <strong>사방넷 사용</strong>을 선택합니다. (선택하면 API 입력란이 열립니다)</li>
+            <li><strong>사방넷 로그인 ID (샵 ID)</strong>에 로그인 아이디를 넣습니다.</li>
+            <li><strong>API 연동키</strong>에 「연동키 관리」에서 복사한 키를 붙여넣습니다.</li>
+            <li>추가 메모에 담당자·물류처 등을 적어도 됩니다.</li>
+            <li>키를 Drive에만 두고 싶다면 폼 메모에 「Drive API 폴더에 업로드함」이라고 적고, 샵 ID만이라도 남겨 주세요.</li>
+        </ol>
+    </section>
+
+    <section class="card">
+        <h2>4) Omnify 사용 범위 (참고)</h2>
+        <ul>
+            <li>표준: 재고·출고 현황 <strong>조회(읽기)</strong></li>
+            <li>쓰기(수량 반영·출고 확정): Enterprise 협의·별도 견적 시에만</li>
+        </ul>
+    </section>
+
+    <p class="sub">경로 근거: 사방넷 부가서비스·연동키 관리 안내 및 주요 연동 매뉴얼(마이페이지 → 서비스 관리 → 연동키/API 인증키).</p>
+    <a class="back" href="javascript:history.length>1?history.back():window.close()">← 수집 폼으로 돌아가기</a>
+</div>
+</body>
+</html>
