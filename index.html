@@ -384,6 +384,176 @@
             box-shadow: 0 14px 44px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(167, 139, 250, 0.15);
             transform: translateY(-3px);
         }
+        .aop-price-row .tier-starter { color: #67e8f9; }
+        .aop-price-row .tier-growth { color: #34d399; }
+        .aop-price-row .tier-enterprise { color: #a78bfa; }
+        .pricing-aop {
+            border: 1px solid rgba(75, 85, 99, 0.7);
+            background: rgba(11, 17, 32, 0.72);
+        }
+        .pricing-aop-kicker {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #fbbf24;
+            margin: 0 0 0.5rem;
+        }
+        .aop-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            margin-top: 1.5rem;
+            border-top: 1px solid rgba(55, 65, 81, 0.9);
+        }
+        @media (max-width: 768px) {
+            .aop-split { grid-template-columns: 1fr; }
+            .aop-col.is-primary {
+                border-bottom: 1px solid rgba(55, 65, 81, 0.9);
+            }
+            .aop-col + .aop-col { border-left: 0; }
+        }
+        .aop-col {
+            padding: 1.35rem 1.25rem 1.15rem;
+        }
+        .aop-col + .aop-col {
+            border-left: 1px solid rgba(55, 65, 81, 0.9);
+        }
+        .aop-col.is-primary {
+            background: rgba(251, 191, 36, 0.04);
+        }
+        .aop-col-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #9ca3af;
+            margin: 0 0 0.35rem;
+        }
+        .aop-col.is-primary .aop-col-label { color: #fbbf24; }
+        .aop-hero {
+            display: flex;
+            align-items: baseline;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .aop-hero .rate {
+            font-size: clamp(2.25rem, 5vw, 2.85rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            color: #fbbf24;
+            line-height: 1;
+        }
+        .aop-hero .rate-sub {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #d1d5db;
+        }
+        .aop-price-list {
+            display: flex;
+            flex-direction: column;
+            margin: 0 0 1rem;
+            border-top: 1px solid rgba(55, 65, 81, 0.85);
+        }
+        .aop-price-row {
+            display: grid;
+            grid-template-columns: 5.5rem 1fr auto;
+            gap: 0.5rem 0.65rem;
+            align-items: baseline;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.85);
+        }
+        .aop-price-row .tier {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .aop-price-row .compare {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .aop-price-row .was {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-decoration: line-through;
+            text-decoration-color: rgba(156, 163, 175, 0.85);
+            text-decoration-thickness: 1.5px;
+        }
+        .aop-price-row .now {
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: #6ee7b7;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            text-align: right;
+        }
+        .aop-price-row .now .unit {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #a7f3d0;
+            margin-left: 0.1rem;
+        }
+        .aop-perks {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .aop-perks li {
+            font-size: 0.82rem;
+            color: #d1d5db;
+            line-height: 1.45;
+            padding-left: 0.85rem;
+            position: relative;
+        }
+        .aop-perks li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5em;
+            width: 0.3rem;
+            height: 0.3rem;
+            background: #fbbf24;
+        }
+        .aop-perks strong { color: #fde68a; font-weight: 700; }
+        .aop-col-muted {
+            margin: 0;
+            font-size: 0.78rem;
+            color: #9ca3af;
+            line-height: 1.45;
+        }
+        .aop-policy {
+            margin-top: 1.25rem;
+            padding-top: 1.15rem;
+            border-top: 1px solid rgba(55, 65, 81, 0.9);
+        }
+        .aop-policy h4 {
+            margin: 0 0 0.55rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #fca5a5;
+            letter-spacing: 0.02em;
+        }
+        .aop-policy p {
+            margin: 0 0 0.55rem;
+            font-size: 0.8rem;
+            color: #d1d5db;
+            line-height: 1.55;
+        }
+        .aop-policy p:last-child { margin-bottom: 0; }
+        .aop-policy strong { color: #f3f4f6; }
+        .aop-note {
+            margin: 0.85rem 0 0;
+            font-size: 0.72rem;
+            color: #9ca3af;
+            line-height: 1.5;
+        }
         .table-row-hover:hover { background: rgba(31,41,55,0.5); }
         .fade-up { animation: fadeUp 0.6s ease-out both; }
         @keyframes fadeUp {
@@ -1661,6 +1831,74 @@
                     <li class="text-gray-500">재고·발주 쓰기 <span class="text-gray-400">사방넷 · 별도 견적</span></li>
                     <li class="text-gray-500">+ 작업좌석 <strong class="text-gray-300">3만/인·월</strong></li>
                 </ul>
+            </div>
+        </div>
+
+        <div class="glass pricing-aop p-5 sm:p-8">
+            <p class="pricing-aop-kicker">Annual Optimization Plan</p>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-2">연간 운영 최적화 플랜</h3>
+            <p class="text-sm text-gray-400 max-w-lg leading-relaxed">유지비 일시납 할인. 초기 구축비는 포함되지 않습니다.</p>
+
+            <div class="aop-split">
+                <div class="aop-col is-primary">
+                    <p class="aop-col-label">12개월</p>
+                    <div class="aop-hero">
+                        <span class="rate">10%</span>
+                        <span class="rate-sub">할인 · 일시납</span>
+                    </div>
+                    <div class="aop-price-list">
+                        <div class="aop-price-row">
+                            <span class="tier tier-starter">Starter</span>
+                            <span class="compare"><span class="was">180만원</span></span>
+                            <span class="now">162<span class="unit">만원</span></span>
+                        </div>
+                        <div class="aop-price-row">
+                            <span class="tier tier-growth">Growth</span>
+                            <span class="compare"><span class="was">360만원</span></span>
+                            <span class="now">324<span class="unit">만원</span></span>
+                        </div>
+                        <div class="aop-price-row">
+                            <span class="tier tier-enterprise">Enterprise</span>
+                            <span class="compare"><span class="was">600만원~</span></span>
+                            <span class="now">540<span class="unit">만원~</span></span>
+                        </div>
+                    </div>
+                    <ul class="aop-perks">
+                        <li><strong>우선 대응</strong> — 장애 시 4시간 이내 착수</li>
+                        <li><strong>분기 인사이트</strong> — 데이터 리포트 + 운영 컨설팅 (연 4회)</li>
+                    </ul>
+                </div>
+                <div class="aop-col">
+                    <p class="aop-col-label">6개월</p>
+                    <div class="aop-hero">
+                        <span class="rate">5%</span>
+                        <span class="rate-sub">할인 · 일시납</span>
+                    </div>
+                    <div class="aop-price-list">
+                        <div class="aop-price-row">
+                            <span class="tier tier-starter">Starter</span>
+                            <span class="compare"><span class="was">90만원</span></span>
+                            <span class="now">85.5<span class="unit">만원</span></span>
+                        </div>
+                        <div class="aop-price-row">
+                            <span class="tier tier-growth">Growth</span>
+                            <span class="compare"><span class="was">180만원</span></span>
+                            <span class="now">171<span class="unit">만원</span></span>
+                        </div>
+                        <div class="aop-price-row">
+                            <span class="tier tier-enterprise">Enterprise</span>
+                            <span class="compare"><span class="was">300만원~</span></span>
+                            <span class="now">285<span class="unit">만원~</span></span>
+                        </div>
+                    </div>
+                    <p class="aop-col-muted">우선 대응·분기 인사이트는 12개월에 포함됩니다.</p>
+                </div>
+            </div>
+
+            <div class="aop-policy">
+                <h4>주의 · 중도 해지 · 환불</h4>
+                <p>중도 해지 시 <strong>할인 전 정상가(월 이용료)</strong>를 기준으로 사용 기간만큼 차감한 뒤, 잔액을 환불합니다.</p>
+                <p class="aop-note">※ 유지비(월 구독) 기준 예시입니다. 초기 구축비는 환불 대상이 아닙니다. 본 조항은 계약서·이용약관에 명시됩니다.</p>
             </div>
         </div>
 
