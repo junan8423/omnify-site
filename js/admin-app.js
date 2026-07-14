@@ -186,6 +186,78 @@
         updateQuoteStatus(tenant, !!(opts.force && tenant.quoteText));
     }
 
+    function ensureIntakeToken(tenant) {
+        if (!tenant) return '';
+        if (tenant.intakeToken && String(tenant.intakeToken).length >= 8) return tenant.intakeToken;
+        var tok = 'in_' + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 8);
+        tenant.intakeToken = tok;
+        tenant.updatedAt = new Date().toISOString();
+        upsertTenant(tenant);
+        return tok;
+    }
+
+    function intakePublicUrl(token) {
+        var origin = (window.location && window.location.origin && window.location.protocol !== 'file:')
+            ? window.location.origin
+            : 'https://omnify.kr';
+        return origin.replace(/\/$/, '') + '/intake.html?token=' + encodeURIComponent(token);
+    }
+
+    function refreshIntakePanel(tenant) {
+        var st = $('intake-status');
+        var pre = $('intake-preview');
+        if (!st || !pre) return;
+        if (!tenant || tenant.id === '(draft)') {
+            st.textContent = '테넌트 저장 후 수집 링크를 발급할 수 있습니다.';
+            pre.textContent = '제출 전입니다.';
+            return;
+        }
+        var tok = tenant.intakeToken || '';
+        var url = tok ? intakePublicUrl(tok) : '(링크 복사 시 자동 발급)';
+        var ci = tenant.customerIntake || {};
+        st.innerHTML = '상태: <strong>' + (ci.status === 'submitted' ? '제출됨' : '대기') + '</strong>' +
+            (ci.submittedAt ? ' · ' + String(ci.submittedAt).replace('T', ' ').slice(0, 16) : '') +
+            '<br><span class="muted" style="word-break:break-all">' + escapeHtml(url) + '</span>';
+        if (ci.status !== 'submitted' || !tok) {
+            pre.textContent = '아직 고객 제출이 없습니다. 링크를 보내 주세요.';
+            return;
+        }
+        pre.textContent = '불러오는 중…';
+        fetch('/api/intake?token=' + encodeURIComponent(tok), { credentials: 'omit' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || !d.intake || !d.intake.intake) {
+                    pre.textContent = '제출 기록 없음';
+                    return;
+                }
+                pre.textContent = JSON.stringify(d.intake.intake, null, 2);
+            })
+            .catch(function () {
+                pre.textContent = '조회 실패 — 네트워크/배포 상태를 확인하세요.';
+            });
+    }
+
+    function copyIntakeLink() {
+        if (!editingId) {
+            toast('먼저 테넌트를 저장·선택하세요.', 'warning');
+            return;
+        }
+        var t = getTenantById(editingId);
+        if (!t) return;
+        var tok = ensureIntakeToken(t);
+        var url = intakePublicUrl(tok);
+        refreshIntakePanel(t);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(function () {
+                toast('수집 링크가 복사되었습니다. 고객에게 전달하세요.', 'success');
+            }).catch(function () {
+                toast(url, 'info');
+            });
+        } else {
+            toast(url, 'info');
+        }
+    }
+
     function exportContractPdf() {
         var t = editingId ? getTenantById(editingId) : null;
         if (!t) {
@@ -273,10 +345,12 @@
             renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, t.opsChecklist, 'ops-check');
             $('f-ops-notes').value = t.opsNotes || '';
             refreshQuotePreview(t);
+            refreshIntakePanel(t);
         } else {
             renderChecklist('contract-checklist', CONTRACT_CHECKLIST_DEFS, {}, 'contract-check');
             renderChecklist('ops-checklist', OPS_CHECKLIST_DEFS, {}, 'ops-check');
             $('f-ops-notes').value = '';
+            refreshIntakePanel(null);
             var draft = null;
             try {
                 var form = readForm();
@@ -1313,6 +1387,31 @@
         }
         if ($('btn-contract-pdf')) {
             $('btn-contract-pdf').addEventListener('click', exportContractPdf);
+        }
+        if ($('btn-copy-intake')) {
+            $('btn-copy-intake').addEventListener('click', copyIntakeLink);
+        }
+        if ($('btn-open-intake')) {
+            $('btn-open-intake').addEventListener('click', function () {
+                if (!editingId) {
+                    toast('먼저 테넌트를 저장·선택하세요.', 'warning');
+                    return;
+                }
+                var t = getTenantById(editingId);
+                if (!t) return;
+                var tok = ensureIntakeToken(t);
+                window.open(intakePublicUrl(tok), '_blank', 'noopener');
+            });
+        }
+        if ($('btn-view-intake')) {
+            $('btn-view-intake').addEventListener('click', function () {
+                if (!editingId) {
+                    toast('테넌트를 선택하세요.', 'warning');
+                    return;
+                }
+                refreshIntakePanel(getTenantById(editingId));
+                toast('제출 내용을 새로고침했습니다.', 'info');
+            });
         }
         $('btn-refresh-quote').addEventListener('click', function () {
             var t = editingId ? getTenantById(editingId) : null;

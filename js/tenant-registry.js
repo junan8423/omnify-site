@@ -435,6 +435,8 @@ function normalizeTenantRecord(t) {
     t.opsNotes = t.opsNotes || '';
     t.quoteText = t.quoteText != null ? String(t.quoteText) : '';
     t.quoteUpdatedAt = t.quoteUpdatedAt || '';
+    t.intakeToken = t.intakeToken || '';
+    t.customerIntake = t.customerIntake || null;
     // 구버전: keyId가 이메일이면 비움 → projectFolder/제안값으로 보정
     if (t.keyId && String(t.keyId).indexOf('@') >= 0) t.keyId = '';
     if (t.projectFolder && String(t.projectFolder).indexOf('@') >= 0) t.projectFolder = '';

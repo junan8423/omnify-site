@@ -613,6 +613,18 @@
                     </div>
 
                     <div class="section-block">
+                        <p class="section-title">고객 정보 수집 (온보딩)</p>
+                        <p class="pipe-help">고유 링크를 카카오·이메일로 보내면, 고객이 직접 작성·제출하고 어드민에서 바로 확인합니다.</p>
+                        <p class="muted" id="intake-status">테넌트를 선택하면 수집 링크와 제출 상태가 표시됩니다.</p>
+                        <div class="actions" style="margin-top:.4rem">
+                            <button type="button" class="btn ghost" id="btn-copy-intake">수집 링크 복사</button>
+                            <button type="button" class="btn ghost" id="btn-open-intake">링크 미리보기</button>
+                            <button type="button" class="btn ghost" id="btn-view-intake">제출 내용 보기</button>
+                        </div>
+                        <pre id="intake-preview" class="quote-box" style="margin-top:.55rem;min-height:80px;max-height:260px">제출 전입니다.</pre>
+                    </div>
+
+                    <div class="section-block">
                         <p class="section-title">계약 체크리스트</p>
                         <p class="pipe-help">등록된 청구·서비스·요금·채널 조건으로 표준계약서 PDF를 출력할 수 있습니다. 기명·날인 후 효력 발생.</p>
                         <div id="contract-checklist" class="check-list"></div>
@@ -671,7 +683,7 @@
     <script src="js/margin-calc-engine.js?v=20260715"></script>
     <script src="js/quote-pdf.js?v=20260715e"></script>
     <script src="js/contract-pdf.js?v=20260715"></script>
-    <script src="js/tenant-registry.js?v=20260715-pdf2"></script>
-    <script src="js/admin-app.js?v=20260715-ctr"></script>
+    <script src="js/tenant-registry.js?v=20260715-intake"></script>
+    <script src="js/admin-app.js?v=20260715-intake"></script>
 </body>
 </html>

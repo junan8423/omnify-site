@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omnify 구축 정보 작성</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --bg: #f4f6f9;
+            --card: #fff;
+            --text: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --primary: #2563eb;
+            --ok: #059669;
+            --bad: #dc2626;
+            --tip: #eff6ff;
+            --tip-b: #bfdbfe;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Pretendard, system-ui, sans-serif;
+            background: radial-gradient(900px 400px at 0% 0%, rgba(37,99,235,.08), transparent),
+                        radial-gradient(700px 360px at 100% 0%, rgba(16,185,129,.06), transparent),
+                        var(--bg);
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrap { max-width: 720px; margin: 0 auto; padding: 1.25rem 1rem 3.5rem; }
+        header {
+            margin-bottom: 1.25rem;
+            padding-bottom: .9rem;
+            border-bottom: 1px solid var(--line);
+        }
+        header .brand { font-size: .8rem; font-weight: 700; color: var(--primary); letter-spacing: .02em; }
+        header h1 { margin: .2rem 0 0; font-size: 1.45rem; letter-spacing: -.02em; }
+        header p { margin: .35rem 0 0; color: var(--muted); font-size: .9rem; }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: .85rem;
+            padding: 1rem 1.05rem;
+            margin-bottom: .85rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,.04);
+        }
+        .card h2 {
+            margin: 0 0 .55rem;
+            font-size: 1.02rem;
+            display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
+        }
+        .req, .opt {
+            font-size: .68rem; font-weight: 800; padding: .12rem .4rem;
+            border-radius: .3rem; letter-spacing: .02em;
+        }
+        .req { background: #fef2f2; color: #b91c1c; }
+        .opt { background: #f3f4f6; color: #4b5563; }
+        .tip {
+            margin: 0 0 .75rem; padding: .55rem .65rem;
+            background: var(--tip); border: 1px solid var(--tip-b);
+            border-radius: .5rem; font-size: .82rem; color: #1e3a8a; line-height: 1.4;
+        }
+        .tip-lab {
+            display: inline-block; font-size: .65rem; font-weight: 800;
+            background: #2563eb; color: #fff; padding: .1rem .35rem;
+            border-radius: .25rem; margin-right: .25rem; vertical-align: .05em;
+        }
+        label.field { display: block; margin-bottom: .65rem; }
+        label.field > span {
+            display: block; font-size: .78rem; font-weight: 650; color: #374151; margin-bottom: .22rem;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="time"], textarea, select {
+            width: 100%; padding: .55rem .65rem; border: 1px solid var(--line);
+            border-radius: .5rem; font: inherit; background: #fff;
+        }
+        textarea { min-height: 72px; resize: vertical; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; }
+        @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+        .ch-group { margin-bottom: .75rem; }
+        .ch-group-t { margin: 0 0 .35rem; font-size: .75rem; font-weight: 800; color: var(--muted); }
+        .ch-list { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }
+        @media (max-width: 560px) { .ch-list { grid-template-columns: 1fr; } }
+        .ch-item {
+            display: flex; align-items: center; gap: .45rem;
+            padding: .45rem .55rem; border: 1px solid var(--line);
+            border-radius: .5rem; font-size: .88rem; cursor: pointer; background: #fafafa;
+        }
+        .ch-item:has(input:checked),
+        .ch-item.is-on { border-color: #93c5fd; background: #eff6ff; }
+        .api-card {
+            border: 1px solid var(--line); border-radius: .65rem;
+            padding: .75rem; margin-bottom: .55rem; background: #fafafa;
+        }
+        .api-title { margin: 0 0 .4rem; font-weight: 750; font-size: .92rem; }
+        .checkline { display: flex; align-items: flex-start; gap: .45rem; font-size: .9rem; margin: .45rem 0; }
+        .radio-row { display: flex; gap: .85rem; flex-wrap: wrap; margin: .4rem 0 .7rem; }
+        .muted { color: var(--muted); font-size: .85rem; }
+        .err { color: var(--bad); }
+        .hidden { display: none !important; }
+        .status {
+            margin: 0 0 .85rem; padding: .65rem .75rem; border-radius: .55rem;
+            font-size: .88rem; border: 1px solid var(--line); background: #fff;
+        }
+        .status.ok { border-color: #a7f3d0; background: #ecfdf5; color: #065f46; }
+        .status.bad { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+        .actions-bar {
+            position: sticky; bottom: 0; margin-top: 1rem; padding: .75rem 0;
+            background: linear-gradient(transparent, var(--bg) 30%);
+        }
+        .btn {
+            width: 100%; border: 0; border-radius: .65rem; padding: .85rem 1rem;
+            font: inherit; font-weight: 750; font-size: 1rem; cursor: pointer;
+            background: var(--primary); color: #fff;
+        }
+        .btn:disabled { opacity: .55; cursor: not-allowed; }
+        .toast {
+            position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%) translateY(120%);
+            background: #111827; color: #fff; padding: .55rem .9rem; border-radius: .6rem;
+            font-size: .85rem; font-weight: 650; opacity: 0; transition: .25s; z-index: 40;
+            max-width: 90vw;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.ok { background: #065f46; }
+        .center-msg { text-align: center; padding: 3rem 1rem; }
+        .sa-box {
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: .78rem; background: #111827; color: #e5e7eb;
+            padding: .45rem .55rem; border-radius: .4rem; word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div class="brand">Omnify · 구축 정보 수집</div>
+            <h1 id="heading-co">고객사</h1>
+            <p>체크와 짧은 입력만으로 끝나요. 빨간 <strong>필수</strong>만 채우면 제출할 수 있습니다.</p>
+        </header>
+
+        <div id="boot" class="card center-msg"><p class="muted">링크 확인 중…</p></div>
+
+        <div id="blocked" class="card center-msg hidden">
+            <p id="blocked-msg" class="err">유효한 수집 링크가 필요합니다.</p>
+            <p class="muted">카카오·이메일로 받은 Omnify 전용 링크로 다시 들어와 주세요.</p>
+        </div>
+
+        <div id="form-wrap" class="hidden">
+            <div id="form-status" class="status">작성 후 아래 「저장 · 제출하기」를 누르면 Omnify에 바로 반영됩니다.</div>
+
+            <section class="card">
+                <h2>1. 회사 · 담당자 <span class="req">필수</span></h2>
+                <p class="tip"><span class="tip-lab">TIP</span> 세금계산서·계약에 쓰이는 이름과 같게 적어 주세요.</p>
+                <label class="field"><span>회사명(상호)</span><input id="company" type="text" placeholder="예: 주식회사 갓바디"></label>
+                <div class="row2">
+                    <label class="field"><span>담당자 이름</span><input id="contact-name" type="text" placeholder="홍길동"></label>
+                    <label class="field"><span>휴대폰</span><input id="contact-phone" type="tel" placeholder="010-1234-5678"></label>
+                </div>
+                <div class="row2">
+                    <label class="field"><span>이메일 (전화 없으면 필수)</span><input id="contact-email" type="email" placeholder="ops@company.com"></label>
+                    <label class="field"><span>사업자등록번호 <span class="opt">선택</span></span><input id="bizno" type="text" placeholder="000-00-00000"></label>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>2. 판매채널 <span class="req">필수</span></h2>
+                <p class="tip"><span class="tip-lab">TIP</span> 지금 실제로 파는 곳만 체크하세요. 나중에 추가해도 됩니다.</p>
+                <div id="ch-grid"></div>
+            </section>
+
+            <section class="card">
+                <h2>3. 채널 API 정보 <span class="req">필수</span></h2>
+                <div id="ch-api-blocks"></div>
+            </section>
+
+            <section class="card">
+                <h2>4. Google Drive 자료실 <span class="req">필수(사용 시)</span></h2>
+                <p class="tip"><span class="tip-lab">TIP</span> Drive에서 폴더 만들고, 아래 계정을 <strong>공유(뷰어 이상)</strong>하세요.</p>
+                <label class="checkline"><input id="drive-on" type="checkbox" checked> Drive 자료실을 사용합니다</label>
+                <div id="drive-fields">
+                    <p class="muted" style="margin:.2rem 0 .45rem">공유할 Omnify 계정</p>
+                    <div class="sa-box">omnify-drive@omnify-site.iam.gserviceaccount.com</div>
+                    <label class="field" style="margin-top:.65rem"><span>폴더 링크 또는 ID</span><input id="drive-url" type="text" placeholder="https://drive.google.com/drive/folders/…"></label>
+                    <label class="field"><span>폴더 소유자 이메일 <span class="opt">선택</span></span><input id="drive-owner" type="email" placeholder="ops@company.com"></label>
+                    <label class="checkline"><input id="drive-shared-ok" type="checkbox"> 위 Omnify 계정을 폴더에 공유했습니다</label>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>5. 물류(WMS) <span class="req">필수</span></h2>
+                <p class="tip"><span class="tip-lab">TIP</span> Omnify는 <strong>사방넷</strong>만 연동합니다. 이지·셀메이트는 해당 없습니다.</p>
+                <div class="radio-row">
+                    <label class="checkline"><input id="wms-yes" type="radio" name="wms" value="yes"> 사방넷 사용</label>
+                    <label class="checkline"><input id="wms-no" type="radio" name="wms" value="no" checked> 사용 안 함</label>
+                </div>
+                <label class="field"><span>사방넷 관련 메모 <span class="opt">선택</span></span><input id="wms-note" type="text" placeholder="예: API 계정은 별도 전달 / 담당 OO"></label>
+            </section>
+
+            <section class="card">
+                <h2>6. 매출·마진 시드 <span class="opt">선택 · 권장</span></h2>
+                <p class="tip"><span class="tip-lab">TIP</span> <strong>마진</strong> = 팔아서 남는 비율이에요.<br>
+                    예) 1만원짜리 상품, 원가 4,200원 + 수수료·배송 등으로 3,000원 나갔다면 → 남는 돈 2,800원 → 마진 약 <strong>28%</strong>.<br>
+                    잘 모르겠으면 <strong>목표 마진 30</strong>, <strong>원가율 40</strong>처럼 대략만 적어도 됩니다.</p>
+                <div class="row2">
+                    <label class="field"><span>최근 월 매출(억)</span><input id="kpi-revenue" type="number" step="0.1" placeholder="예: 6.4"></label>
+                    <label class="field"><span>일 평균 주문(건)</span><input id="kpi-orders" type="number" placeholder="예: 400"></label>
+                </div>
+                <div class="row2">
+                    <label class="field"><span>목표 마진(%)</span><input id="kpi-margin" type="number" step="0.1" placeholder="예: 32"></label>
+                    <label class="field"><span>상품 원가율(%)</span><input id="kpi-cogs" type="number" step="0.1" placeholder="예: 42"></label>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>7. 아침 알림톡 수신자 <span class="req">필수</span></h2>
+                <p class="tip"><span class="tip-lab">TIP</span> 한 줄에 한 명. 형식은 이미 채워 두었으니 <strong>이름·역할·전화만 고쳐</strong> 주세요.</p>
+                <label class="field"><span>수신자 목록</span>
+                    <textarea id="brief-recipients">이름|역할|010-0000-0000</textarea>
+                </label>
+                <label class="field"><span>발송 시각</span><input id="brief-time" type="time" value="08:30"></label>
+            </section>
+
+            <section class="card">
+                <h2>8. 광고 <span class="opt">선택</span></h2>
+                <p class="tip"><span class="tip-lab">TIP</span> 없으면 비워 두세요. 있으면 월 예산과 매체만.</p>
+                <label class="field"><span>월 광고비(만원)</span><input id="ad-budget" type="number" placeholder="예: 1500"></label>
+                <label class="field"><span>매체 목록</span>
+                    <textarea id="ad-media" placeholder="Meta Ads|SNS|50&#10;네이버 검색광고|검색|40"></textarea>
+                </label>
+            </section>
+
+            <section class="card">
+                <h2>9. 기타 메모 <span class="opt">선택</span></h2>
+                <label class="field"><span>전달하고 싶은 말</span><textarea id="extra-notes" placeholder="예: API는 보안상 내일 오전에 전달하겠습니다"></textarea></label>
+            </section>
+
+            <div class="actions-bar">
+                <button type="button" class="btn" id="btn-submit">저장 · 제출하기</button>
+                <p class="muted" style="text-align:center;margin:.45rem 0 0;font-size:.8rem">제출 즉시 Omnify 어드민에서 확인 가능합니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="js/tenant-registry.js?v=20260715-intake"></script>
+    <script src="js/intake-form.js?v=20260715"></script>
+</body>
+</html>
