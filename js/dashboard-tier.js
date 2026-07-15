@@ -183,7 +183,7 @@ function renderStarterDashboard() {
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 home-chart-row">
         <div class="glass rounded-xl p-4 xl:col-span-2 chart-card">
             <div class="chart-card-header">
                 <div class="chart-card-title">
@@ -198,18 +198,19 @@ function renderStarterDashboard() {
             </div>
             <div class="chart-canvas-wrap tall"><canvas id="multiChannelChart"></canvas></div>
         </div>
-        <div class="glass rounded-xl p-4">
+        <div class="glass rounded-xl p-4 home-inv-alert">
             <div class="chart-card-header mb-2">
                 <h2 class="font-bold text-sm">위험 재고</h2>
                 <span class="chart-unit-badge text-danger border-danger/30 bg-danger/10">${m.atRiskInventory}건</span>
             </div>
-            <div class="space-y-2">
+            <div class="space-y-2 home-inv-list" role="list" aria-label="위험 재고 목록">
                 ${atRisk.length ? atRisk.map(function(i) {
-                    return '<div class="p-3 rounded-lg bg-surface border border-border cursor-pointer hover:border-danger/30" onclick="navigateTo(\'view-inventory\')">' +
+                    return '<div class="p-3 rounded-lg bg-surface border border-border cursor-pointer hover:border-danger/30 shrink-0" role="listitem" onclick="navigateTo(\'view-inventory\')">' +
                         '<p class="text-sm font-semibold truncate">' + i.name + '</p>' +
                         '<p class="text-xs text-gray-500 mt-1">잔여 <strong class="text-danger">' + i.total + '</strong> / 안전 ' + i.safety + '</p></div>';
                 }).join('') : '<p class="text-sm text-gray-500 text-center py-4">위험 재고 없음</p>'}
             </div>
+            <button type="button" onclick="navigateTo('view-inventory')" class="home-inv-foot mt-3 text-xs text-primary font-semibold hover:underline text-center w-full">전체 재고 보기 →</button>
         </div>
     </div>
 

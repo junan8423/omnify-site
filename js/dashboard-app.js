@@ -2351,16 +2351,25 @@ App.views['view-dashboard'] = () => {
             <div class="chart-canvas-wrap tall"><canvas id="multiChannelChart"></canvas></div>
         </div>
 
-        <div class="glass rounded-xl p-4 home-inv-alert h-full">
+        <div class="glass rounded-xl p-4 home-inv-alert">
             <div class="chart-card-header mb-2">
                 <div class="chart-card-title">
                     <h2>위험 재고 경보</h2>
                     <span class="chart-unit-badge text-danger border-danger/30 bg-danger/10">${m.atRiskInventory}건</span>
                 </div>
             </div>
-            <div class="space-y-2.5 home-inv-list">
-                ${App.inventory.filter(i => i.status !== 'safe').map(i => `
-                <div class="p-3 rounded-lg bg-surface border border-border hover:border-danger/30 transition-colors cursor-pointer" onclick="navigateTo('view-inventory')">
+            <div class="space-y-2.5 home-inv-list" role="list" aria-label="위험 재고 목록">
+                ${App.inventory.filter(function (i) { return i.status !== 'safe'; })
+                    .sort(function (a, b) {
+                        var rank = { critical: 0, warning: 1 };
+                        var ra = rank[a.status] != null ? rank[a.status] : 9;
+                        var rb = rank[b.status] != null ? rank[b.status] : 9;
+                        if (ra !== rb) return ra - rb;
+                        return (Number(a.total) || 0) - (Number(b.total) || 0);
+                    })
+                    .map(function (i) {
+                    return `
+                <div class="p-3 rounded-lg bg-surface border border-border hover:border-danger/30 transition-colors cursor-pointer shrink-0" role="listitem" onclick="navigateTo('view-inventory')">
                     <div class="flex justify-between items-start mb-1">
                         <p class="text-sm font-semibold truncate pr-2">${i.name}</p>
                         ${App.statusBadge(i.status)}
@@ -2372,9 +2381,10 @@ App.views['view-dashboard'] = () => {
                     <div class="mt-2 w-full bg-gray-800 rounded-full h-1">
                         <div class="h-1 rounded-full ${i.status==='critical'?'bg-danger':'bg-warning'}" style="width:${Math.min(100,(i.total/i.safety)*100)}%"></div>
                     </div>
-                </div>`).join('') || '<p class="text-sm text-gray-500 py-6 text-center">위험 재고 없음</p>'}
+                </div>`;
+                }).join('') || '<p class="text-sm text-gray-500 py-6 text-center">위험 재고 없음</p>'}
             </div>
-            <button onclick="navigateTo('view-inventory')" class="mt-3 text-xs text-primary font-semibold hover:underline text-center w-full shrink-0">전체 재고 보기 →</button>
+            <button type="button" onclick="navigateTo('view-inventory')" class="home-inv-foot mt-3 text-xs text-primary font-semibold hover:underline text-center w-full">전체 재고 보기 →</button>
         </div>
     </div>
 

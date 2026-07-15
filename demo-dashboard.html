@@ -862,12 +862,49 @@
         .home-ops-cell .val { font-size: 1rem; font-weight: 800; color: var(--c-text); letter-spacing: -0.02em; margin-top: 0.1rem; }
         .home-ops-cell .delta { font-size: 0.65rem; margin-top: 0.15rem; }
         .home-inv-alert {
-            display: flex; flex-direction: column; min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+            max-height: 360px;
         }
-        .home-inv-alert .home-inv-list { flex: 1; min-height: 0; overflow-y: auto; }
+        .home-inv-alert .chart-card-header { flex-shrink: 0; }
+        .home-inv-alert .home-inv-list {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 0.15rem;
+            scrollbar-gutter: stable;
+        }
+        .home-inv-alert .home-inv-list::-webkit-scrollbar { width: 6px; }
+        .home-inv-alert .home-inv-list::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
+            border-radius: 999px;
+        }
+        .home-inv-alert .home-inv-foot { flex-shrink: 0; }
         .home-chart-row { align-items: stretch; }
+        /* 좌측 매출 차트(헤더+범례+tall 캔버스)와 동일 높이로 고정 → 초과 레코드는 스크롤 */
         @media (min-width: 1280px) {
-            .home-inv-alert { min-height: 380px; }
+            .home-chart-row > .chart-card,
+            .home-chart-row > .home-inv-alert {
+                height: 418px;
+                max-height: 418px;
+            }
+            .home-chart-row > .chart-card {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .home-chart-row > .chart-card .chart-canvas-wrap.tall {
+                flex: 1 1 auto;
+                min-height: 0;
+                height: auto;
+            }
+        }
+        @media (max-width: 1279px) {
+            .home-inv-alert { max-height: 320px; }
         }
         .home-promo-card .promo-chip {
             font-size: 0.65rem; font-weight: 800; padding: 0.12rem 0.4rem; border-radius: 0.3rem;
@@ -1294,6 +1331,13 @@
             border: 2px solid #0b1220;
         }
         .cs-fab-badge.show { display: flex; }
+        /* 챗봇 UI 비활성 시: 가이드 FAB·모달 숨김, CS 버튼을 하단으로 */
+        body.dg-chatbot-off .dg-guide-fab,
+        body.dg-chatbot-off #dg-guide-modal { display: none !important; }
+        body.dg-chatbot-off .cs-fab { bottom: 1.35rem; }
+        @media (max-width: 640px) {
+            body.dg-chatbot-off .cs-fab { bottom: 1rem; }
+        }
         .omnify-copyright {
             position: fixed;
             left: 50%;
@@ -1849,7 +1893,7 @@
         }
     </style>
 </head>
-<body class="flex h-screen selection:bg-primary selection:text-white">
+<body class="flex h-screen selection:bg-primary selection:text-white dg-chatbot-off">
 
 <!-- Mobile Overlay -->
 <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 md:hidden" onclick="toggleMobileSidebar()"></div>
@@ -2242,8 +2286,8 @@
     <span class="cs-fab-badge" id="cs-fab-badge">0</span>
 </button>
 
-<!-- 사용가이드 플로팅 버튼 -->
-<button type="button" id="btn-open-guide" class="dg-guide-fab" aria-label="사용가이드 열기">
+<!-- 사용가이드 플로팅 버튼 (챗봇: DashboardGuide CHATBOT_UI_ENABLED=false 로 숨김) -->
+<button type="button" id="btn-open-guide" class="dg-guide-fab" aria-label="사용가이드 열기" hidden aria-hidden="true" style="display:none">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
     </svg>
@@ -2350,11 +2394,11 @@
     <script src="js/report-print.js?v=20260715-report4"></script>
     <script src="js/cs-tickets.js?v=20260715-cs1"></script>
     <script src="js/dashboard-mock-data.js?v=20260715-invui1"></script>
-    <script src="js/dashboard-app.js?v=20260715-invui1"></script>
+    <script src="js/dashboard-app.js?v=20260716-invscroll1"></script>
     <script src="js/dashboard-inventory-ui.js?v=20260715-invui1"></script>
-    <script src="js/dashboard-tier.js?v=20260715-lightpromo1"></script>
+    <script src="js/dashboard-tier.js?v=20260716-invscroll1"></script>
     <script src="js/dashboard-guide-kb.js?v=20260715-guidev2"></script>
-    <script src="js/dashboard-guide.js?v=20260715-guidev2"></script>
+    <script src="js/dashboard-guide.js?v=20260716-guideoff1"></script>
     <script>
     (function () {
         function wireCsDashboard() {

@@ -1,6 +1,9 @@
-/* Omnify Demo Dashboard — 사용가이드 · FAQ 검색 (정식 대시보드 호버 툴팁 비활성) */
+/* Omnify Demo Dashboard — 사용가이드 · FAQ 검색 (정식 대시보드 호버 툴팁 비활성)
+ * 챗봇 UI: CHATBOT_UI_ENABLED=false 로 숨김 (코드·KB 유지, 추후 LLM/고도화 시 true) */
 var DashboardGuide = (function () {
     var TOOLTIPS_ENABLED = false;
+    /** false = FAB·모달 비표시. true 로 바꾸면 챗봇 UI 재활성 */
+    var CHATBOT_UI_ENABLED = false;
     var tooltipEl = null;
     var tooltipHideTimer = null;
     var activeView = 'view-dashboard';
@@ -1360,6 +1363,7 @@ var DashboardGuide = (function () {
     }
 
     function openModal(focusGuideId, viewFilter) {
+        if (!CHATBOT_UI_ENABLED) return;
         var modal = document.getElementById('dg-guide-modal');
         if (!modal) return;
         modalFilterView = viewFilter || activeView || '';
@@ -1427,7 +1431,42 @@ var DashboardGuide = (function () {
         requestAnimationFrame(function () { refresh(viewId); });
     }
 
+    function applyChatbotVisibility() {
+        var fab = document.getElementById('btn-open-guide');
+        var modal = document.getElementById('dg-guide-modal');
+        if (CHATBOT_UI_ENABLED) {
+            document.body.classList.remove('dg-chatbot-off');
+            if (fab) {
+                fab.hidden = false;
+                fab.setAttribute('aria-hidden', 'false');
+                fab.style.display = '';
+            }
+            if (modal) modal.setAttribute('aria-hidden', modal.classList.contains('open') ? 'false' : 'true');
+        } else {
+            document.body.classList.add('dg-chatbot-off');
+            if (fab) {
+                fab.hidden = true;
+                fab.setAttribute('aria-hidden', 'true');
+                fab.style.display = 'none';
+            }
+            if (modal) {
+                modal.classList.remove('open');
+                modal.setAttribute('aria-hidden', 'true');
+                modal.style.display = 'none';
+            }
+            document.body.classList.remove('dg-modal-open');
+        }
+    }
+
     function init() {
+        applyChatbotVisibility();
+        if (!CHATBOT_UI_ENABLED) {
+            // 툴팁 바인딩만 유지(현재 TOOLTIPS_ENABLED=false). 챗봇 UI는 숨김.
+            bindNavTooltips();
+            bindHeaderWidgets();
+            bindTooltipsForView(activeView);
+            return;
+        }
         var openBtn = document.getElementById('btn-open-guide');
         if (openBtn) {
             openBtn.addEventListener('click', function () { openModal('', activeView); });
@@ -1498,10 +1537,11 @@ var DashboardGuide = (function () {
         bindNavTooltips();
         bindHeaderWidgets();
         bindTooltipsForView(activeView);
+        // 챗봇 재활성(CHATBOT_UI_ENABLED=true) 시에만 안내 토스트
         if (typeof showToast === 'function' && !sessionStorage.getItem('dg_hint_shown')) {
             sessionStorage.setItem('dg_hint_shown', '1');
             setTimeout(function () {
-                showToast('💡 사용 도우미가 업그레이드되었습니다. 업무 질문으로 물어보세요.', 'info');
+                showToast('💡 사용 도우미에서 업무 질문을 물어볼 수 있습니다.', 'info');
             }, 1200);
         }
     }
@@ -1515,6 +1555,7 @@ var DashboardGuide = (function () {
         close: closeModal,
         closeModal: closeModal,
         ask: askGuideChat,
-        getGuide: getGuide
+        getGuide: getGuide,
+        isChatbotEnabled: function () { return !!CHATBOT_UI_ENABLED; }
     };
 })();
