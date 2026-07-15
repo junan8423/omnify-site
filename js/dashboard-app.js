@@ -294,21 +294,48 @@ function getDashboardChartData(period) {
     var s = getSettings();
     var scale = s.kpi.currentMonthlyRevenue / 637500000 * getDateRangeMultiplier();
     function sc(arr) { return arr.map(function(v) { return Math.round(v * scale); }); }
+    var asOf = getDataHubAsOfDate();
+    var i, d, labels;
+
     if (period === 'monthly') {
+        labels = [];
+        for (i = 6; i >= 0; i--) {
+            d = new Date(asOf.getFullYear(), asOf.getMonth() - i, 1);
+            labels.push((d.getMonth() + 1) + '월');
+        }
         return {
-            labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월'],
+            labels: labels,
             cafe24: sc([820, 910, 880, 950, 1020, 980, 1100]),
             smartstore: sc([650, 720, 690, 780, 840, 810, 900]),
             coupang: sc([480, 520, 500, 580, 620, 590, 680]),
-            roas: [280, 300, 290, 310, 330, 320, 340],
+            roas: [2.8, 3.0, 2.9, 3.1, 3.3, 3.2, 3.4].map(function(v) { return Math.round(v * 100); }),
         };
     }
+
+    /* 주간: 최근 7일 (과거→오늘) */
+    labels = [];
+    var cafe24 = [], smartstore = [], coupang = [], roas = [];
+    var baseC = [300, 320, 340, 360, 390, 480, 520];
+    var baseS = [240, 255, 270, 285, 310, 400, 450];
+    var baseP = [170, 180, 195, 210, 235, 310, 350];
+    var baseR = [2.2, 2.35, 2.4, 2.55, 2.7, 3.3, 3.5];
+    for (i = 6; i >= 0; i--) {
+        d = new Date(asOf.getFullYear(), asOf.getMonth(), asOf.getDate() - i);
+        labels.push((d.getMonth() + 1) + '/' + d.getDate());
+        var lift = dataHubWeekdayLift(d.getDay());
+        var noise = 0.96 + dataHubHashNoise(i * 7 + d.getDate()) * 0.08;
+        var idx = 6 - i;
+        cafe24.push(Math.round(baseC[idx] * lift * noise));
+        smartstore.push(Math.round(baseS[idx] * lift * noise));
+        coupang.push(Math.round(baseP[idx] * lift * noise));
+        roas.push(Math.round(baseR[idx] * lift * 100));
+    }
     return {
-        labels: ['월', '화', '수', '목', '금', '토', '일'],
-        cafe24: sc([320, 380, 350, 480, 420, 550, 600]),
-        smartstore: sc([250, 290, 270, 390, 340, 480, 520]),
-        coupang: sc([180, 210, 195, 280, 250, 340, 380]),
-        roas: [210, 240, 230, 310, 280, 380, 410],
+        labels: labels,
+        cafe24: sc(cafe24),
+        smartstore: sc(smartstore),
+        coupang: sc(coupang),
+        roas: roas
     };
 }
 
@@ -450,13 +477,24 @@ var NOTIF_READ_KEY = 'sample_notifications_read_v1';
 var CURRENT_USER_KEY = 'sample_current_user_v1';
 var BRIEFING_CONFIG_KEY = 'sample_briefing_config_v1';
 var DATE_RANGE_PRESETS = [
-    { id: 'today', label: '오늘', multiplier: 0.14, dataHubPeriod: 'daily' },
-    { id: '7d', label: '최근 7일', multiplier: 1, dataHubPeriod: 'daily' },
-    { id: '30d', label: '최근 30일', multiplier: 4.2, dataHubPeriod: 'weekly' },
-    { id: 'month', label: '이번 달', multiplier: 3.5, dataHubPeriod: 'monthly' },
-    { id: 'lastmonth', label: '지난 달', multiplier: 3.2, dataHubPeriod: 'monthly' },
+    { id: 'today', label: '오늘', group: '빠른 선택' },
+    { id: 'yesterday', label: '전일', group: '빠른 선택' },
+    { id: 'thisweek', label: '이번 주', group: '주 단위' },
+    { id: 'lastweek', label: '지난 주', group: '주 단위' },
+    { id: '7d', label: '최근 7일', group: '주 단위' },
+    { id: '14d', label: '최근 14일', group: '주 단위' },
+    { id: 'thismonth', label: '이번 달', group: '월 단위' },
+    { id: 'lastmonth', label: '지난달', group: '월 단위' },
+    { id: '30d', label: '최근 30일', group: '월 단위' },
+    { id: '90d', label: '최근 90일', group: '월 단위' },
+    { id: 'thisyear', label: '올해', group: '연 단위' },
+    { id: 'lastyear', label: '작년', group: '연 단위' },
+    { id: 'custom', label: '직접 지정', group: '직접 지정' }
 ];
-App.globalDateRange = { preset: '7d', label: '최근 7일', multiplier: 1, dataHubPeriod: 'daily' };
+App.globalDateRange = {
+    preset: '7d', label: '최근 7일', multiplier: 1, dataHubPeriod: 'daily',
+    start: '', end: ''
+};
 App.currentUserId = 'kim';
 App.notificationReadIds = [];
 App.pendingDrillDown = null;
@@ -568,19 +606,142 @@ function renderBriefingRecipientsPanel() {
     }).join('');
 }
 
+function datePad2(n) { return String(n).padStart(2, '0'); }
+
+function startOfDay(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function fmtDateYmd(d) {
+    return d.getFullYear() + '-' + datePad2(d.getMonth() + 1) + '-' + datePad2(d.getDate());
+}
+
+function fmtDateShort(d) {
+    return (d.getMonth() + 1) + '/' + d.getDate();
+}
+
+function parseYmd(str) {
+    if (!str || !/^\d{4}-\d{2}-\d{2}$/.test(str)) return null;
+    var p = str.split('-');
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return isNaN(d.getTime()) ? null : startOfDay(d);
+}
+
+function daysInclusive(start, end) {
+    return Math.max(1, Math.round((startOfDay(end) - startOfDay(start)) / 86400000) + 1);
+}
+
+function startOfWeekMon(d) {
+    var day = d.getDay();
+    var diff = day === 0 ? 6 : day - 1;
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() - diff);
+}
+
+function resolveDateRangeBounds(presetId, customStart, customEnd) {
+    var today = startOfDay(new Date());
+    var start = today;
+    var end = today;
+    var id = presetId === 'month' ? 'thismonth' : presetId;
+
+    if (id === 'today') {
+        start = end = today;
+    } else if (id === 'yesterday') {
+        start = end = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+    } else if (id === 'thisweek') {
+        start = startOfWeekMon(today);
+        end = today;
+    } else if (id === 'lastweek') {
+        var thisMon = startOfWeekMon(today);
+        end = new Date(thisMon.getFullYear(), thisMon.getMonth(), thisMon.getDate() - 1);
+        start = startOfWeekMon(end);
+    } else if (id === '7d') {
+        start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+    } else if (id === '14d') {
+        start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 13);
+    } else if (id === '30d') {
+        start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29);
+    } else if (id === '90d') {
+        start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 89);
+    } else if (id === 'thismonth') {
+        start = new Date(today.getFullYear(), today.getMonth(), 1);
+    } else if (id === 'lastmonth') {
+        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        end = new Date(today.getFullYear(), today.getMonth(), 0);
+    } else if (id === 'thisyear') {
+        start = new Date(today.getFullYear(), 0, 1);
+    } else if (id === 'lastyear') {
+        start = new Date(today.getFullYear() - 1, 0, 1);
+        end = new Date(today.getFullYear() - 1, 11, 31);
+    } else if (id === 'custom') {
+        start = parseYmd(customStart);
+        end = parseYmd(customEnd);
+        if (!start || !end) return null;
+        if (end < start) { var tmp = start; start = end; end = tmp; }
+    } else {
+        return null;
+    }
+    return { start: startOfDay(start), end: startOfDay(end) };
+}
+
+function dataHubPeriodForDays(days) {
+    if (days <= 14) return 'daily';
+    if (days <= 62) return 'weekly';
+    return 'monthly';
+}
+
+function formatCustomRangeLabel(start, end) {
+    if (start.getFullYear() === end.getFullYear()) {
+        return fmtDateShort(start) + ' – ' + fmtDateShort(end);
+    }
+    return start.getFullYear() + '/' + fmtDateShort(start) + ' – ' + end.getFullYear() + '/' + fmtDateShort(end);
+}
+
+function buildGlobalDateRangeState(presetId, customStart, customEnd) {
+    var id = presetId === 'month' ? 'thismonth' : presetId;
+    var preset = DATE_RANGE_PRESETS.find(function(p) { return p.id === id; });
+    if (!preset) return null;
+    var bounds = resolveDateRangeBounds(id, customStart, customEnd);
+    if (!bounds) return null;
+    var days = daysInclusive(bounds.start, bounds.end);
+    var multiplier = Math.round((days / 7) * 100) / 100;
+    if (multiplier < 0.05) multiplier = 0.05;
+    if (multiplier > 60) multiplier = 60;
+    return {
+        preset: id,
+        label: id === 'custom' ? formatCustomRangeLabel(bounds.start, bounds.end) : preset.label,
+        multiplier: multiplier,
+        dataHubPeriod: dataHubPeriodForDays(days),
+        start: fmtDateYmd(bounds.start),
+        end: fmtDateYmd(bounds.end),
+        days: days
+    };
+}
+
 function loadGlobalDateRange() {
     try {
         var raw = localStorage.getItem(DATE_RANGE_KEY);
-        if (raw) {
-            var saved = JSON.parse(raw);
-            var preset = DATE_RANGE_PRESETS.find(function(p) { return p.id === saved.preset; });
-            if (preset) App.globalDateRange = { preset: preset.id, label: preset.label, multiplier: preset.multiplier, dataHubPeriod: preset.dataHubPeriod };
+        if (!raw) {
+            App.globalDateRange = buildGlobalDateRangeState('7d') || App.globalDateRange;
+            return;
         }
-    } catch (e) { /* ignore */ }
+        var saved = JSON.parse(raw);
+        var id = saved.preset === 'month' ? 'thismonth' : saved.preset;
+        var next = buildGlobalDateRangeState(id, saved.start, saved.end);
+        if (next) App.globalDateRange = next;
+        else App.globalDateRange = buildGlobalDateRangeState('7d') || App.globalDateRange;
+    } catch (e) {
+        App.globalDateRange = buildGlobalDateRangeState('7d') || App.globalDateRange;
+    }
 }
 
 function persistGlobalDateRange() {
-    try { localStorage.setItem(DATE_RANGE_KEY, JSON.stringify({ preset: App.globalDateRange.preset })); } catch (e) { /* ignore */ }
+    try {
+        localStorage.setItem(DATE_RANGE_KEY, JSON.stringify({
+            preset: App.globalDateRange.preset,
+            start: App.globalDateRange.start || '',
+            end: App.globalDateRange.end || ''
+        }));
+    } catch (e) { /* ignore */ }
 }
 
 function getDateRangeMultiplier() {
@@ -592,29 +753,100 @@ function initDateRangePicker() {
     var label = document.getElementById('date-range-label');
     if (label) label.textContent = App.globalDateRange.label;
     if (!menu) return;
-    menu.innerHTML = DATE_RANGE_PRESETS.map(function(p) {
-        return '<button type="button" class="' + (App.globalDateRange.preset === p.id ? 'active' : '') + '" onclick="setGlobalDateRange(\'' + p.id + '\')">' + p.label + '</button>';
-    }).join('');
+
+    var groups = [];
+    DATE_RANGE_PRESETS.forEach(function(p) {
+        if (groups.indexOf(p.group) < 0) groups.push(p.group);
+    });
+
+    var customStart = App.globalDateRange.start || fmtDateYmd(new Date(Date.now() - 6 * 86400000));
+    var customEnd = App.globalDateRange.end || fmtDateYmd(new Date());
+    var showCustom = App.globalDateRange.preset === 'custom';
+
+    var html = '';
+    groups.forEach(function(g) {
+        if (g === '직접 지정') return;
+        html += '<div class="date-range-group">';
+        html += '<p class="date-range-group-label">' + g + '</p>';
+        html += '<div class="date-range-grid">';
+        DATE_RANGE_PRESETS.filter(function(p) { return p.group === g; }).forEach(function(p) {
+            html += '<button type="button" class="date-range-opt' + (App.globalDateRange.preset === p.id ? ' active' : '') +
+                '" onclick="setGlobalDateRange(\'' + p.id + '\')">' + p.label + '</button>';
+        });
+        html += '</div></div>';
+    });
+
+    html += '<div class="date-range-custom' + (showCustom ? ' open' : '') + '">';
+    html += '<button type="button" class="date-range-opt date-range-custom-toggle' + (showCustom ? ' active' : '') +
+        '" onclick="revealCustomDateRange(event)">직접 지정</button>';
+    html += '<div class="date-range-custom-panel" id="date-range-custom-panel"' + (showCustom ? '' : ' hidden') + '>';
+    html += '<div class="date-range-custom-fields">';
+    html += '<label>시작<input type="date" id="date-range-start" value="' + customStart + '"></label>';
+    html += '<label>종료<input type="date" id="date-range-end" value="' + customEnd + '"></label>';
+    html += '</div>';
+    html += '<button type="button" class="date-range-apply" onclick="applyCustomDateRange(event)">적용</button>';
+    html += '</div></div>';
+
+    menu.innerHTML = html;
+}
+
+function revealCustomDateRange(e) {
+    if (e) e.stopPropagation();
+    var panel = document.getElementById('date-range-custom-panel');
+    var toggle = document.querySelector('.date-range-custom-toggle');
+    if (panel) panel.hidden = false;
+    if (toggle) toggle.classList.add('active');
+    document.querySelectorAll('.date-range-opt').forEach(function(btn) {
+        if (!btn.classList.contains('date-range-custom-toggle')) btn.classList.remove('active');
+    });
+}
+
+function applyCustomDateRange(e) {
+    if (e) e.stopPropagation();
+    var startEl = document.getElementById('date-range-start');
+    var endEl = document.getElementById('date-range-end');
+    var start = startEl ? startEl.value : '';
+    var end = endEl ? endEl.value : '';
+    if (!start || !end) {
+        showToast('시작·종료 날짜를 모두 선택해 주세요.', 'warning');
+        return;
+    }
+    if (parseYmd(end) < parseYmd(start)) {
+        showToast('종료일이 시작일보다 앞입니다.', 'warning');
+        return;
+    }
+    setGlobalDateRange('custom', start, end);
 }
 
 function toggleDateRangeMenu(e) {
     if (e) e.stopPropagation();
     var menu = document.getElementById('date-range-menu');
-    if (menu) menu.classList.toggle('open');
+    if (!menu) return;
+    var opening = !menu.classList.contains('open');
+    if (opening) initDateRangePicker();
+    menu.classList.toggle('open', opening);
 }
 
-function setGlobalDateRange(presetId) {
-    var preset = DATE_RANGE_PRESETS.find(function(p) { return p.id === presetId; });
-    if (!preset) return;
-    App.globalDateRange = { preset: preset.id, label: preset.label, multiplier: preset.multiplier, dataHubPeriod: preset.dataHubPeriod };
+function setGlobalDateRange(presetId, customStart, customEnd) {
+    if (presetId === 'custom' && (customStart == null || customEnd == null)) {
+        revealCustomDateRange();
+        return;
+    }
+    var next = buildGlobalDateRangeState(presetId, customStart, customEnd);
+    if (!next) {
+        showToast('기간을 확인할 수 없습니다.', 'warning');
+        return;
+    }
+    App.globalDateRange = next;
     persistGlobalDateRange();
     initDateRangePicker();
     var menu = document.getElementById('date-range-menu');
     if (menu) menu.classList.remove('open');
-    dataHubFilter.period = preset.dataHubPeriod;
+    dataHubFilter.period = next.dataHubPeriod;
     App.demoLastRefresh = new Date();
     refreshMetricsViews();
-    showToast('기간 필터: ' + preset.label + ' (데모)', 'info');
+    var hint = next.start && next.end ? (' · ' + next.start + ' ~ ' + next.end) : '';
+    showToast('기간 필터: ' + next.label + hint + ' (데모)', 'info');
 }
 
 function loadNotificationReadState() {
@@ -4404,51 +4636,181 @@ function getDataHubWeight(channel) {
     return ch ? ch.weight : 1;
 }
 
-function getDataHubPeriodLabel(period, index) {
-    var i = index;
+function getDataHubAsOfDate() {
+    var end = App.globalDateRange && App.globalDateRange.end
+        ? parseYmd(App.globalDateRange.end)
+        : null;
+    return end || startOfDay(new Date());
+}
+
+function dataHubIsoWeek(d) {
+    var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    var day = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - day);
+    var yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    var week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    return { year: date.getUTCFullYear(), week: week };
+}
+
+function buildDataHubPeriodPoints(period, asOf) {
+    var points = [];
+    var i, d, wk, start, end, lab;
+
     if (period === 'daily') {
-        var d = 10 - i;
-        return '2026-07-' + String(Math.max(1, d)).padStart(2, '0');
+        for (i = 29; i >= 0; i--) {
+            d = new Date(asOf.getFullYear(), asOf.getMonth(), asOf.getDate() - i);
+            points.push({
+                date: startOfDay(d),
+                label: fmtDateYmd(d),
+                shortLabel: (d.getMonth() + 1) + '/' + d.getDate()
+            });
+        }
+    } else if (period === 'weekly') {
+        end = startOfWeekMon(asOf);
+        for (i = 15; i >= 0; i--) {
+            start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - i * 7);
+            wk = dataHubIsoWeek(start);
+            lab = wk.year + '-W' + datePad2(wk.week);
+            points.push({
+                date: startOfDay(start),
+                label: lab,
+                shortLabel: (start.getMonth() + 1) + '/' + start.getDate() + '주'
+            });
+        }
+    } else if (period === 'monthly') {
+        for (i = 11; i >= 0; i--) {
+            d = new Date(asOf.getFullYear(), asOf.getMonth() - i, 1);
+            points.push({
+                date: startOfDay(d),
+                label: d.getFullYear() + '-' + datePad2(d.getMonth() + 1),
+                shortLabel: (d.getFullYear() % 100) + '/' + datePad2(d.getMonth() + 1)
+            });
+        }
+    } else {
+        for (i = 4; i >= 0; i--) {
+            d = new Date(asOf.getFullYear() - i, 0, 1);
+            points.push({
+                date: startOfDay(d),
+                label: String(d.getFullYear()),
+                shortLabel: String(d.getFullYear())
+            });
+        }
     }
-    if (period === 'weekly') return '2026-W' + String(28 - i).padStart(2, '0');
-    if (period === 'monthly') {
-        var m = 7 - i;
-        return '2026-' + String(m > 0 ? m : m + 12).padStart(2, '0');
-    }
-    return String(2026 - i);
+    return points;
+}
+
+function dataHubMonthSeason(monthIndex) {
+    /* 0=Jan … 화장품·패션 시즌성 */
+    var season = [0.82, 0.88, 0.98, 1.02, 1.08, 1.12, 1.18, 1.05, 0.94, 1.0, 1.14, 1.22];
+    return season[monthIndex] || 1;
+}
+
+function dataHubWeekdayLift(day) {
+    /* 0=Sun … 주말·금요일 상승 */
+    var lift = [1.12, 0.92, 0.95, 0.98, 1.0, 1.08, 1.22];
+    return lift[day] || 1;
+}
+
+function dataHubHashNoise(seed) {
+    var x = Math.sin(seed * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
 }
 
 function generateDataHubRows(period, channel) {
-    var configs = { daily: [14, 1], weekly: [12, 7], monthly: [12, 30], yearly: [5, 365] };
-    var count = configs[period][0];
-    var mult = configs[period][1];
-    var w = getDataHubWeight(channel);
-    var rangeMult = getDateRangeMultiplier();
-    var chName = channel === 'all' ? '통합' : (App.dataHubChannels.find(function(c) { return c.id === channel; }) || {}).name || channel;
-    var rows = [];
+    var asOf = getDataHubAsOfDate();
+    var points = buildDataHubPeriodPoints(period, asOf);
+    var w = channel === 'all' ? 1 : getDataHubWeight(channel);
+    var s = typeof getSettings === 'function' ? getSettings() : null;
+    var monthlyTarget = (s && s.kpi && s.kpi.currentMonthlyRevenue) || 637500000;
+    var dailyBase = monthlyTarget / 30;
+    var chName = channel === 'all'
+        ? '통합'
+        : ((App.dataHubChannels.find(function(c) { return c.id === channel; }) || {}).name || channel);
 
-    for (var i = 0; i < count; i++) {
-        var seed = (count - i) * 137 + channel.length * 47;
-        var variance = 0.85 + (seed % 30) / 100;
-        var revenue = Math.round(28450000 * mult * w * variance * rangeMult);
-        var orders = Math.max(1, Math.round(1248 * mult * w * variance * rangeMult));
-        var prevRev = revenue * (0.88 + (seed % 15) / 100);
-        var momBase = revenue * (0.92 + (seed % 8) / 100);
-        var yoyBase = revenue * (0.78 + (seed % 12) / 100);
+    var daySpan = { daily: 1, weekly: 7, monthly: 30, yearly: 365 }[period] || 1;
+    var trendCagr = period === 'yearly' ? 0.22 : (period === 'monthly' ? 0.18 : 0.12);
+    var rows = [];
+    var prevRevenue = null;
+    var prevYearProxy = null;
+
+    points.forEach(function(pt, idx) {
+        var progress = points.length > 1 ? idx / (points.length - 1) : 1;
+        var trend = 1 + trendCagr * (progress - 0.35);
+        var season = dataHubMonthSeason(pt.date.getMonth());
+        var dow = period === 'daily' ? dataHubWeekdayLift(pt.date.getDay()) : 1;
+        var noise = 0.93 + dataHubHashNoise(idx * 17 + channel.length * 31 + pt.date.getMonth() * 7) * 0.14;
+
+        /* 프로모션·시즌 피크 의사 스파이크 */
+        var spike = 1;
+        if (period === 'daily') {
+            var day = pt.date.getDate();
+            if (day === 1 || day === 11 || day === 21) spike = 1.18;
+            if (pt.date.getDay() === 6 && day >= 14 && day <= 21) spike = 1.28;
+        } else if (period === 'weekly' && (idx === points.length - 3 || idx === points.length - 5)) {
+            spike = 1.15;
+        } else if (period === 'monthly' && (pt.date.getMonth() === 6 || pt.date.getMonth() === 11)) {
+            spike = 1.12;
+        } else if (period === 'yearly' && pt.date.getFullYear() === asOf.getFullYear() - 1) {
+            spike = 1.06;
+        }
+
+        var revenue = Math.round(dailyBase * daySpan * w * trend * season * dow * noise * spike);
+        revenue = Math.max(Math.round(dailyBase * daySpan * w * 0.45), revenue);
+
+        var aovBase = 42000 + Math.round(dataHubHashNoise(idx * 9 + 3) * 9000);
+        if (period === 'yearly') aovBase = Math.round(aovBase * (1 + 0.04 * progress));
+        var orders = Math.max(1, Math.round(revenue / aovBase));
+        var aov = Math.round(revenue / orders);
+        var margin = parseFloat((26.5 + season * 4 + dataHubHashNoise(idx * 5) * 3.5 - (dow > 1.1 ? 0.8 : 0)).toFixed(1));
+        var newCustomers = Math.max(1, Math.round(orders * (0.18 + dataHubHashNoise(idx * 11) * 0.1)));
+        var returnRate = parseFloat((1.2 + (period === 'daily' && pt.date.getDay() === 0 ? 0.6 : 0) + dataHubHashNoise(idx * 13) * 1.4).toFixed(1));
+
+        var growth = 0;
+        if (prevRevenue != null && prevRevenue > 0) {
+            growth = parseFloat((((revenue - prevRevenue) / prevRevenue) * 100).toFixed(1));
+        }
+
+        var mom = growth;
+        if (period === 'daily' || period === 'weekly') {
+            /* 동일 구간 길이의 “한 달 전” 대비 근사 */
+            var lookback = period === 'daily' ? 30 : 4;
+            var ref = rows[idx - lookback];
+            if (ref && ref.revenue > 0) {
+                mom = parseFloat((((revenue - ref.revenue) / ref.revenue) * 100).toFixed(1));
+            } else {
+                mom = parseFloat((growth * 0.6 + (dataHubHashNoise(idx) - 0.45) * 8).toFixed(1));
+            }
+        }
+
+        var yoy = parseFloat((8 + trendCagr * 40 * progress + (dataHubHashNoise(idx * 19) - 0.5) * 10).toFixed(1));
+        if (period === 'yearly' && prevRevenue != null && prevRevenue > 0) {
+            yoy = growth;
+        } else if (period === 'monthly' && rows.length >= 1) {
+            /* 단순 YoY: 시즌 대비 성장률 */
+            yoy = parseFloat(((trend - 1) * 100 + (dataHubHashNoise(idx * 23) - 0.4) * 6).toFixed(1));
+        } else if (prevYearProxy != null && prevYearProxy > 0 && (period === 'daily' || period === 'weekly')) {
+            yoy = parseFloat((((revenue - prevYearProxy) / prevYearProxy) * 100).toFixed(1));
+        }
+
         rows.push({
-            period: getDataHubPeriodLabel(period, i),
+            period: pt.label,
+            periodShort: pt.shortLabel,
             channel: chName,
             revenue: revenue,
             orders: orders,
-            aov: Math.round(revenue / orders),
-            margin: parseFloat((28 + (seed % 8) - 4).toFixed(1)),
-            newCustomers: Math.round(342 * mult * w * variance * rangeMult * 0.3),
-            returnRate: parseFloat((1.5 + (seed % 15) / 10).toFixed(1)),
-            growth: parseFloat(((revenue - prevRev) / prevRev * 100).toFixed(1)),
-            mom: parseFloat(((revenue - momBase) / momBase * 100).toFixed(1)),
-            yoy: parseFloat(((revenue - yoyBase) / yoyBase * 100).toFixed(1)),
+            aov: aov,
+            margin: margin,
+            newCustomers: newCustomers,
+            returnRate: returnRate,
+            growth: growth,
+            mom: mom,
+            yoy: yoy
         });
-    }
+
+        prevRevenue = revenue;
+        prevYearProxy = Math.round(revenue / (1.12 + progress * 0.08));
+    });
+
     return rows;
 }
 
@@ -4458,22 +4820,22 @@ function getDataHubSummary(rows) {
     var avgMargin = rows.length ? rows.reduce(function(s, r) { return s + r.margin; }, 0) / rows.length : 0;
     var totalNew = rows.reduce(function(s, r) { return s + r.newCustomers; }, 0);
     var avgReturn = rows.length ? rows.reduce(function(s, r) { return s + r.returnRate; }, 0) / rows.length : 0;
-    var lastGrowth = rows.length ? rows[0].growth : 0;
+    var lastGrowth = rows.length ? rows[rows.length - 1].growth : 0;
 
-    /* 직전 구간 대비: 최근 절반 vs 이전 절반 (rows[0]=최신) */
+    /* 직전 구간 대비: 최근 절반 vs 이전 절반 (rows 끝 = 최신, 과거→현재 순) */
     var mid = Math.max(1, Math.ceil(rows.length / 2));
-    var recent = rows.slice(0, mid);
-    var older = rows.slice(mid);
+    var recent = rows.slice(-mid);
+    var older = rows.slice(0, Math.max(0, rows.length - mid));
     if (!older.length && rows.length >= 2) {
-        recent = [rows[0]];
-        older = [rows[1]];
+        recent = [rows[rows.length - 1]];
+        older = [rows[rows.length - 2]];
     }
     function avg(arr, key) {
         if (!arr.length) return 0;
-        return arr.reduce(function (s, r) { return s + (Number(r[key]) || 0); }, 0) / arr.length;
+        return arr.reduce(function(s, r) { return s + (Number(r[key]) || 0); }, 0) / arr.length;
     }
     function sum(arr, key) {
-        return arr.reduce(function (s, r) { return s + (Number(r[key]) || 0); }, 0);
+        return arr.reduce(function(s, r) { return s + (Number(r[key]) || 0); }, 0);
     }
     var cmp = older.length ? {
         revenue: sum(recent, 'revenue'),
@@ -4683,7 +5045,9 @@ function initDataHub() {
     var descEl = document.getElementById('datahub-table-desc');
     if (titleEl) titleEl.textContent = periodNames[dataHubFilter.period] + ' 매출 추이';
     if (pieEl) pieEl.textContent = periodNames[dataHubFilter.period];
-    if (descEl) descEl.textContent = App.globalDateRange.label + ' · ' + periodNames[dataHubFilter.period] + ' · ' + (dataHubFilter.channel === 'all' ? '전 채널' : App.dataHubChannels.find(function(c) { return c.id === dataHubFilter.channel; }).name) + ' 누적 스냅샷';
+    var unitEl = document.getElementById('datahub-chart-unit');
+    if (unitEl) unitEl.textContent = '만원';
+    if (descEl) descEl.textContent = App.globalDateRange.label + ' · ' + periodNames[dataHubFilter.period] + ' · ' + (dataHubFilter.channel === 'all' ? '전 채널' : App.dataHubChannels.find(function(c) { return c.id === dataHubFilter.channel; }).name) + ' 누적 스냅샷 (과거→현재)';
     dgRefresh();
 }
 
@@ -5029,14 +5393,36 @@ function initCharts() {
 
     var dhTrend = document.getElementById('dataHubTrendChart');
     if (dhTrend && dataHubRowsCache.length) {
-        var dhLabels = dataHubRowsCache.map(function(r) { return r.period; });
+        var dhLabels = dataHubRowsCache.map(function(r) { return r.periodShort || r.period; });
+        var tickLimit = dataHubFilter.period === 'daily' ? 10
+            : (dataHubFilter.period === 'weekly' ? 8
+            : (dataHubFilter.period === 'monthly' ? 12 : 5));
         App.charts.push(new Chart(dhTrend, {
             type: 'line',
             data: {
                 labels: dhLabels,
                 datasets: [
-                    { label: '매출', data: dataHubRowsCache.map(function(r) { return Math.round(r.revenue / 10000); }), borderColor: 'rgba(59,130,246,0.9)', backgroundColor: 'rgba(59,130,246,0.15)', borderWidth: 2, pointRadius: 3, tension: 0.35, fill: true, yAxisID: 'y' },
-                    { label: '주문', data: dataHubRowsCache.map(function(r) { return r.orders; }), borderColor: 'rgba(16,185,129,0.9)', borderWidth: 2, pointRadius: 2, tension: 0.35, yAxisID: 'y1' },
+                    {
+                        label: '매출',
+                        data: dataHubRowsCache.map(function(r) { return Math.round(r.revenue / 10000); }),
+                        borderColor: 'rgba(59,130,246,0.9)',
+                        backgroundColor: 'rgba(59,130,246,0.12)',
+                        borderWidth: 2,
+                        pointRadius: dataHubFilter.period === 'daily' ? 2 : 3,
+                        pointHoverRadius: 4,
+                        tension: 0.28,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: '주문',
+                        data: dataHubRowsCache.map(function(r) { return r.orders; }),
+                        borderColor: 'rgba(16,185,129,0.9)',
+                        borderWidth: 2,
+                        pointRadius: dataHubFilter.period === 'daily' ? 1.5 : 2,
+                        tension: 0.28,
+                        yAxisID: 'y1'
+                    }
                 ]
             },
             options: {
@@ -5044,9 +5430,28 @@ function initCharts() {
                 interaction: { mode: 'index', intersect: false },
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } },
-                    y: { position: 'left', title: { display: true, text: '만원', font: { size: 10 } } },
-                    y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: '건', font: { size: 10 } } },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: tickLimit,
+                            font: { size: 10 },
+                            color: '#9ca3af'
+                        }
+                    },
+                    y: {
+                        position: 'left',
+                        title: { display: true, text: '만원', font: { size: 10 }, color: '#9ca3af' },
+                        ticks: { font: { size: 10 }, color: '#9ca3af' },
+                        grid: { color: 'rgba(55,65,81,0.35)' }
+                    },
+                    y1: {
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: '건', font: { size: 10 }, color: '#9ca3af' },
+                        ticks: { font: { size: 10 }, color: '#9ca3af' }
+                    }
                 }
             }
         }));
@@ -5055,17 +5460,19 @@ function initCharts() {
     var dhChannel = document.getElementById('dataHubChannelChart');
     if (dhChannel) {
         var chData = getDataHubShareChannels();
-        var periodMult = { daily: 1, weekly: 7, monthly: 30, yearly: 365 }[dataHubFilter.period] || 1;
-        var totalW = chData.reduce(function (s, c) { return s + (Number(c.weight) || 0); }, 0) || 1;
+        var latestRev = dataHubRowsCache.length
+            ? dataHubRowsCache[dataHubRowsCache.length - 1].revenue
+            : 28450000;
+        var totalW = chData.reduce(function(s, c) { return s + (Number(c.weight) || 0); }, 0) || 1;
         App.charts.push(new Chart(dhChannel, {
             type: 'doughnut',
             data: {
-                labels: chData.map(function (c) { return c.name; }),
+                labels: chData.map(function(c) { return c.name; }),
                 datasets: [{
-                    data: chData.map(function (c) {
-                        return Math.round(28450000 * ((Number(c.weight) || 0) / totalW) * periodMult / 10000);
+                    data: chData.map(function(c) {
+                        return Math.round(latestRev * ((Number(c.weight) || 0) / totalW) / 10000);
                     }),
-                    backgroundColor: chData.map(function (_, i) {
+                    backgroundColor: chData.map(function(_, i) {
                         return DATAHUB_CHANNEL_COLORS_RGBA[i % DATAHUB_CHANNEL_COLORS_RGBA.length];
                     }),
                     borderWidth: 0

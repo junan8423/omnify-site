@@ -401,21 +401,70 @@
             padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 600;
             background: var(--c-surface); border: 1px solid var(--c-border-strong);
             color: var(--c-text-secondary); transition: border-color 0.15s, color 0.15s;
+            max-width: 11.5rem;
+        }
+        .date-range-btn #date-range-label {
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .date-range-btn:hover { border-color: var(--c-primary-border); color: var(--c-text); }
         .date-range-menu {
             display: none; position: absolute; top: calc(100% + 6px); right: 0;
-            min-width: 160px; z-index: 55; border-radius: 10px; overflow: hidden;
+            width: min(20rem, calc(100vw - 1.5rem)); z-index: 80; border-radius: 12px;
             background: var(--c-panel); border: 1px solid var(--c-border-strong);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.32);
+            padding: 0.55rem; max-height: min(70vh, 28rem); overflow-y: auto;
         }
         .date-range-menu.open { display: block; }
-        .date-range-menu button {
-            display: block; width: 100%; text-align: left; padding: 8px 12px;
-            font-size: 13px; color: var(--c-muted-strong); transition: background 0.12s;
+        .date-range-group { margin-bottom: 0.45rem; }
+        .date-range-group:last-of-type { margin-bottom: 0.2rem; }
+        .date-range-group-label {
+            margin: 0 0 0.3rem; padding: 0 0.25rem;
+            font-size: 0.65rem; font-weight: 750; letter-spacing: 0.04em;
+            color: var(--c-muted-faint); text-transform: none;
         }
-        .date-range-menu button:hover { background: var(--c-primary-soft); color: var(--c-text); }
-        .date-range-menu button.active { color: var(--c-primary-text); background: var(--c-primary-soft); }
+        .date-range-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem;
+        }
+        .date-range-menu .date-range-opt {
+            display: block; width: 100%; text-align: left; padding: 0.45rem 0.55rem;
+            font-size: 0.8rem; font-weight: 650; color: var(--c-muted-strong);
+            border-radius: 0.5rem; border: 1px solid transparent;
+            background: transparent; transition: background 0.12s, color 0.12s, border-color 0.12s;
+        }
+        .date-range-menu .date-range-opt:hover {
+            background: var(--c-primary-soft); color: var(--c-text); border-color: var(--c-primary-border);
+        }
+        .date-range-menu .date-range-opt.active {
+            color: var(--c-primary-text); background: var(--c-primary-soft); border-color: var(--c-primary-border);
+        }
+        .date-range-custom {
+            margin-top: 0.35rem; padding-top: 0.45rem;
+            border-top: 1px solid var(--c-border);
+        }
+        .date-range-custom-toggle { margin-bottom: 0.35rem; }
+        .date-range-custom-panel { display: grid; gap: 0.45rem; }
+        .date-range-custom-panel[hidden] { display: none !important; }
+        .date-range-custom-fields {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;
+        }
+        .date-range-custom-fields label {
+            display: grid; gap: 0.2rem; font-size: 0.65rem; font-weight: 700; color: var(--c-muted-faint);
+        }
+        .date-range-custom-fields input[type="date"] {
+            width: 100%; padding: 0.4rem 0.45rem; border-radius: 0.45rem;
+            border: 1px solid var(--c-border-strong); background: var(--c-surface);
+            color: var(--c-text); font-size: 0.75rem; font-weight: 600;
+            color-scheme: dark;
+        }
+        html[data-theme="light"] .date-range-custom-fields input[type="date"] {
+            color-scheme: light;
+        }
+        .date-range-apply {
+            width: 100%; padding: 0.5rem 0.65rem; border-radius: 0.55rem;
+            font-size: 0.8rem; font-weight: 800; color: #fff;
+            background: var(--c-primary); border: 1px solid var(--c-primary-border);
+        }
+        .date-range-apply:hover { filter: brightness(1.06); }
         .kpi-drill { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
         .kpi-drill:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.12); }
         .kpi-drill-hint { font-size: 12px; color: var(--c-muted-strong); margin-top: 2px; }
@@ -1704,7 +1753,7 @@
     <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/8 rounded-full blur-[120px] pointer-events-none"></div>
 
     <!-- Header -->
-    <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-border/60 glass-strong z-10 shrink-0">
+    <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-border/60 glass-strong z-30 shrink-0 relative">
         <div class="flex items-center gap-3">
             <button class="md:hidden p-2 rounded-lg hover:bg-surface text-gray-400" onclick="toggleMobileSidebar()">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -2045,7 +2094,7 @@
     <script src="js/data-schema.js?v=20260715-schema01"></script>
     <script src="js/report-print.js?v=20260715-report4"></script>
     <script src="js/cs-tickets.js?v=20260715-cs1"></script>
-    <script src="js/dashboard-app.js?v=20260715-theme2"></script>
+    <script src="js/dashboard-app.js?v=20260715-chart1"></script>
     <script src="js/dashboard-tier.js?v=20260715-ux2"></script>
     <script src="js/dashboard-guide.js?v=20260715-ux3"></script>
     <script>
