@@ -860,9 +860,7 @@ var DashboardGuide = (function () {
                 else if (kl.indexOf(t) >= 0 || t.indexOf(kl) >= 0) score += 7;
             });
             if (t.length >= 2) {
-                for (var i = 0; i < t.length - 1; i++) {
-                    if (blob.indexOf(t.slice(i, i + 2)) >= 0) score += 1;
-                }
+                if (blob.indexOf(t) >= 0) score += 2;
             }
         });
         if (modalFilterView && item.view === modalFilterView) score += 6;
@@ -873,46 +871,89 @@ var DashboardGuide = (function () {
         return (window.DashboardGuideKB && window.DashboardGuideKB.synonyms) || {};
     }
 
-    function tokenize(raw) {
-        var q = String(raw || '').toLowerCase()
-            .replace(/[?!.,，。·？！]+/g, ' ')
+    var GUIDE_STOP = {
+        '은': 1, '는': 1, '이': 1, '가': 1, '을': 1, '를': 1, '에': 1, '의': 1, '로': 1, '으로': 1,
+        '와': 1, '과': 1, '도': 1, '만': 1, '에서': 1, '까지': 1, '부터': 1, '하다': 1, '하는': 1, '한': 1,
+        '좀': 1, '혹시': 1, '알려줘': 1, '알려주세요': 1, '뭐야': 1, '무엇': 1, '어떻게': 1, '어디': 1,
+        '있나요': 1, '있어요': 1, '인가요': 1, '할까': 1, '싶은': 1, '해주세요': 1, '해줘': 1,
+        '설명해줘': 1, '설명': 1, '질문': 1, '궁금': 1, '대해': 1, '관련': 1, '하면': 1, '되면': 1,
+        '되나': 1, '되나용': 1, '돼요': 1, '됩니다': 1, '해주세요요': 1, '부탁': 1, '입니다': 1
+    };
+
+    function normalizeQuery(raw) {
+        return String(raw || '')
+            .toLowerCase()
+            .replace(/[?!.,，。·？！~…]+/g, ' ')
             .replace(/\s+/g, ' ')
             .trim();
-        if (!q) return [];
-        var stop = {
-            '은': 1, '는': 1, '이': 1, '가': 1, '을': 1, '를': 1, '에': 1, '의': 1, '로': 1, '으로': 1,
-            '와': 1, '과': 1, '도': 1, '만': 1, '에서': 1, '까지': 1, '부터': 1, '하다': 1, '하는': 1, '한': 1,
-            '좀': 1, '혹시': 1, '알려줘': 1, '알려주세요': 1, '뭐야': 1, '무엇': 1, '어떻게': 1, '어디': 1,
-            '있나요': 1, '있어요': 1, '인가요': 1, '할까': 1, '싶은': 1, '해주세요': 1, '해줘': 1
-        };
-        var parts = q.split(/\s+/).filter(Boolean);
-        var out = [];
+    }
+
+    function stripKoreanEnding(token) {
+        var t = String(token || '');
+        if (t.length < 3) return t;
+        return t
+            .replace(/(으로|에서|까지|부터|이나|라도|처럼|보다)$/g, '')
+            .replace(/(을|를|은|는|이|가|와|과|의|로|에|도|만|요|죠)$/g, '')
+            .replace(/(인가요|하나요|되나요|할까요|인가요|가나요|하나요|인가요)$/g, '')
+            .replace(/(하다|하는|하면|해서|한|됨|되는|될까)$/g, '');
+    }
+
+    function expandSynonyms(token, bag) {
         var syn = getSynonymMap();
-        parts.forEach(function (p) {
-            if (p.length >= 2 && !stop[p]) out.push(p);
-            if (/[가-힣]{4,}/.test(p)) {
-                for (var i = 0; i < p.length - 1; i++) {
-                    var bi = p.slice(i, i + 2);
-                    if (!stop[bi]) out.push(bi);
-                }
-            }
-            Object.keys(syn).forEach(function (key) {
-                var list = syn[key];
-                var hit = list.some(function (s) { return p.indexOf(s) >= 0 || s.indexOf(p) >= 0; });
-                if (hit) list.forEach(function (s) { out.push(s); });
-            });
-        });
+        var t = String(token || '');
+        if (!t || t.length < 2) return;
         Object.keys(syn).forEach(function (key) {
-            syn[key].forEach(function (s) {
+            var list = syn[key];
+            var hit = list.some(function (s) {
+                return s.length >= 2 && (t === s || t.indexOf(s) >= 0 || s.indexOf(t) >= 0);
+            });
+            if (hit) {
+                bag[key] = 1;
+                list.forEach(function (s) {
+                    if (s.length >= 2 && s.length <= 12) bag[s] = 1;
+                });
+            }
+        });
+    }
+
+    function tokenize(raw) {
+        var q = normalizeQuery(raw);
+        if (!q) return [];
+        var bag = {};
+        q.split(/\s+/).forEach(function (p) {
+            if (!p) return;
+            var stem = stripKoreanEnding(p);
+            if (stem.length >= 2 && !GUIDE_STOP[stem]) bag[stem] = 1;
+            if (p.length >= 2 && !GUIDE_STOP[p]) bag[p] = 1;
+            expandSynonyms(p, bag);
+            expandSynonyms(stem, bag);
+        });
+        Object.keys(getSynonymMap()).forEach(function (key) {
+            getSynonymMap()[key].forEach(function (s) {
                 if (s.length >= 2 && q.indexOf(s) >= 0) {
-                    out.push(s);
-                    syn[key].forEach(function (x) { out.push(x); });
+                    bag[s] = 1;
+                    bag[key] = 1;
                 }
             });
         });
-        var uniq = [];
-        out.forEach(function (t) { if (uniq.indexOf(t) < 0) uniq.push(t); });
-        return uniq;
+        return Object.keys(bag).filter(function (t) {
+            return t.length >= 2 && !GUIDE_STOP[t];
+        });
+    }
+
+    function detectIntent(raw) {
+        var q = normalizeQuery(raw);
+        var patterns = (window.DashboardGuideKB && window.DashboardGuideKB.intents) || [];
+        for (var i = 0; i < patterns.length; i++) {
+            var p = patterns[i];
+            try {
+                if (p.re && new RegExp(p.re, 'i').test(q)) return p;
+            } catch (e) { /* ignore bad pattern */ }
+        }
+        if (/^(안녕|안녕하세요|하이|헬로|hi|hello)\b/.test(q)) return { id: 'greet', type: 'greet' };
+        if (/^(고마|감사|땡큐|thanks)/.test(q)) return { id: 'thanks', type: 'thanks' };
+        if (/^(도움|헬프|help|메뉴|뭐\s*할\s*수)/.test(q)) return { id: 'help', type: 'help' };
+        return null;
     }
 
     function knowledgeList() {
@@ -933,47 +974,82 @@ var DashboardGuide = (function () {
                 rows.push({
                     guideId: item.id, faqIndex: idx, view: item.view, menu: item.menu,
                     title: item.title, keywords: item.keywords || [], summary: item.summary || '',
-                    q: f.q, a: f.a
+                    q: f.q, a: f.a, aliases: f.aliases || [], steps: f.steps || null, tip: f.tip || ''
                 });
             });
         });
         return rows;
     }
 
+    function tokenOverlapRatio(aTokens, bTokens) {
+        if (!aTokens.length || !bTokens.length) return 0;
+        var hit = 0;
+        aTokens.forEach(function (t) {
+            if (bTokens.indexOf(t) >= 0) hit += 1;
+        });
+        return hit / Math.max(aTokens.length, 1);
+    }
+
     function scoreFaqRow(row, tokens, rawQ) {
-        if (!tokens.length) return 0;
+        var raw = normalizeQuery(rawQ);
+        if (!raw) return 0;
         var qLow = row.q.toLowerCase();
         var aLow = row.a.toLowerCase();
         var titleLow = (row.title + ' ' + row.menu).toLowerCase();
         var kw = (row.keywords || []).join(' ').toLowerCase();
-        var raw = String(rawQ || '').toLowerCase();
+        var aliasBlob = (row.aliases || []).join(' ').toLowerCase();
+        var compactRaw = raw.replace(/\s+/g, '');
+        var compactQ = qLow.replace(/\s+/g, '');
         var score = 0;
-        tokens.forEach(function (t) {
-            if (qLow.indexOf(t) >= 0) score += 28;
-            if (titleLow.indexOf(t) >= 0) score += 14;
-            if (kw.indexOf(t) >= 0) score += 12;
-            if (aLow.indexOf(t) >= 0) score += 6;
-            if (row.summary && row.summary.toLowerCase().indexOf(t) >= 0) score += 4;
+        var qHits = 0;
+        var aOnlyHits = 0;
+
+        if (compactRaw && (compactQ.indexOf(compactRaw) >= 0 || compactRaw.indexOf(compactQ) >= 0)) score += 120;
+        (row.aliases || []).forEach(function (al) {
+            var c = String(al).toLowerCase().replace(/\s+/g, '');
+            if (!c) return;
+            if (c === compactRaw) score += 140;
+            else if (compactRaw.indexOf(c) >= 0 || c.indexOf(compactRaw) >= 0) score += 70;
+            else if (raw.indexOf(String(al).toLowerCase()) >= 0) score += 45;
         });
-        var qTokens = tokenize(row.q);
-        var overlap = 0;
-        tokens.forEach(function (t) { if (qTokens.indexOf(t) >= 0) overlap += 1; });
-        if (qTokens.length) score += Math.round((overlap / Math.max(qTokens.length, 1)) * 40);
-        if (raw && qLow.indexOf(raw.replace(/\s+/g, '')) >= 0) score += 20;
-        if (modalFilterView && row.view === modalFilterView) score += 8;
-        if (/어떻게|어디|방법|하려면|할까|차이|몇\s*명|비용|요금|가능/.test(raw)) score += 3;
+
+        tokens.forEach(function (t) {
+            var inQ = qLow.indexOf(t) >= 0 || aliasBlob.indexOf(t) >= 0;
+            var inTitle = titleLow.indexOf(t) >= 0;
+            var inKw = kw.indexOf(t) >= 0;
+            var inA = aLow.indexOf(t) >= 0;
+            if (inQ) { score += 32; qHits += 1; }
+            if (inTitle) score += 12;
+            if (inKw) score += 14;
+            if (inA && !inQ) { score += 4; aOnlyHits += 1; }
+            else if (inA) score += 5;
+            if (row.summary && row.summary.toLowerCase().indexOf(t) >= 0) score += 3;
+        });
+
+        var qTokens = tokenize(row.q + ' ' + (row.aliases || []).join(' '));
+        var overlap = tokenOverlapRatio(tokens, qTokens);
+        score += Math.round(overlap * 55);
+        if (qHits === 0 && aOnlyHits > 0) score = Math.round(score * 0.35);
+        if (qHits === 0 && !aliasBlob) score = Math.min(score, 22);
+
+        if (modalFilterView && row.view === modalFilterView) score += 10;
+        if (activeView && row.view === activeView) score += 6;
+        if (/차이|비교|다른/.test(raw) && /차이|비교/.test(qLow + aliasBlob)) score += 18;
+        if (/(어디|어디로|어디서)/.test(raw) && /(어디|화면|메뉴|탭)/.test(qLow + aLow)) score += 12;
+        if (/(몇\s*명|한도|몇개|얼마)/.test(raw) && /(명|한도|원|개)/.test(qLow + aLow)) score += 14;
+        if (/(안\s*돼|되나|가능|수정|쓰기|발주|출고)/.test(raw) && /(불가|봉쇄|원천|사방넷|조회)/.test(qLow + aLow)) score += 16;
         return score;
     }
 
     function searchAnswers(query, limit) {
-        limit = limit || 5;
+        limit = limit || 6;
+        if (!query || !String(query).trim()) return [];
         var tokens = tokenize(query);
         var rows = flattenFaqs(knowledgeList());
-        if (!query || !String(query).trim()) return [];
         var scored = rows.map(function (r) {
             return { row: r, score: scoreFaqRow(r, tokens, query) };
-        }).filter(function (x) { return x.score >= 18; })
-            .sort(function (a, b) { return b.score - a.score; });
+        }).filter(function (x) { return x.score >= 28; })
+            .sort(function (a, b) { return b.score - a.score || a.row.q.length - b.row.q.length; });
         var seen = {};
         var out = [];
         scored.forEach(function (x) {
@@ -982,6 +1058,69 @@ var DashboardGuide = (function () {
             out.push(x);
         });
         return out.slice(0, limit);
+    }
+
+    function intentReply(intent) {
+        if (!intent) return null;
+        if (intent.type === 'greet' || intent.id === 'greet') {
+            return {
+                text: '안녕하세요. Omnify 사용을 도와드릴게요. 재고 검색, 좌석·뷰어, 발주 가능 여부, 브리핑, 요금제처럼 업무 질문으로 물어보시면 됩니다.',
+                related: ((window.DashboardGuideKB && window.DashboardGuideKB.chips) || []).slice(0, 5).map(function (c) { return { q: c }; })
+            };
+        }
+        if (intent.type === 'thanks' || intent.id === 'thanks') {
+            return {
+                text: '도움이 되었다니 다행입니다. 다른 운영 질문이 있으면 이어서 물어보세요.',
+                related: [{ q: '위험 재고는 어디서 보나요?' }, { q: '기간을 직접 지정하려면?' }]
+            };
+        }
+        if (intent.type === 'help' || intent.id === 'help') {
+            return {
+                text: '저는 Omnify 제품 스펙·화면 가이드를 바탕으로 답합니다. 「목록」 탭에서 메뉴별 FAQ를 보거나, 아래 추천 질문으로 시작해 보세요.',
+                related: ((window.DashboardGuideKB && window.DashboardGuideKB.chips) || []).slice(0, 6).map(function (c) { return { q: c }; })
+            };
+        }
+        if (intent.faqId) {
+            var rows = flattenFaqs(knowledgeList());
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].guideId === intent.faqId || rows[i].q === intent.q) {
+                    return {
+                        q: rows[i].q,
+                        text: composeAnswer(rows[i], intent.lead || ''),
+                        menu: rows[i].menu + ' · ' + rows[i].title,
+                        view: rows[i].view,
+                        confidence: 92
+                    };
+                }
+            }
+        }
+        if (intent.answer) {
+            return {
+                text: intent.answer,
+                view: intent.view || null,
+                menu: intent.menu || '',
+                confidence: 88,
+                related: (intent.related || []).map(function (q) { return { q: q }; })
+            };
+        }
+        return null;
+    }
+
+    function composeAnswer(row, lead) {
+        var parts = [];
+        if (lead) parts.push(lead);
+        parts.push(row.a);
+        if (row.steps && row.steps.length) {
+            parts.push(row.steps.map(function (s, i) { return (i + 1) + ') ' + s; }).join(' '));
+        }
+        if (row.tip) parts.push('Tip: ' + row.tip);
+        return parts.join('\n\n');
+    }
+
+    function confidenceLabel(score) {
+        if (score >= 90) return { pct: Math.min(99, Math.round(score / 1.4)), label: '높은 일치' };
+        if (score >= 55) return { pct: Math.min(85, Math.round(score / 1.5)), label: '관련 답변' };
+        return { pct: Math.min(55, Math.round(score / 1.8)), label: '참고 답변' };
     }
 
     function renderGuideList(items, expandId) {
@@ -1084,15 +1223,18 @@ var DashboardGuide = (function () {
         if (!chatHistory.length) {
             el.innerHTML =
                 '<div class="dg-msg bot"><div class="dg-msg-bubble">' +
-                '<p class="dg-msg-lead">안녕하세요. Omnify 사용 도우미입니다.</p>' +
-                '<p>스펙 기반 FAQ를 고감도로 검색해 답합니다. 예: 「좌석과 뷰어 차이」, 「직접 지정 기간」, 「사방넷만 되나요?」</p>' +
-                '<p class="dg-msg-note">※ 로컬 지식베이스 챗봇입니다. 실시간 LLM이 아니며, 추후 AI API로 확장 가능합니다.</p>' +
+                '<p class="dg-msg-lead">안녕하세요. Omnify 운영 도우미입니다.</p>' +
+                '<p>재고·주문·좌석·브리핑·요금처럼 <strong>실제 업무 질문</strong>으로 물어보세요. 제품 스펙 지식베이스에서 가장 가까운 안내를 골라 답합니다.</p>' +
+                '<p class="dg-msg-note">로컬 스펙 매칭 엔진입니다(실시간 LLM 아님). 질문 예: 「재고 CSV 어떻게 받아요?」 「발주 여기서 되나요?」 「뷰어랑 좌석 차이」</p>' +
                 '</div></div>';
             return;
         }
         el.innerHTML = chatHistory.map(function (m) {
             if (m.role === 'user') {
                 return '<div class="dg-msg user"><div class="dg-msg-bubble">' + escapeHtml(m.text) + '</div></div>';
+            }
+            if (m.typing) {
+                return '<div class="dg-msg bot"><div class="dg-msg-bubble dg-typing"><span></span><span></span><span></span></div></div>';
             }
             var extras = '';
             if (m.related && m.related.length) {
@@ -1105,13 +1247,14 @@ var DashboardGuide = (function () {
                 ? '<button type="button" class="dg-go-btn dg-chat-go" data-view="' + m.view + '">해당 화면으로 이동 →</button>'
                 : '';
             var conf = m.confidence != null
-                ? '<span class="dg-conf">' + (m.confidence >= 70 ? '높은 일치' : m.confidence >= 40 ? '관련 답변' : '참고 답변') + '</span>'
+                ? '<span class="dg-conf">' + escapeHtml(m.confLabel || (m.confidence >= 70 ? '높은 일치' : m.confidence >= 40 ? '관련 답변' : '참고 답변')) + '</span>'
                 : '';
+            var answerHtml = escapeHtml(m.text).replace(/\n\n/g, '</p><p class="dg-msg-a">').replace(/\n/g, '<br>');
             return '<div class="dg-msg bot"><div class="dg-msg-bubble">' +
                 (m.menu ? '<span class="dg-msg-tag">' + escapeHtml(m.menu) + '</span>' : '') +
                 conf +
-                (m.q ? '<p class="dg-msg-q">' + escapeHtml(m.q) + '</p>' : '') +
-                '<p class="dg-msg-a">' + escapeHtml(m.text) + '</p>' +
+                (m.q && m.showQ !== false ? '<p class="dg-msg-q">' + escapeHtml(m.q) + '</p>' : '') +
+                '<p class="dg-msg-a">' + answerHtml + '</p>' +
                 go + extras +
                 '</div></div>';
         }).join('');
@@ -1132,33 +1275,71 @@ var DashboardGuide = (function () {
         if (!q) return;
         setGuideMode('chat');
         chatHistory.push({ role: 'user', text: q });
-        var hits = searchAnswers(q, 5);
-        if (!hits.length) {
-            chatHistory.push({
-                role: 'bot',
-                text: '정확히 맞는 FAQ를 찾지 못했습니다. 키워드를 바꿔 보시거나 「목록」 탭에서 메뉴별 가이드를 둘러보세요. 예: 좌석, 알림톡, 사방넷, 기간, ROAS, CSV.',
-                related: ((window.DashboardGuideKB && window.DashboardGuideKB.chips) || []).slice(0, 4).map(function (c) {
-                    return { q: c };
-                })
-            });
-        } else {
+        chatHistory.push({ role: 'bot', typing: true });
+        renderChatThread();
+
+        var finish = function (reply, hitCount) {
+            chatHistory = chatHistory.filter(function (m) { return !m.typing; });
+            chatHistory.push(reply);
+            var input = document.getElementById('dg-chat-input');
+            if (input) input.value = '';
+            var listSearch = document.getElementById('dg-guide-search');
+            if (listSearch) listSearch.value = q;
+            renderChatThread();
+            updateGuideCountLabel(hitCount != null ? hitCount : 0);
+        };
+
+        setTimeout(function () {
+            var intent = detectIntent(q);
+            var direct = intentReply(intent);
+            if (direct && (intent.type === 'greet' || intent.type === 'thanks' || intent.type === 'help' || intent.answer || intent.faqId)) {
+                finish({
+                    role: 'bot',
+                    text: direct.text,
+                    q: direct.q || '',
+                    showQ: !!direct.q,
+                    menu: direct.menu || '',
+                    view: direct.view || null,
+                    confidence: direct.confidence || 90,
+                    confLabel: '바로 안내',
+                    related: direct.related || []
+                }, direct.q ? 1 : 0);
+                return;
+            }
+
+            var hits = searchAnswers(q, 6);
+            if (!hits.length) {
+                var suggest = ((window.DashboardGuideKB && window.DashboardGuideKB.chips) || []).slice(0, 5);
+                finish({
+                    role: 'bot',
+                    showQ: false,
+                    text: '그 문장과 정확히 맞는 스펙 답변을 아직 못 찾았습니다.\n\n키워드를 조금 바꿔 보세요. 예: 재고 CSV / 발주 가능 여부 / 좌석 뷰어 / 사방넷 / 브리핑 미리보기.\n\n「목록」 탭에서 메뉴별 FAQ를 훑어보는 것도 빠릅니다.',
+                    related: suggest.map(function (c) { return { q: c }; })
+                }, 0);
+                return;
+            }
+
             var best = hits[0];
-            chatHistory.push({
+            var second = hits[1];
+            var conf = confidenceLabel(best.score);
+            var lead = conf.pct < 70 ? '질문과 가장 가까운 안내입니다.' : '';
+            var text = composeAnswer(best.row, lead);
+            if (second && best.score - second.score < 12 && second.score >= 40) {
+                text += '\n\n같이 보면 좋은 안내: 「' + second.row.q + '」 — ' + second.row.a;
+            }
+
+            finish({
                 role: 'bot',
                 q: best.row.q,
-                text: best.row.a,
+                showQ: conf.pct < 85,
+                text: text,
                 menu: best.row.menu + ' · ' + best.row.title,
                 view: best.row.view,
-                confidence: Math.min(99, Math.round(Math.min(best.score, 120) / 120 * 100)),
+                confidence: conf.pct,
+                confLabel: conf.label,
                 related: hits.slice(1, 4).map(function (h) { return { q: h.row.q }; })
-            });
-        }
-        var input = document.getElementById('dg-chat-input');
-        if (input) input.value = '';
-        var listSearch = document.getElementById('dg-guide-search');
-        if (listSearch) listSearch.value = q;
-        renderChatThread();
-        updateGuideCountLabel(hits.length);
+            }, hits.length);
+        }, 220 + Math.min(280, q.length * 8));
     }
 
     function updateGuideCountLabel(n) {
@@ -1320,7 +1501,7 @@ var DashboardGuide = (function () {
         if (typeof showToast === 'function' && !sessionStorage.getItem('dg_hint_shown')) {
             sessionStorage.setItem('dg_hint_shown', '1');
             setTimeout(function () {
-                showToast('💡 사용가이드가 챗봇형으로 업그레이드되었습니다. 우측 하단에서 질문해 보세요.', 'info');
+                showToast('💡 사용 도우미가 업그레이드되었습니다. 업무 질문으로 물어보세요.', 'info');
             }, 1200);
         }
     }
