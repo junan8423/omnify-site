@@ -2687,78 +2687,9 @@ App.views['view-orders'] = () => {
 </div>`;
 };
 
-App.views['view-inventory'] = () => {
-    var m = getMockMetrics();
-    var pol = (typeof INVENTORY_POLICY !== 'undefined' && INVENTORY_POLICY) ? INVENTORY_POLICY : null;
-    return `
-<div id="view-inventory" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
-    <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
-        <div>
-            <h2 class="text-xl font-bold">${pol ? pol.title : '통합 재고 (조회)'}</h2>
-            <p class="text-sm text-gray-400 mt-1">${pol ? pol.subtitle : '사방넷 실재고 + 채널 재고 조회'} <span class="demo-pill">데모</span></p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-            <button type="button" onclick="typeof OmnifyReportPrint!=='undefined'&&OmnifyReportPrint.openForm('inventory')" class="text-xs font-semibold px-3 py-2 rounded-lg border border-border hover:border-primary/40 transition-colors">출력 양식</button>
-            <button type="button" onclick="openInventorySourceHint()" class="text-xs font-semibold px-3 py-2 rounded-lg border border-border hover:border-primary/40 transition-colors">원천 시스템 안내</button>
-            <button type="button" onclick="blockInventoryWrite('재고 수량 수정')" class="text-xs font-semibold px-3 py-2 rounded-lg border border-warning/40 text-warning/90 hover:bg-warning/10">재고 수정 (봉쇄)</button>
-        </div>
-    </div>
-
-    <div class="glass rounded-xl p-4 border border-warning/25 bg-warning/5" id="inventory-policy-banner">
-        <p class="text-sm text-gray-200"><span class="font-bold text-warning">${pol ? pol.bannerLead : 'Omnify는 재고 Source of Truth가 아닙니다.'}</span> ${pol ? pol.bannerBody : ''}</p>
-        <p class="text-[11px] text-gray-500 mt-1.5">제공: 사방넷 실재고 조회 · 채널 재고 조회 · 경보 · 브리핑 · 바로가기 &nbsp;|&nbsp; 제외: 이지어드민·셀메이트 &nbsp;|&nbsp; 봉쇄: 수량 쓰기 · 출고 확정 &nbsp;|&nbsp; Ent.: 사방넷만 협의 커스텀</p>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        ${[
-            { label: '전체 SKU', value: String(m.totalSku), icon: '📦' },
-            { label: '위험 재고', value: String(m.atRiskInventory), icon: '⚠️', danger: true },
-            { label: '이번 주 예상 소진', value: '14 SKU', icon: '📉' },
-        ].map(s => `
-        <div class="glass rounded-xl p-5 flex items-center gap-4 ${s.danger?'border border-danger/30':''}">
-            <span class="text-2xl">${s.icon}</span>
-            <div>
-                <p class="text-xs text-gray-400">${s.label}</p>
-                <p class="text-2xl font-extrabold ${s.danger?'text-danger':''}">${s.value}</p>
-            </div>
-        </div>`).join('')}
-    </div>
-
-    <div class="glass rounded-xl overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="text-gray-500 text-xs border-b border-border bg-surface/50">
-                    <tr>
-                        <th class="px-5 py-3 text-left font-medium">SKU</th>
-                        <th class="px-5 py-3 text-left font-medium">상품명</th>
-                        <th class="px-5 py-3 text-center font-medium">사방넷(실재고)</th>
-                        <th class="px-5 py-3 text-center font-medium">Cafe24</th>
-                        <th class="px-5 py-3 text-center font-medium">스마트스토어</th>
-                        <th class="px-5 py-3 text-center font-medium">쿠팡</th>
-                        <th class="px-5 py-3 text-center font-medium">에이블리</th>
-                        <th class="px-5 py-3 text-center font-medium">안전재고*</th>
-                        <th class="px-5 py-3 text-center font-medium">상태</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-border">
-                    ${App.inventory.map(i => `
-                    <tr class="table-row ${i.status!=='safe'?'bg-danger/5':''}">
-                        <td class="px-5 py-4 font-mono text-xs text-gray-400">${i.sku}</td>
-                        <td class="px-5 py-4 font-medium">${i.name}</td>
-                        <td class="px-5 py-4 text-center font-bold ${i.status==='critical'?'text-danger':i.status==='warning'?'text-warning':'text-white'}">${i.total}</td>
-                        <td class="px-5 py-4 text-center text-gray-400">${i.cafe24}</td>
-                        <td class="px-5 py-4 text-center text-gray-400">${i.smartstore}</td>
-                        <td class="px-5 py-4 text-center text-gray-400">${i.coupang}</td>
-                        <td class="px-5 py-4 text-center text-gray-400">${i.ably}</td>
-                        <td class="px-5 py-4 text-center text-gray-500">${i.safety}</td>
-                        <td class="px-5 py-4 text-center">${App.statusBadge(i.status)}</td>
-                    </tr>`).join('')}
-                </tbody>
-            </table>
-        </div>
-        <p class="text-[10px] text-gray-600 px-5 py-3 border-t border-border">* 안전재고 = Omnify 경보 기준값. 「사방넷(실재고)」는 미러 조회 · 채널 열은 노출 재고. 이지·셀메이트 미연동. 이 화면은 조회 전용입니다.</p>
-    </div>
-</div>`;
+App.views['view-inventory'] = function () {
+    if (typeof buildInventoryShellHtml === 'function') return buildInventoryShellHtml();
+    return '<div id="view-inventory" class="view-section fade-in p-8 text-gray-400">재고 조회 UI를 불러오지 못했습니다.</div>';
 };
 
 App.views['view-crm'] = () => `
@@ -5575,6 +5506,9 @@ function switchView(targetId) {
     if (targetId === 'view-orders') {
         renderOrders(App.orders);
         applyPendingDrillDown();
+    }
+    if (targetId === 'view-inventory') {
+        if (typeof initInventoryView === 'function') initInventoryView();
     }
     if (targetId === 'view-activity') {
         activityFilter = { user: 'all', cat: 'all', search: '' };

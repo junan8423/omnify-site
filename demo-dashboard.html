@@ -631,6 +631,52 @@
         .status-dot.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
         .table-row { transition: background 0.15s; }
         .table-row:hover { background: var(--c-table-hover); }
+
+        /* ── Inventory console ── */
+        .inv-kpi-card { transition: border-color 0.15s, transform 0.15s; cursor: pointer; }
+        .inv-kpi-card:hover { border-color: rgba(59,130,246,0.45) !important; transform: translateY(-1px); }
+        .inv-kpi-card.active, .inv-kpi-card[data-inv-status].active {
+            border-color: rgba(59,130,246,0.55) !important;
+            box-shadow: 0 0 0 1px rgba(59,130,246,0.25);
+        }
+        .inv-chip {
+            font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px;
+            border: 1px solid var(--c-border, #334155); background: transparent; color: #94a3b8;
+            transition: all 0.15s;
+        }
+        .inv-chip:hover { color: #e2e8f0; border-color: rgba(59,130,246,0.4); }
+        .inv-chip.active { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.45); }
+        .inv-sort-btn {
+            font-size: 11px; font-weight: 600; color: inherit; background: transparent; border: 0;
+            padding: 0; cursor: pointer; white-space: nowrap;
+        }
+        .inv-sort-btn:hover, .inv-sort-btn.active { color: #93c5fd; }
+        .inv-table-scroll { max-height: min(62vh, 720px); overflow: auto; }
+        #inventory-table thead th { backdrop-filter: blur(8px); }
+        .inv-row-critical { background: rgba(239,68,68,0.06); }
+        .inv-row-warn { background: rgba(245,158,11,0.05); }
+        .inv-fill-track { height: 3px; border-radius: 99px; background: rgba(148,163,184,0.15); overflow: hidden; max-width: 160px; }
+        .inv-fill-bar { height: 100%; border-radius: 99px; }
+        .inv-watch-btn {
+            width: 28px; height: 28px; border-radius: 8px; border: 1px solid transparent;
+            background: transparent; color: #64748b; font-size: 14px; line-height: 1;
+        }
+        .inv-watch-btn:hover { border-color: rgba(59,130,246,0.35); color: #93c5fd; }
+        .inv-watch-btn.on { color: #fbbf24; }
+        .inv-mismatch-badge {
+            display: inline-block; margin-left: 6px; font-size: 9px; font-weight: 700;
+            padding: 1px 5px; border-radius: 4px; background: rgba(245,158,11,0.15); color: #fbbf24;
+            vertical-align: middle;
+        }
+        #inventory-table.inv-compact .inv-fill-track { display: none; }
+        html[data-theme="light"] .inv-chip { color: #475569; border-color: #cbd5e1; }
+        html[data-theme="light"] .inv-chip.active { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+        html[data-theme="light"] .inv-sort-btn:hover, html[data-theme="light"] .inv-sort-btn.active { color: #1d4ed8; }
+        html[data-theme="light"] .inv-row-critical { background: #fef2f2; }
+        html[data-theme="light"] .inv-row-warn { background: #fffbeb; }
+        html[data-theme="light"] .inv-fill-track { background: #e2e8f0; }
+        html[data-theme="light"] #inventory-table thead { position: sticky; top: 0; z-index: 10; }
+
         .cmd-palette { display: none; }
         .cmd-palette.open { display: flex; }
         .comms-modal { display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.72); }
@@ -2291,8 +2337,9 @@
     <script src="js/data-schema.js?v=20260715-schema01"></script>
     <script src="js/report-print.js?v=20260715-report4"></script>
     <script src="js/cs-tickets.js?v=20260715-cs1"></script>
-    <script src="js/dashboard-mock-data.js?v=20260715-mock1"></script>
-    <script src="js/dashboard-app.js?v=20260715-mock1"></script>
+    <script src="js/dashboard-mock-data.js?v=20260715-invui1"></script>
+    <script src="js/dashboard-app.js?v=20260715-invui1"></script>
+    <script src="js/dashboard-inventory-ui.js?v=20260715-invui1"></script>
     <script src="js/dashboard-tier.js?v=20260715-lightpromo1"></script>
     <script src="js/dashboard-guide-kb.js?v=20260715-guidekb1"></script>
     <script src="js/dashboard-guide.js?v=20260715-guidechat1"></script>

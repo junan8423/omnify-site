@@ -93,13 +93,13 @@
     function buildInventory() {
         return [
             { sku: 'SKU-COS-001', name: '코스메 히트 세럼 50ml', qtyWms: 24, qtyByChannel: { cafe24: 10, smartstore: 8, coupang: 4, ably: 2 }, safety: 50 },
-            { sku: 'SKU-COS-002', name: '비건 수분 크림 100ml', qtyWms: 850, qtyByChannel: { cafe24: 300, smartstore: 280, coupang: 180, ably: 90 }, safety: 100 },
+            { sku: 'SKU-COS-002', name: '비건 수분 크림 100ml', qtyWms: 850, qtyByChannel: { cafe24: 300, smartstore: 280, coupang: 190, ably: 90 }, safety: 100 },
             { sku: 'SKU-COS-003', name: '시카 리페어 크림 50ml', qtyWms: 42, qtyByChannel: { cafe24: 15, smartstore: 12, coupang: 10, ably: 5 }, safety: 60 },
             { sku: 'SKU-COS-004', name: '글로우 업 세럼 30ml', qtyWms: 320, qtyByChannel: { cafe24: 100, smartstore: 90, coupang: 80, ably: 50 }, safety: 80 },
             { sku: 'SKU-COS-005', name: '선크림 SPF50+ 60ml', qtyWms: 156, qtyByChannel: { cafe24: 50, smartstore: 45, coupang: 40, ably: 21 }, safety: 70 },
             { sku: 'SKU-COS-006', name: '비건 히알루론산 토너 200ml', qtyWms: 512, qtyByChannel: { cafe24: 180, smartstore: 160, coupang: 120, ably: 52 }, safety: 90 },
             { sku: 'SKU-COS-007', name: '비타민C 앰플 20ml', qtyWms: 18, qtyByChannel: { cafe24: 6, smartstore: 5, coupang: 4, ably: 3 }, safety: 40 },
-            { sku: 'SKU-COS-008', name: '클렌징 폼 150ml 2개입', qtyWms: 440, qtyByChannel: { cafe24: 150, smartstore: 140, coupang: 100, ably: 50 }, safety: 80 },
+            { sku: 'SKU-COS-008', name: '클렌징 폼 150ml 2개입', qtyWms: 440, qtyByChannel: { cafe24: 160, smartstore: 140, coupang: 100, ably: 50 }, safety: 80 },
             { sku: 'SKU-COS-009', name: '수분 마스크팩 10매', qtyWms: 280, qtyByChannel: { cafe24: 100, smartstore: 90, coupang: 60, ably: 30 }, safety: 100 },
             { sku: 'SKU-COS-010', name: '옴므 올인원 로션 200ml', qtyWms: 210, qtyByChannel: { cafe24: 70, smartstore: 65, coupang: 50, ably: 25 }, safety: 60 },
             { sku: 'SKU-COS-011', name: '레티놀 나이트 크림 50ml', qtyWms: 76, qtyByChannel: { cafe24: 28, smartstore: 22, coupang: 18, ably: 8 }, safety: 55 },
