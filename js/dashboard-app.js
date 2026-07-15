@@ -2885,6 +2885,10 @@ function getSettingsDefaults() {
         inventoryItems: App.inventory.map(function(i) {
             return { sku: i.sku, name: i.name, safety: i.safety, leadTime: 7 };
         }),
+        appearance: {
+            mode: 'dark',
+            tone: 'ocean',
+        },
     };
     if (App.tenantMeta && App.tenantMeta.custom && typeof customToSettingsPatch === 'function') {
         var patch = customToSettingsPatch(App.tenantMeta.custom, App.tenantMeta.channels);
@@ -2909,6 +2913,8 @@ function loadSettings() {
         var raw = localStorage.getItem(key);
         if (raw) {
             App.settings = Object.assign(getSettingsDefaults(), JSON.parse(raw));
+            if (!App.settings.appearance) App.settings.appearance = getSettingsDefaults().appearance;
+            App.settings.appearance = normalizeAppearance(App.settings.appearance);
             if (typeof applyTenantCustomAfterLoad === 'function' && App.tenantMeta) {
                 /* keep user edits; custom only fills missing seed path via getSettingsDefaults */
             }
@@ -2925,6 +2931,7 @@ function persistSettings() {
     } catch (e) {
         showToast('설정 저장에 실패했습니다.', 'danger');
     }
+    applyAppearanceSettings();
     syncSettingsToApp();
     refreshDemoUI();
 }
@@ -2946,6 +2953,7 @@ function resetAllSettings() {
     if (!confirm('모든 설정을 기본값으로 초기화할까요?')) return;
     App.settings = getSettingsDefaults();
     persistSettings();
+    applyAppearanceSettings();
     showToast('설정이 초기화되었습니다.', 'success');
     if (App.currentView === 'view-settings') initSettingsView();
     refreshMetricsViews();
@@ -2994,9 +3002,81 @@ function collectSettingsFromForm() {
             if (leadEl) item.leadTime = parseInt(leadEl.value, 10) || item.leadTime;
         });
     }
+    if (settingsActiveTab === 'appearance' || document.getElementById('set-appearance-mode')) {
+        collectAppearanceFromForm(s);
+    }
+}
+
+var APPEARANCE_UI_THEME_KEY = 'omnify_ui_theme';
+var APPEARANCE_TONES = [
+    { id: 'ocean', label: '오션 블루', desc: '기본 · 신뢰감 · 데이터 대시보드', sw1: '#3b82f6', sw2: '#8b5cf6' },
+    { id: 'slate', label: '슬레이트', desc: '중립 · 비즈니스 · 차분한 톤', sw1: '#475569', sw2: '#0f766e' },
+    { id: 'forest', label: '포레스트', desc: '성장 · 마진 · 친환경 인상', sw1: '#059669', sw2: '#14b8a6' },
+    { id: 'rose', label: '로즈', desc: '강조 · 프로모션 · 캠페인', sw1: '#e11d48', sw2: '#db2777' },
+    { id: 'amber', label: '앰버', desc: '워밍 · 세일 · 알림 강조', sw1: '#d97706', sw2: '#ea580c' },
+];
+
+function normalizeAppearance(a) {
+    var tones = { ocean: 1, slate: 1, forest: 1, rose: 1, amber: 1 };
+    return {
+        mode: (a && a.mode === 'light') ? 'light' : 'dark',
+        tone: (a && tones[a.tone]) ? a.tone : 'ocean',
+    };
+}
+
+function applyAppearanceSettings(opt) {
+    var s = getSettings();
+    if (!s.appearance) s.appearance = getSettingsDefaults().appearance;
+    var ap = normalizeAppearance(opt || s.appearance);
+    s.appearance = ap;
+    var root = document.documentElement;
+    root.setAttribute('data-theme', ap.mode);
+    root.setAttribute('data-tone', ap.tone);
+    root.style.colorScheme = ap.mode;
+    try {
+        localStorage.setItem(APPEARANCE_UI_THEME_KEY, JSON.stringify(ap));
+    } catch (e) { /* ignore */ }
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = ap.mode === 'light' ? '#334155' : '#a8b0bc';
+        Chart.defaults.borderColor = ap.mode === 'light' ? 'rgba(148,163,184,0.45)' : 'rgba(55,65,81,0.45)';
+        if (Chart.defaults.scale && Chart.defaults.scale.grid) {
+            Chart.defaults.scale.grid.color = ap.mode === 'light' ? 'rgba(148,163,184,0.35)' : 'rgba(55,65,81,0.35)';
+        }
+    }
+}
+
+function collectAppearanceFromForm(s) {
+    s = s || getSettings();
+    if (!s.appearance) s.appearance = getSettingsDefaults().appearance;
+    var modeEl = document.querySelector('input[name="set-appearance-mode"]:checked') || document.getElementById('set-appearance-mode');
+    var toneEl = document.querySelector('input[name="set-appearance-tone"]:checked');
+    if (modeEl && modeEl.value) s.appearance.mode = modeEl.value;
+    if (toneEl && toneEl.value) s.appearance.tone = toneEl.value;
+    s.appearance = normalizeAppearance(s.appearance);
+    return s.appearance;
+}
+
+function previewAppearance(mode, tone) {
+    var s = getSettings();
+    if (!s.appearance) s.appearance = getSettingsDefaults().appearance;
+    if (mode) s.appearance.mode = mode;
+    if (tone) s.appearance.tone = tone;
+    s.appearance = normalizeAppearance(s.appearance);
+    applyAppearanceSettings(s.appearance);
+    if (settingsActiveTab === 'appearance') renderSettingsPanel();
+}
+
+function saveAppearanceSettings() {
+    collectAppearanceFromForm();
+    persistSettings();
+    showToast('외관 설정이 적용·저장되었습니다.', 'success');
+    if (typeof initCharts === 'function' && App.currentView && App.currentView !== 'view-settings') {
+        try { initCharts(); } catch (e) { /* ignore */ }
+    }
 }
 
 var SETTINGS_TABS = [
+    { id: 'appearance', label: '외관 · 톤', icon: '🎨' },
     { id: 'team', label: '팀 · 좌석', icon: '👥' },
     { id: 'kpi', label: '목표 KPI', icon: '🎯' },
     { id: 'margins', label: '마진율', icon: '📊' },
@@ -3398,6 +3478,46 @@ function renderSettingsPanel() {
                 '</div>';
             }).join('') +
             '</div><button onclick="saveAdMediaFromForm()" class="text-xs font-semibold px-4 py-2 rounded-lg bg-primary text-white mt-4">광고 매체 저장</button>';
+    }
+
+    if (settingsActiveTab === 'appearance') {
+        if (!s.appearance) s.appearance = getSettingsDefaults().appearance;
+        var ap = normalizeAppearance(s.appearance);
+        html = '<h3 class="font-bold text-sm mb-1">외관 · 톤앤매너</h3>' +
+            '<p class="text-xs text-gray-500 mb-5">다크/라이트 모드와 브랜드 톤을 선택합니다. <strong class="text-gray-400">배경·본문·보조텍스트 대비는 테마가 고정 보장</strong>하고, 톤은 Primary/Accent 강조색만 바꿉니다.</p>' +
+            '<h4 class="font-semibold text-xs text-gray-400 mb-2">화면 모드</h4>' +
+            '<div class="flex flex-wrap gap-3 mb-6">' +
+                '<button type="button" class="appearance-mode-btn' + (ap.mode === 'dark' ? ' active' : '') + '" onclick="previewAppearance(\'dark\')">' +
+                    '<input type="radio" name="set-appearance-mode" id="set-appearance-mode" value="dark" ' + (ap.mode === 'dark' ? 'checked' : '') + ' class="sr-only">' +
+                    '<p class="text-sm font-bold mb-1">다크 모드</p>' +
+                    '<p class="text-[11px] text-gray-500">야간·집중형 · 기본</p>' +
+                '</button>' +
+                '<button type="button" class="appearance-mode-btn' + (ap.mode === 'light' ? ' active' : '') + '" onclick="previewAppearance(\'light\')">' +
+                    '<input type="radio" name="set-appearance-mode" value="light" ' + (ap.mode === 'light' ? 'checked' : '') + ' class="sr-only">' +
+                    '<p class="text-sm font-bold mb-1">라이트 모드</p>' +
+                    '<p class="text-[11px] text-gray-500">주간·인쇄 친화 · 고대비</p>' +
+                '</button>' +
+            '</div>' +
+            '<h4 class="font-semibold text-xs text-gray-400 mb-2">템플릿 톤앤매너</h4>' +
+            '<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">' +
+            APPEARANCE_TONES.map(function(t) {
+                return '<button type="button" class="appearance-swatch' + (ap.tone === t.id ? ' active' : '') + '" onclick="previewAppearance(null,\'' + t.id + '\')">' +
+                    '<input type="radio" name="set-appearance-tone" value="' + t.id + '" ' + (ap.tone === t.id ? 'checked' : '') + ' class="sr-only">' +
+                    '<div class="swatch-bar" style="--sw1:' + t.sw1 + ';--sw2:' + t.sw2 + '"></div>' +
+                    '<p class="text-sm font-bold">' + t.label + '</p>' +
+                    '<p class="text-[11px] text-gray-500 mt-0.5">' + t.desc + '</p>' +
+                '</button>';
+            }).join('') +
+            '</div>' +
+            '<div class="appearance-preview" aria-live="polite">' +
+                '<p class="pv-title">미리보기 · 가독성 체크</p>' +
+                '<p class="pv-muted">본문·보조 텍스트가 배경과 구분되는지 확인하세요. 톤은 강조색만 변경합니다.</p>' +
+                '<span class="pv-btn">Primary 버튼</span>' +
+            '</div>' +
+            '<div class="flex flex-wrap gap-2 mt-5">' +
+                '<button type="button" onclick="saveAppearanceSettings()" class="text-xs font-semibold px-4 py-2 rounded-lg bg-primary text-white">외관 저장 · 적용</button>' +
+                '<button type="button" onclick="previewAppearance(\'dark\',\'ocean\'); saveAppearanceSettings()" class="text-xs font-semibold px-4 py-2 rounded-lg border border-border hover:border-primary/40">기본값 복원</button>' +
+            '</div>';
     }
 
     el.innerHTML = html;
@@ -5108,6 +5228,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadComms();
         }
         loadSettings();
+        applyAppearanceSettings();
         if (typeof applyTenantCustomAfterLoad === 'function') applyTenantCustomAfterLoad();
         initDateRangePicker();
         updateCurrentUserUI();
