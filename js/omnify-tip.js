@@ -31,7 +31,7 @@
         {
             kicker: 'TIP 03 · 브리핑',
             title: '매일 08:30,\n카카오톡으로 보고',
-            punch: '어제 마진율, 오늘의 리스크, AI 한 줄 인사이트.\n사무실에 앉기 전에 이미 현황을 압니다.',
+            punch: '매출·마진·재고·발주·ROAS를 항목 ON/OFF로 조합.\n대시보드 미리보기와 같은 내용이 그대로 발송됩니다.',
             hook: '데일리 카카오 브리핑 — “보고받는 경영”으로 전환하세요.',
             voice: '출근길 카톡에 어제 마진이 먼저 와요. 자리 앉기 전에 할 말이 정해지니까 아침이 편해졌어요.',
             voiceBy: '생활용품 C사 운영이사',
@@ -177,18 +177,27 @@
                 '<div class="otip-kpi"><em>주문</em><div class="otip-kpi-row"><b>1,247</b><i class="up">▲9%</i></div></div>' +
                 '</div>',
             briefing:
-                '<div class="otip-mock otip-kakao">' +
-                '<div class="otip-kakao-head"><span class="otip-kakao-avatar">Om</span><div><b>Omnify 브리핑</b><em>알림톡 · 오늘 08:30</em></div></div>' +
-                '<div class="otip-kakao-thread">' +
-                '<div class="otip-kakao-bubble">' +
-                '<p class="k-title">[Omnify] 데일리 브리핑</p>' +
-                '<p>어제 통합 마진 <b>31.8%</b> (전일 대비 ▲1.2%p)</p>' +
-                '<p>쿠팡 마진 <b>24.3%</b> ↓2.1%p · 점검 권고</p>' +
-                '<p class="k-ai">AI: 메타 예산 15% → ROAS 상위 소재로 재배분 시 월 약 ₩420만 절감 예상</p>' +
-                '<p class="k-time">오전 8:30</p>' +
+                '<div class="otip-mock otip-brief-phone">' +
+                '<p class="otip-brief-cap">오늘 발송될 브리핑 미리보기 (설정 반영)</p>' +
+                '<div class="otip-brief-frame">' +
+                '<div class="otip-brief-top"><span class="otip-brief-avatar"></span><b>(주)SAMPLE</b></div>' +
+                '<div class="otip-brief-body">' +
+                '<div class="otip-brief-card">' +
+                '<div class="otip-brief-badge">알림톡 도착</div>' +
+                '<div class="otip-brief-inner">' +
+                '<p class="k-sub">(주)SAMPLE 데일리 리포트</p>' +
+                '<p class="k-head">📊 옴니채널 브리핑</p>' +
+                '<p>안녕하세요, <strong>김지현 대표님</strong>!</p>' +
+                '<p>어제 전 채널 통합 매출: <strong>₩2,845만</strong> (전일 대비 +8.2%)</p>' +
+                '<p>통합 마진율: <strong>31.8%</strong> (목표 30%)</p>' +
+                '<p><span class="k-warn">⚠️ 위험 재고 3건</span> · 히트 세럼 잔여 24개</p>' +
+                '<p>📋 미처리 발주: <strong>184건</strong></p>' +
+                '<p>🔗 API 상태: 전 채널 정상</p>' +
+                '<p>📉 쿠팡 ROAS 주의 · 평균 ROAS <strong>3.42x</strong></p>' +
+                '<div class="otip-brief-cta">대시보드 바로가기</div>' +
                 '</div></div>' +
-                '<div class="otip-kakao-input">메시지 입력…</div>' +
-                '</div>',
+                '<p class="otip-brief-time">오전 8:30 · 수신 3명 한도</p>' +
+                '</div></div></div>',
             orders:
                 '<div class="otip-mock otip-mock-orders">' +
                 '<div class="otip-ord-head"><span>주문번호</span><span>송장</span><span>상태</span></div>' +

@@ -127,12 +127,14 @@ var DashboardGuide = (function () {
         },
         'menu-datahub': {
             view: 'view-datahub', menu: '누적 데이터 DB', title: '누적 데이터 DB',
-            summary: '채널·기간별 원시·집계 데이터를 테이블로 조회·정렬·보냅니다.',
-            keywords: ['DB', '데이터', '테이블', '엑셀', 'CSV', '누적'],
+            summary: '일/주/월/연 매출 추이·채널 비중·집계 테이블을 조회하고 CSV/Excel/PDF로 보냅니다.',
+            keywords: ['DB', '데이터', '테이블', '엑셀', 'CSV', '누적', '추이', '일간', '주간', '월간', '연간'],
             faq: [
-                { q: '어떤 데이터가 쌓이나요?', a: '주문, 정산, 재고 스냅샷, 광고 성과 등 API·배치로 수집된 레코드입니다.' },
-                { q: '정렬·검색은?', a: '컬럼 헤더 클릭으로 정렬, 상단 검색창으로 SKU·주문번호 등을 필터링할 수 있습니다.' },
-                { q: '보내기는?', a: 'Excel/PDF 버튼으로 현재 필터 결과를 다운로드할 수 있습니다(데모에서는 안내만 표시).' }
+                { q: '어떤 데이터가 쌓이나요?', a: '주문·정산·재고 스냅샷·광고 성과 등 API·배치로 수집된 집계 레코드입니다(데모는 목업).' },
+                { q: '매출 추이 차트는?', a: '과거→현재 순. 일간·주간·월간·연간 탭으로 단위를 바꿉니다. 시즌·요일·성장 패턴이 반영된 데모 곡선입니다.' },
+                { q: '정렬·검색은?', a: '컬럼 헤더로 정렬, 상단 검색으로 기간·채널 텍스트를 필터합니다.' },
+                { q: '보내기는?', a: 'CSV/Excel은 집계 테이블 다운로드, PDF는 화면 캡처형 리포트입니다. 원시 대용량 덤프는 차단됩니다.' },
+                { q: '채널 비중 도넛은?', a: '최근 구간의 채널 weight 기준 비중입니다. 범례는 최대 12채널까지 표시합니다.' }
             ]
         },
         'menu-briefing': {
@@ -224,12 +226,13 @@ var DashboardGuide = (function () {
         },
         'menu-settings': {
             view: 'view-settings', menu: '설정', title: '설정',
-            summary: 'KPI 목표, 마진·채널, 재고 규칙, 팀·좌석, 광고 매체 등 시스템 기준값을 관리합니다.',
-            keywords: ['설정', 'KPI', '목표', '채널', '마진', '광고', '좌석', '팀'],
+            summary: 'KPI·마진·재고·팀 좌석·광고·외관(다크/라이트) 등 시스템 기준값을 관리합니다.',
+            keywords: ['설정', 'KPI', '목표', '채널', '마진', '광고', '좌석', '팀', '테마', '라이트', '다크'],
             faq: [
-                { q: '탭별 역할은?', a: '「팀 · 좌석」에서 로그인 계정을 관리하고, KPI·마진·재고·판매처·광고 매체를 설정합니다.' },
-                { q: '저장은 즉시 반영되나요?', a: '데모에서는 localStorage에 저장되며 대시보드 KPI·알림 기준에 반영됩니다.' },
-                { q: '초기화는?', a: '설정 화면 하단 「초기화」로 기본값 복원이 가능합니다.' }
+                { q: '탭별 역할은?', a: '「팀 · 좌석」에서 계정, KPI·마진·재고·판매처·광고 매체, 외관(테마·톤)을 설정합니다.' },
+                { q: '저장은 즉시 반영되나요?', a: '데모에서는 localStorage에 저장되며 KPI·알림·테마에 반영됩니다.' },
+                { q: '라이트/다크 전환은?', a: '설정 외관에서 테마를 바꾸면 전체 토큰 색이 전환됩니다. 라이트는 대비 강화 토큰을 씁니다.' },
+                { q: '초기화는?', a: '설정 하단 「초기화」로 기본값 복원이 가능합니다.' }
             ]
         },
         'settings-team': {
@@ -245,10 +248,13 @@ var DashboardGuide = (function () {
         },
         'header-date-range': {
             view: null, menu: '공통 · 헤더', title: '날짜 범위 선택',
-            summary: '대시보드 전역 KPI·차트·DB 조회 기간을 변경합니다.',
-            keywords: ['날짜', '기간', '7일', '30일', '범위'],
+            summary: '오늘·전일·주·월·연 프리셋과 직접 지정으로 전역 KPI·차트 기간을 바꿉니다.',
+            keywords: ['날짜', '기간', '7일', '30일', '범위', '오늘', '어제', '이번주', '지난주', '이번달', '직접지정', '커스텀'],
             faq: [
-                { q: '어디에 적용되나요?', a: '통합 대시보드 KPI, 차트, 데이터 DB, 수익성 분석 등 날짜 기반 화면 전체에 적용됩니다.' }
+                { q: '어디에 적용되나요?', a: '통합 대시보드 KPI·차트 배율, 누적 DB 추이 기준, 헤더 부제 등 날짜 기반 화면에 반영됩니다.' },
+                { q: '프리셋에 어떤 것이 있나요?', a: '오늘·전일, 이번/지난 주, 최근 7·14일, 이번/지난달, 최근 30·90일, 올해·작년, 그리고 시작·종료 직접 지정이 있습니다.' },
+                { q: '직접 지정은?', a: '기간 메뉴 → 「직접 지정」 → 시작·종료일 → 「적용」. 잘못된 순서(종료<시작)면 경고가 뜹니다.' },
+                { q: '선택이 유지되나요?', a: '브라우저 localStorage에 프리셋·커스텀 날짜가 저장되어 새로고침 후에도 유지됩니다(데모).' }
             ]
         },
         'header-command': {
@@ -840,19 +846,142 @@ var DashboardGuide = (function () {
 
     function scoreGuide(item, q) {
         if (!q) return 1;
-        var tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
+        var tokens = tokenize(q);
         if (!tokens.length) return 1;
-        var blob = (item.title + ' ' + item.menu + ' ' + item.summary + ' ' + (item.keywords || []).join(' ') + ' ' +
+        var blob = (item.title + ' ' + item.menu + ' ' + (item.summary || '') + ' ' + (item.keywords || []).join(' ') + ' ' +
             (item.faq || []).map(function (f) { return f.q + ' ' + f.a; }).join(' ')).toLowerCase();
         var score = 0;
         tokens.forEach(function (t) {
             if (blob.indexOf(t) >= 0) score += 10;
-            if (item.title.toLowerCase().indexOf(t) >= 0) score += 8;
+            if (item.title.toLowerCase().indexOf(t) >= 0) score += 12;
             (item.keywords || []).forEach(function (k) {
-                if (k.toLowerCase().indexOf(t) >= 0) score += 5;
+                var kl = k.toLowerCase();
+                if (kl === t) score += 14;
+                else if (kl.indexOf(t) >= 0 || t.indexOf(kl) >= 0) score += 7;
+            });
+            if (t.length >= 2) {
+                for (var i = 0; i < t.length - 1; i++) {
+                    if (blob.indexOf(t.slice(i, i + 2)) >= 0) score += 1;
+                }
+            }
+        });
+        if (modalFilterView && item.view === modalFilterView) score += 6;
+        return score;
+    }
+
+    function getSynonymMap() {
+        return (window.DashboardGuideKB && window.DashboardGuideKB.synonyms) || {};
+    }
+
+    function tokenize(raw) {
+        var q = String(raw || '').toLowerCase()
+            .replace(/[?!.,，。·？！]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        if (!q) return [];
+        var stop = {
+            '은': 1, '는': 1, '이': 1, '가': 1, '을': 1, '를': 1, '에': 1, '의': 1, '로': 1, '으로': 1,
+            '와': 1, '과': 1, '도': 1, '만': 1, '에서': 1, '까지': 1, '부터': 1, '하다': 1, '하는': 1, '한': 1,
+            '좀': 1, '혹시': 1, '알려줘': 1, '알려주세요': 1, '뭐야': 1, '무엇': 1, '어떻게': 1, '어디': 1,
+            '있나요': 1, '있어요': 1, '인가요': 1, '할까': 1, '싶은': 1, '해주세요': 1, '해줘': 1
+        };
+        var parts = q.split(/\s+/).filter(Boolean);
+        var out = [];
+        var syn = getSynonymMap();
+        parts.forEach(function (p) {
+            if (p.length >= 2 && !stop[p]) out.push(p);
+            if (/[가-힣]{4,}/.test(p)) {
+                for (var i = 0; i < p.length - 1; i++) {
+                    var bi = p.slice(i, i + 2);
+                    if (!stop[bi]) out.push(bi);
+                }
+            }
+            Object.keys(syn).forEach(function (key) {
+                var list = syn[key];
+                var hit = list.some(function (s) { return p.indexOf(s) >= 0 || s.indexOf(p) >= 0; });
+                if (hit) list.forEach(function (s) { out.push(s); });
             });
         });
+        Object.keys(syn).forEach(function (key) {
+            syn[key].forEach(function (s) {
+                if (s.length >= 2 && q.indexOf(s) >= 0) {
+                    out.push(s);
+                    syn[key].forEach(function (x) { out.push(x); });
+                }
+            });
+        });
+        var uniq = [];
+        out.forEach(function (t) { if (uniq.indexOf(t) < 0) uniq.push(t); });
+        return uniq;
+    }
+
+    function knowledgeList() {
+        var base = allGuidesList();
+        var extras = (window.DashboardGuideKB && window.DashboardGuideKB.extras) || [];
+        return base.concat(extras.map(function (g) {
+            return {
+                id: g.id, view: g.view, menu: g.menu, title: g.title,
+                summary: g.summary || '', keywords: g.keywords || [], faq: g.faq || []
+            };
+        }));
+    }
+
+    function flattenFaqs(items) {
+        var rows = [];
+        items.forEach(function (item) {
+            (item.faq || []).forEach(function (f, idx) {
+                rows.push({
+                    guideId: item.id, faqIndex: idx, view: item.view, menu: item.menu,
+                    title: item.title, keywords: item.keywords || [], summary: item.summary || '',
+                    q: f.q, a: f.a
+                });
+            });
+        });
+        return rows;
+    }
+
+    function scoreFaqRow(row, tokens, rawQ) {
+        if (!tokens.length) return 0;
+        var qLow = row.q.toLowerCase();
+        var aLow = row.a.toLowerCase();
+        var titleLow = (row.title + ' ' + row.menu).toLowerCase();
+        var kw = (row.keywords || []).join(' ').toLowerCase();
+        var raw = String(rawQ || '').toLowerCase();
+        var score = 0;
+        tokens.forEach(function (t) {
+            if (qLow.indexOf(t) >= 0) score += 28;
+            if (titleLow.indexOf(t) >= 0) score += 14;
+            if (kw.indexOf(t) >= 0) score += 12;
+            if (aLow.indexOf(t) >= 0) score += 6;
+            if (row.summary && row.summary.toLowerCase().indexOf(t) >= 0) score += 4;
+        });
+        var qTokens = tokenize(row.q);
+        var overlap = 0;
+        tokens.forEach(function (t) { if (qTokens.indexOf(t) >= 0) overlap += 1; });
+        if (qTokens.length) score += Math.round((overlap / Math.max(qTokens.length, 1)) * 40);
+        if (raw && qLow.indexOf(raw.replace(/\s+/g, '')) >= 0) score += 20;
+        if (modalFilterView && row.view === modalFilterView) score += 8;
+        if (/어떻게|어디|방법|하려면|할까|차이|몇\s*명|비용|요금|가능/.test(raw)) score += 3;
         return score;
+    }
+
+    function searchAnswers(query, limit) {
+        limit = limit || 5;
+        var tokens = tokenize(query);
+        var rows = flattenFaqs(knowledgeList());
+        if (!query || !String(query).trim()) return [];
+        var scored = rows.map(function (r) {
+            return { row: r, score: scoreFaqRow(r, tokens, query) };
+        }).filter(function (x) { return x.score >= 18; })
+            .sort(function (a, b) { return b.score - a.score; });
+        var seen = {};
+        var out = [];
+        scored.forEach(function (x) {
+            if (seen[x.row.q]) return;
+            seen[x.row.q] = 1;
+            out.push(x);
+        });
+        return out.slice(0, limit);
     }
 
     function renderGuideList(items, expandId) {
@@ -866,18 +995,19 @@ var DashboardGuide = (function () {
         }
         if (emptyEl) emptyEl.classList.add('hidden');
         listEl.innerHTML = items.map(function (item) {
-            var open = expandId === item.id ? ' open' : '';
             var faqHtml = (item.faq || []).map(function (f, i) {
                 return '<details class="dg-faq-item"' + (expandId === item.id && i === 0 ? ' open' : '') + '>' +
                     '<summary>' + escapeHtml(f.q) + '</summary>' +
                     '<p>' + escapeHtml(f.a) + '</p></details>';
             }).join('');
-            var goBtn = item.view ? '<button type="button" class="dg-go-btn" data-view="' + item.view + '">해당 화면으로 이동 →</button>' : '';
+            var goBtn = item.view
+                ? '<button type="button" class="dg-go-btn" data-view="' + item.view + '">해당 화면으로 이동 →</button>'
+                : '';
             return '<article class="dg-guide-card" data-id="' + item.id + '">' +
                 '<div class="dg-guide-card-head">' +
                 '<span class="dg-guide-menu">' + escapeHtml(item.menu) + '</span>' +
                 '<h4>' + escapeHtml(item.title) + '</h4>' +
-                '<p class="dg-guide-summary">' + escapeHtml(item.summary) + '</p>' +
+                '<p class="dg-guide-summary">' + escapeHtml(item.summary || '') + '</p>' +
                 goBtn +
                 '</div>' +
                 '<div class="dg-faq-block">' + faqHtml + '</div>' +
@@ -885,9 +1015,8 @@ var DashboardGuide = (function () {
         }).join('');
         listEl.querySelectorAll('.dg-go-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var v = btn.dataset.view;
                 closeModal();
-                if (typeof navigateTo === 'function') navigateTo(v);
+                if (typeof navigateTo === 'function') navigateTo(btn.dataset.view);
             });
         });
     }
@@ -897,9 +1026,11 @@ var DashboardGuide = (function () {
     }
 
     function filterGuides(query, viewOnly) {
-        var items = allGuidesList();
+        var items = knowledgeList();
         if (viewOnly) {
-            items = items.filter(function (it) { return it.view === viewOnly || it.id === MENU_GUIDE_MAP[viewOnly]; });
+            items = items.filter(function (it) {
+                return it.view === viewOnly || it.id === MENU_GUIDE_MAP[viewOnly];
+            });
         }
         if (query && query.trim()) {
             items = items.map(function (it) {
@@ -916,12 +1047,135 @@ var DashboardGuide = (function () {
         return items;
     }
 
+    var guideMode = 'chat';
+    var chatHistory = [];
+
+    function setGuideMode(mode) {
+        guideMode = mode === 'list' ? 'list' : 'chat';
+        var chatPane = document.getElementById('dg-chat-pane');
+        var listPane = document.getElementById('dg-list-pane');
+        var tabChat = document.getElementById('dg-tab-chat');
+        var tabList = document.getElementById('dg-tab-list');
+        if (chatPane) chatPane.classList.toggle('hidden', guideMode !== 'chat');
+        if (listPane) listPane.classList.toggle('hidden', guideMode !== 'list');
+        if (tabChat) tabChat.classList.toggle('active', guideMode === 'chat');
+        if (tabList) tabList.classList.toggle('active', guideMode === 'list');
+        if (guideMode === 'list') {
+            var input = document.getElementById('dg-guide-search');
+            renderModal(input ? input.value : '');
+        }
+    }
+
+    function renderChips() {
+        var el = document.getElementById('dg-chat-chips');
+        if (!el) return;
+        var chips = (window.DashboardGuideKB && window.DashboardGuideKB.chips) || [];
+        el.innerHTML = chips.map(function (c) {
+            return '<button type="button" class="dg-chip" data-q="' + escapeHtml(c) + '">' + escapeHtml(c) + '</button>';
+        }).join('');
+        el.querySelectorAll('.dg-chip').forEach(function (btn) {
+            btn.addEventListener('click', function () { askGuideChat(btn.getAttribute('data-q')); });
+        });
+    }
+
+    function renderChatThread() {
+        var el = document.getElementById('dg-chat-thread');
+        if (!el) return;
+        if (!chatHistory.length) {
+            el.innerHTML =
+                '<div class="dg-msg bot"><div class="dg-msg-bubble">' +
+                '<p class="dg-msg-lead">안녕하세요. Omnify 사용 도우미입니다.</p>' +
+                '<p>스펙 기반 FAQ를 고감도로 검색해 답합니다. 예: 「좌석과 뷰어 차이」, 「직접 지정 기간」, 「사방넷만 되나요?」</p>' +
+                '<p class="dg-msg-note">※ 로컬 지식베이스 챗봇입니다. 실시간 LLM이 아니며, 추후 AI API로 확장 가능합니다.</p>' +
+                '</div></div>';
+            return;
+        }
+        el.innerHTML = chatHistory.map(function (m) {
+            if (m.role === 'user') {
+                return '<div class="dg-msg user"><div class="dg-msg-bubble">' + escapeHtml(m.text) + '</div></div>';
+            }
+            var extras = '';
+            if (m.related && m.related.length) {
+                extras += '<div class="dg-related">' + m.related.map(function (r) {
+                    return '<button type="button" class="dg-related-btn" data-q="' + escapeHtml(r.q) + '">' +
+                        escapeHtml(r.q) + '</button>';
+                }).join('') + '</div>';
+            }
+            var go = m.view
+                ? '<button type="button" class="dg-go-btn dg-chat-go" data-view="' + m.view + '">해당 화면으로 이동 →</button>'
+                : '';
+            var conf = m.confidence != null
+                ? '<span class="dg-conf">' + (m.confidence >= 70 ? '높은 일치' : m.confidence >= 40 ? '관련 답변' : '참고 답변') + '</span>'
+                : '';
+            return '<div class="dg-msg bot"><div class="dg-msg-bubble">' +
+                (m.menu ? '<span class="dg-msg-tag">' + escapeHtml(m.menu) + '</span>' : '') +
+                conf +
+                (m.q ? '<p class="dg-msg-q">' + escapeHtml(m.q) + '</p>' : '') +
+                '<p class="dg-msg-a">' + escapeHtml(m.text) + '</p>' +
+                go + extras +
+                '</div></div>';
+        }).join('');
+        el.querySelectorAll('.dg-chat-go').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                closeModal();
+                if (typeof navigateTo === 'function') navigateTo(btn.dataset.view);
+            });
+        });
+        el.querySelectorAll('.dg-related-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () { askGuideChat(btn.getAttribute('data-q')); });
+        });
+        el.scrollTop = el.scrollHeight;
+    }
+
+    function askGuideChat(raw) {
+        var q = String(raw || '').trim();
+        if (!q) return;
+        setGuideMode('chat');
+        chatHistory.push({ role: 'user', text: q });
+        var hits = searchAnswers(q, 5);
+        if (!hits.length) {
+            chatHistory.push({
+                role: 'bot',
+                text: '정확히 맞는 FAQ를 찾지 못했습니다. 키워드를 바꿔 보시거나 「목록」 탭에서 메뉴별 가이드를 둘러보세요. 예: 좌석, 알림톡, 사방넷, 기간, ROAS, CSV.',
+                related: ((window.DashboardGuideKB && window.DashboardGuideKB.chips) || []).slice(0, 4).map(function (c) {
+                    return { q: c };
+                })
+            });
+        } else {
+            var best = hits[0];
+            chatHistory.push({
+                role: 'bot',
+                q: best.row.q,
+                text: best.row.a,
+                menu: best.row.menu + ' · ' + best.row.title,
+                view: best.row.view,
+                confidence: Math.min(99, Math.round(Math.min(best.score, 120) / 120 * 100)),
+                related: hits.slice(1, 4).map(function (h) { return { q: h.row.q }; })
+            });
+        }
+        var input = document.getElementById('dg-chat-input');
+        if (input) input.value = '';
+        var listSearch = document.getElementById('dg-guide-search');
+        if (listSearch) listSearch.value = q;
+        renderChatThread();
+        updateGuideCountLabel(hits.length);
+    }
+
+    function updateGuideCountLabel(n) {
+        var countEl = document.getElementById('dg-guide-count');
+        if (!countEl) return;
+        if (guideMode === 'chat') {
+            var totalFaq = flattenFaqs(knowledgeList()).length;
+            countEl.textContent = '지식 ' + totalFaq + '개 FAQ · 매칭 ' + (n != null ? n : '—') + '건';
+        } else {
+            countEl.textContent = n + '개 항목';
+        }
+    }
+
     function renderModal(query) {
         var items = filterGuides(query, modalFilterView || '');
-        var expandId = items.length === 1 ? items[0].id : '';
-        renderGuideList(items, expandId);
-        var countEl = document.getElementById('dg-guide-count');
-        if (countEl) countEl.textContent = items.length + '개 항목';
+        renderGuideList(items, items.length === 1 ? items[0].id : '');
+        updateGuideCountLabel(items.length);
     }
 
     function openModal(focusGuideId, viewFilter) {
@@ -930,9 +1184,12 @@ var DashboardGuide = (function () {
         modalFilterView = viewFilter || activeView || '';
         modal.classList.add('open');
         document.body.classList.add('dg-modal-open');
-        var input = document.getElementById('dg-guide-search');
+        renderChips();
+        updateGuideCountLabel(0);
         if (focusGuideId && getGuide(focusGuideId)) {
+            setGuideMode('list');
             var g = getGuide(focusGuideId);
+            var input = document.getElementById('dg-guide-search');
             if (input) input.value = g.title;
             renderModal(g.title);
             setTimeout(function () {
@@ -940,9 +1197,10 @@ var DashboardGuide = (function () {
                 if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 80);
         } else {
-            if (input) input.value = '';
-            renderModal('');
-            if (input) input.focus();
+            setGuideMode('chat');
+            if (!chatHistory.length) renderChatThread();
+            var chatInput = document.getElementById('dg-chat-input');
+            if (chatInput) chatInput.focus();
         }
         updateViewFilterLabel();
     }
@@ -1018,11 +1276,32 @@ var DashboardGuide = (function () {
                 });
             }
         }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modal && modal.classList.contains('open')) closeModal();
+        });
+
+        var tabChat = document.getElementById('dg-tab-chat');
+        var tabList = document.getElementById('dg-tab-list');
+        if (tabChat) tabChat.addEventListener('click', function () { setGuideMode('chat'); renderChatThread(); });
+        if (tabList) tabList.addEventListener('click', function () { setGuideMode('list'); });
+
+        var chatForm = document.getElementById('dg-chat-form');
+        if (chatForm) {
+            chatForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var input = document.getElementById('dg-chat-input');
+                askGuideChat(input ? input.value : '');
+            });
+        }
+
         var searchInput = document.getElementById('dg-guide-search');
         if (searchInput) {
             searchInput.addEventListener('input', function () { renderModal(searchInput.value); });
             searchInput.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') closeModal();
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    askGuideChat(searchInput.value);
+                }
             });
         }
         var clearFilter = document.getElementById('dg-guide-clear-filter');
@@ -1030,16 +1309,18 @@ var DashboardGuide = (function () {
             clearFilter.addEventListener('click', function () {
                 modalFilterView = '';
                 updateViewFilterLabel();
-                renderModal(searchInput ? searchInput.value : '');
+                if (guideMode === 'list') renderModal(searchInput ? searchInput.value : '');
             });
         }
+
+        renderChips();
         bindNavTooltips();
         bindHeaderWidgets();
         bindTooltipsForView(activeView);
         if (typeof showToast === 'function' && !sessionStorage.getItem('dg_hint_shown')) {
             sessionStorage.setItem('dg_hint_shown', '1');
             setTimeout(function () {
-                showToast('💡 우측 하단 가이드 버튼에서 FAQ를 검색하세요. (카드 호버 툴팁은 정식 대시보드에서 비활성)', 'info');
+                showToast('💡 사용가이드가 챗봇형으로 업그레이드되었습니다. 우측 하단에서 질문해 보세요.', 'info');
             }, 1200);
         }
     }
@@ -1049,7 +1330,10 @@ var DashboardGuide = (function () {
         onViewChange: onViewChange,
         refresh: refresh,
         open: openModal,
+        openModal: openModal,
         close: closeModal,
+        closeModal: closeModal,
+        ask: askGuideChat,
         getGuide: getGuide
     };
 })();

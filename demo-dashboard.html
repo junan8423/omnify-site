@@ -1604,6 +1604,92 @@
         }
         .dg-guide-close:hover { color: #fff; background: rgba(31, 41, 55, 0.8); }
         .dg-guide-head { position: relative; }
+        .dg-mode-tabs {
+            display: inline-flex; gap: 0.25rem; margin: 0.65rem 0 0.35rem;
+            padding: 0.2rem; border-radius: 0.65rem; background: rgba(15,23,42,0.55);
+            border: 1px solid rgba(55,65,81,0.7);
+        }
+        .dg-mode-tab {
+            border: 0; background: transparent; color: #94a3b8;
+            font-size: 0.75rem; font-weight: 750; padding: 0.35rem 0.85rem;
+            border-radius: 0.5rem; cursor: pointer;
+        }
+        .dg-mode-tab.active { background: rgba(59,130,246,0.25); color: #e2e8f0; }
+        .dg-chat-pane {
+            display: flex; flex-direction: column; flex: 1; min-height: 0;
+            padding: 0 1.1rem 1rem;
+        }
+        .dg-chat-pane.hidden, .dg-guide-body.hidden { display: none !important; }
+        .dg-chat-thread {
+            flex: 1; min-height: 14rem; max-height: 42vh; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 0.65rem; padding: 0.35rem 0.15rem 0.75rem;
+        }
+        .dg-msg { display: flex; }
+        .dg-msg.user { justify-content: flex-end; }
+        .dg-msg.bot { justify-content: flex-start; }
+        .dg-msg-bubble {
+            max-width: 92%; padding: 0.7rem 0.85rem; border-radius: 0.85rem;
+            font-size: 0.82rem; line-height: 1.55;
+        }
+        .dg-msg.user .dg-msg-bubble {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
+            border-bottom-right-radius: 0.3rem;
+        }
+        .dg-msg.bot .dg-msg-bubble {
+            background: rgba(30,41,59,0.9); border: 1px solid rgba(71,85,105,0.7); color: #e2e8f0;
+            border-bottom-left-radius: 0.3rem;
+        }
+        .dg-msg-lead { font-weight: 800; margin: 0 0 0.35rem; color: #f8fafc; }
+        .dg-msg-note { margin: 0.45rem 0 0; font-size: 0.7rem; color: #94a3b8; }
+        .dg-msg-tag {
+            display: inline-block; font-size: 0.65rem; font-weight: 750; color: #93c5fd;
+            margin-bottom: 0.25rem; margin-right: 0.35rem;
+        }
+        .dg-conf {
+            display: inline-block; font-size: 0.62rem; font-weight: 700; color: #86efac;
+            background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+            padding: 0.1rem 0.4rem; border-radius: 999px; margin-bottom: 0.35rem;
+        }
+        .dg-msg-q { margin: 0.2rem 0 0.35rem; font-weight: 750; color: #f1f5f9; }
+        .dg-msg-a { margin: 0; color: #cbd5e1; }
+        .dg-related { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.55rem; }
+        .dg-related-btn, .dg-chip {
+            border: 1px solid rgba(71,85,105,0.85); background: rgba(15,23,42,0.55);
+            color: #cbd5e1; font-size: 0.68rem; font-weight: 650;
+            padding: 0.28rem 0.55rem; border-radius: 999px; cursor: pointer; text-align: left;
+        }
+        .dg-related-btn:hover, .dg-chip:hover {
+            border-color: rgba(96,165,250,0.55); color: #fff; background: rgba(37,99,235,0.18);
+        }
+        .dg-chat-chips {
+            display: flex; flex-wrap: wrap; gap: 0.35rem;
+            max-height: 4.8rem; overflow-y: auto; margin-bottom: 0.55rem;
+        }
+        .dg-chat-form { display: flex; gap: 0.45rem; }
+        .dg-chat-input {
+            flex: 1; min-width: 0; padding: 0.65rem 0.8rem; border-radius: 0.7rem;
+            border: 1px solid rgba(71,85,105,0.85); background: rgba(15,23,42,0.7);
+            color: #f8fafc; font-size: 0.85rem;
+        }
+        .dg-chat-input:focus { outline: none; border-color: rgba(59,130,246,0.55); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .dg-chat-send {
+            padding: 0 1rem; border-radius: 0.7rem; border: 0;
+            background: #2563eb; color: #fff; font-weight: 800; font-size: 0.82rem; cursor: pointer;
+        }
+        .dg-chat-send:hover { filter: brightness(1.06); }
+        .dg-msg .dg-go-btn { margin-top: 0.55rem; }
+        html[data-theme="light"] .dg-msg.bot .dg-msg-bubble {
+            background: #f8fafc; border-color: #cbd5e1; color: #1e293b;
+        }
+        html[data-theme="light"] .dg-msg-a { color: #334155; }
+        html[data-theme="light"] .dg-msg-q { color: #0f172a; }
+        html[data-theme="light"] .dg-chat-input {
+            background: #fff; border-color: #cbd5e1; color: #0f172a;
+        }
+        html[data-theme="light"] .dg-chip,
+        html[data-theme="light"] .dg-related-btn {
+            background: #fff; border-color: #cbd5e1; color: #334155;
+        }
     </style>
 </head>
 <body class="flex h-screen selection:bg-primary selection:text-white">
@@ -2046,18 +2132,16 @@
 
 <!-- 사용가이드 모달 -->
 <div id="dg-guide-modal" class="dg-guide-modal" aria-hidden="true" role="dialog" aria-labelledby="dg-guide-title">
-    <div class="dg-guide-panel">
+    <div class="dg-guide-panel dg-guide-panel-chat">
         <div class="dg-guide-head">
             <button type="button" class="dg-guide-close" data-dg-close aria-label="닫기">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-            <h2 id="dg-guide-title">사용가이드</h2>
-            <p>메뉴·기능별 FAQ를 검색하세요. 우측 하단 가이드 버튼으로 언제든 열 수 있습니다.</p>
-            <div class="dg-guide-search-wrap">
-                <div class="dg-search-field">
-                    <svg class="dg-search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="search" id="dg-guide-search" class="dg-guide-search" placeholder="예: 마진, 재고, 알림톡, API, 발주…" autocomplete="off">
-                </div>
+            <h2 id="dg-guide-title">Omnify 사용 도우미</h2>
+            <p>질문을 입력하면 스펙·FAQ 지식베이스에서 고감도 매칭된 답을 돌려줍니다.</p>
+            <div class="dg-mode-tabs" role="tablist">
+                <button type="button" id="dg-tab-chat" class="dg-mode-tab active" role="tab" aria-selected="true">챗봇</button>
+                <button type="button" id="dg-tab-list" class="dg-mode-tab" role="tab" aria-selected="false">목록</button>
             </div>
             <div class="dg-guide-meta">
                 <span id="dg-guide-count">0개 항목</span>
@@ -2065,7 +2149,21 @@
                 <button type="button" id="dg-guide-clear-filter" class="dg-guide-clear hidden">전체 가이드 보기</button>
             </div>
         </div>
-        <div class="dg-guide-body">
+        <div id="dg-chat-pane" class="dg-chat-pane">
+            <div id="dg-chat-thread" class="dg-chat-thread" aria-live="polite"></div>
+            <div id="dg-chat-chips" class="dg-chat-chips" aria-label="추천 질문"></div>
+            <form id="dg-chat-form" class="dg-chat-form" autocomplete="off">
+                <input type="search" id="dg-chat-input" class="dg-chat-input" placeholder="예: 좌석과 뷰어 차이? 기간 직접 지정은?" maxlength="200">
+                <button type="submit" class="dg-chat-send">질문</button>
+            </form>
+        </div>
+        <div id="dg-list-pane" class="dg-guide-body hidden">
+            <div class="dg-guide-search-wrap" style="margin-bottom:0.75rem">
+                <div class="dg-search-field">
+                    <svg class="dg-search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="search" id="dg-guide-search" class="dg-guide-search" placeholder="목록에서 키워드 검색…" autocomplete="off">
+                </div>
+            </div>
             <div id="dg-guide-empty" class="dg-guide-empty hidden">검색 결과가 없습니다. 다른 키워드로 시도해 보세요.</div>
             <div id="dg-guide-list"></div>
         </div>
@@ -2096,7 +2194,8 @@
     <script src="js/cs-tickets.js?v=20260715-cs1"></script>
     <script src="js/dashboard-app.js?v=20260715-chart1"></script>
     <script src="js/dashboard-tier.js?v=20260715-ux2"></script>
-    <script src="js/dashboard-guide.js?v=20260715-ux3"></script>
+    <script src="js/dashboard-guide-kb.js?v=20260715-guidekb1"></script>
+    <script src="js/dashboard-guide.js?v=20260715-guidechat1"></script>
     <script>
     (function () {
         function wireCsDashboard() {

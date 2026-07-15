@@ -1288,40 +1288,62 @@
         .otip-kpi i.down { color: #fb7185; }
         .otip-kpi.warn { border-color: rgba(248, 113, 113, 0.45); }
         .otip-kpi.warn b { color: #fda4af; }
-        /* TIP 03 Kakao */
-        .otip-kakao {
-            background: #b2c7d9 !important;
-            border-color: #8eabbf !important;
-            padding: 0.65rem !important;
-            gap: 0.45rem;
+        /* TIP 03 — 데모 대시보드 브리핑 미리보기와 동일 톤 */
+        .otip-brief-phone {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            gap: 0.55rem;
         }
-        .otip-kakao-head {
+        .otip-brief-cap {
+            margin: 0; font-size: 0.7rem; font-weight: 700; color: #94a3b8;
+        }
+        .otip-brief-frame {
+            width: 100%; max-width: 300px; margin: 0 auto;
+            border-radius: 1rem; overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0,0,0,.35);
+        }
+        .otip-brief-top {
             display: flex; align-items: center; gap: 0.5rem;
-            padding: 0.35rem 0.4rem; border-radius: 0.55rem; background: rgba(255,255,255,.55);
+            background: #b2c7d9; padding: 0.5rem 0.85rem;
         }
-        .otip-kakao-avatar {
-            width: 2rem; height: 2rem; border-radius: 0.55rem;
-            display: flex; align-items: center; justify-content: center;
-            background: #fee500; color: #191919; font-weight: 900; font-size: 0.72rem;
+        .otip-brief-avatar {
+            width: 1.75rem; height: 1.75rem; border-radius: 999px; background: #9ca3af;
         }
-        .otip-kakao-head b { display: block; color: #191919; font-size: 0.8rem; }
-        .otip-kakao-head em { display: block; font-style: normal; font-size: 0.62rem; color: #4b5563; }
-        .otip-kakao-thread { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
-        .otip-kakao-bubble {
-            align-self: flex-start; max-width: 92%;
-            background: #fee500; color: #191919;
-            border-radius: 0.15rem 0.85rem 0.85rem 0.85rem;
-            padding: 0.7rem 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,.08);
-            font-size: 0.78rem; line-height: 1.55;
+        .otip-brief-top b { font-size: 0.8rem; color: #1f2937; font-weight: 800; }
+        .otip-brief-body { background: #a8c5d8; padding: 0.65rem; }
+        .otip-brief-card {
+            background: #fff; border-radius: 1rem; overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
         }
-        .otip-kakao-bubble p { margin: 0 0 0.35rem; }
-        .otip-kakao-bubble .k-title { font-weight: 800; margin-bottom: 0.45rem; }
-        .otip-kakao-bubble .k-ai { color: #3f3f46; font-size: 0.72rem; background: rgba(0,0,0,.06); padding: 0.35rem 0.4rem; border-radius: 0.4rem; }
-        .otip-kakao-bubble .k-time { margin: 0.35rem 0 0; font-size: 0.62rem; color: #71717a; text-align: right; }
-        .otip-kakao-input {
-            margin-top: 0.35rem; padding: 0.45rem 0.65rem; border-radius: 999px;
-            background: #fff; color: #9ca3af; font-size: 0.72rem;
+        .otip-brief-badge {
+            background: #fae100; color: #1f2937;
+            font-size: 0.7rem; font-weight: 800; padding: 0.45rem 0.85rem;
         }
+        .otip-brief-inner {
+            padding: 0.85rem 0.9rem 1rem;
+            color: #374151; font-size: 0.72rem; line-height: 1.55;
+        }
+        .otip-brief-inner p { margin: 0 0 0.4rem; }
+        .otip-brief-inner .k-sub { color: #9ca3af; font-size: 0.68rem; margin-bottom: 0.2rem; }
+        .otip-brief-inner .k-head {
+            color: #111827; font-size: 0.86rem; font-weight: 800; margin-bottom: 0.55rem;
+        }
+        .otip-brief-inner strong { color: #111827; font-weight: 800; }
+        .otip-brief-inner .k-warn { color: #b91c1c; font-weight: 750; }
+        .otip-brief-cta {
+            margin-top: 0.75rem; text-align: center;
+            background: #fae100; color: #111827;
+            font-size: 0.72rem; font-weight: 800;
+            padding: 0.55rem 0.65rem; border-radius: 0.55rem;
+        }
+        .otip-brief-time {
+            margin: 0.4rem 0 0; text-align: right;
+            font-size: 0.62rem; color: #4b5563; font-weight: 650;
+        }
+        /* legacy kakao (unused) kept minimal for safety */
+        .otip-kakao { background: #b2c7d9 !important; }
         /* TIP 04 orders */
         .otip-mock-orders { gap: 0.35rem; }
         .otip-ord-head, .otip-ord-row {
@@ -2989,7 +3011,7 @@
 })();
 </script>
 
-    <script src="js/omnify-tip.js?v=20260715-tip7"></script>
+    <script src="js/omnify-tip.js?v=20260715-tip8"></script>
 
 <a href="http://pf.kakao.com/_fxlxgwX" class="kakao-float no-print" target="_blank" rel="noopener noreferrer" aria-label="카카오채널 상담하기">
     <span class="kakao-float-icon" aria-hidden="true">
