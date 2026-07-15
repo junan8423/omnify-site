@@ -40,16 +40,76 @@
     }
 
     function toggleWatch(sku) {
+        sku = String(sku || '').trim();
+        if (!sku) return;
         var list = loadWatch();
         var i = list.indexOf(sku);
         if (i >= 0) list.splice(i, 1);
         else list.unshift(sku);
         saveWatch(list);
-        renderInventoryTable();
-        updateInvSummary();
-        if (typeof showToast === 'function') {
-            showToast(i >= 0 ? '관심 SKU에서 제거했습니다.' : '관심 SKU에 추가했습니다.', 'success');
+        // 관심 필터 중이면 목록에서 빠질 수 있으므로 전체 갱신, 아니면 해당 버튼만 갱신해 스크롤·순서 유지
+        if (invState.status === 'watch') {
+            renderInventoryTable();
+        } else {
+            updateWatchButton(sku, i < 0);
+            updateInvSummary();
         }
+        if (typeof showToast === 'function') {
+            showToast(i >= 0 ? '관심 SKU에서 제거했습니다.' : '관심 SKU에 추가했습니다. · ' + sku, 'success');
+        }
+    }
+
+    function escapeHtmlAttr(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function escapeHtmlText(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function updateWatchButton(sku, on) {
+        var rows = document.querySelectorAll('#inventory-tbody tr[data-sku]');
+        var row = null;
+        for (var i = 0; i < rows.length; i++) {
+            if (rows[i].getAttribute('data-sku') === sku) { row = rows[i]; break; }
+        }
+        if (!row) {
+            renderInventoryTable();
+            return;
+        }
+        var btn = row.querySelector('.inv-watch-btn');
+        if (!btn) return;
+        btn.classList.toggle('on', !!on);
+        btn.textContent = on ? '★' : '☆';
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+
+    function bindInventoryTableActions() {
+        var tbody = document.getElementById('inventory-tbody');
+        if (!tbody || tbody.dataset.invBound === '1') return;
+        tbody.dataset.invBound = '1';
+        tbody.addEventListener('click', function (e) {
+            var btn = e.target && e.target.closest ? e.target.closest('[data-action]') : null;
+            if (!btn || !tbody.contains(btn)) return;
+            var action = btn.getAttribute('data-action');
+            var sku = btn.getAttribute('data-sku') || '';
+            if (action === 'watch') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleWatch(sku);
+            } else if (action === 'copy-sku') {
+                e.preventDefault();
+                e.stopPropagation();
+                copyInventorySku(sku);
+            }
+        });
     }
 
     function hashStr(s) {
@@ -73,9 +133,9 @@
         var mismatch = Math.abs(channelSum - total) > 0;
         var status = raw.status || 'safe';
         var watched = isWatched(raw.sku);
+        // 관심 여부는 정렬에 넣지 않음 — ★ 토글 시 행이 위로 밀려 "위에서부터 선택"처럼 보이는 버그 방지
         var priority = (STATUS_ORDER[status] != null ? STATUS_ORDER[status] : 9) * 10000
             - gap * 10
-            - (watched ? 500 : 0)
             + Math.min(999, daysCover * 10);
         return {
             sku: raw.sku,
@@ -251,16 +311,16 @@
             var mismatchBadge = r.mismatch
                 ? '<span class="inv-mismatch-badge" title="채널 합계 ' + r.channelSum + ' ≠ 실재고 ' + r.total + '">불일치</span>'
                 : '';
-            return '<tr class="' + rowCls + '" data-sku="' + r.sku + '">' +
+            return '<tr class="' + rowCls + '" data-sku="' + escapeHtmlAttr(r.sku) + '">' +
                 '<td class="px-3 ' + py + ' text-center">' +
-                '<button type="button" class="inv-watch-btn' + (r.watched ? ' on' : '') + '" onclick="toggleInventoryWatch(\'' + r.sku + '\')" title="관심 SKU" aria-label="관심">' +
+                '<button type="button" class="inv-watch-btn' + (r.watched ? ' on' : '') + '" data-sku="' + escapeHtmlAttr(r.sku) + '" data-action="watch" title="관심 SKU" aria-label="관심" aria-pressed="' + (r.watched ? 'true' : 'false') + '">' +
                 (r.watched ? '★' : '☆') + '</button></td>' +
                 '<td class="px-3 ' + py + '">' +
-                '<button type="button" class="font-mono text-xs text-primary/90 hover:underline inv-sku-btn" onclick="copyInventorySku(\'' + r.sku + '\')" title="클릭하여 SKU 복사">' + r.sku + '</button>' +
+                '<button type="button" class="font-mono text-xs text-primary/90 hover:underline inv-sku-btn" data-sku="' + escapeHtmlAttr(r.sku) + '" data-action="copy-sku" title="클릭하여 SKU 복사">' + escapeHtmlText(r.sku) + '</button>' +
                 mismatchBadge +
                 '</td>' +
                 '<td class="px-4 ' + py + '">' +
-                '<p class="font-medium text-gray-100 leading-snug">' + r.name + '</p>' +
+                '<p class="font-medium text-gray-100 leading-snug">' + escapeHtmlText(r.name) + '</p>' +
                 '<div class="inv-fill-track mt-1.5" title="실재고/안전재고 ' + r.fillPct + '%">' +
                 '<div class="inv-fill-bar ' + barCls + '" style="width:' + barW + '%"></div></div>' +
                 '</td>' +
@@ -279,6 +339,7 @@
                 '<td class="px-3 ' + py + ' text-center">' + App.statusBadge(r.status) + '</td>' +
                 '</tr>';
         }).join('');
+        bindInventoryTableActions();
     }
 
     function setInventoryStatusFilter(status) {
@@ -507,6 +568,7 @@
         invState.lowCoverOnly = false;
         // keep pin/compact user prefs in session
         renderInventoryTable();
+        bindInventoryTableActions();
         requestAnimationFrame(function () {
             var input = document.getElementById('inv-search-input');
             if (input && window.innerWidth >= 768) input.focus();
