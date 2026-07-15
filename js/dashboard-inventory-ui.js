@@ -53,10 +53,58 @@
         } else {
             updateWatchButton(sku, i < 0);
             updateInvSummary();
+            syncWatchAllCheckbox();
         }
         if (typeof showToast === 'function') {
             showToast(i >= 0 ? '관심 SKU에서 제거했습니다.' : '관심 SKU에 추가했습니다. · ' + sku, 'success');
         }
+    }
+
+    /** 현재 필터된 목록 기준 관심 전체선택 / 전부해제 */
+    function toggleWatchAllVisible(forceSelect) {
+        var rows = getFilteredSorted();
+        if (!rows.length) {
+            if (typeof showToast === 'function') showToast('선택할 SKU가 없습니다.', 'info');
+            syncWatchAllCheckbox();
+            return;
+        }
+        var watchedCount = rows.filter(function (r) { return r.watched; }).length;
+        var selectAll = forceSelect != null ? !!forceSelect : watchedCount < rows.length;
+        var list = loadWatch();
+        var visible = {};
+        rows.forEach(function (r) { visible[r.sku] = 1; });
+
+        if (selectAll) {
+            rows.forEach(function (r) {
+                if (list.indexOf(r.sku) < 0) list.unshift(r.sku);
+            });
+            saveWatch(list);
+            renderInventoryTable();
+            if (typeof showToast === 'function') {
+                showToast('현재 목록 ' + rows.length + '건을 관심 SKU로 선택했습니다.', 'success');
+            }
+        } else {
+            list = list.filter(function (sku) { return !visible[sku]; });
+            saveWatch(list);
+            renderInventoryTable();
+            if (typeof showToast === 'function') {
+                showToast('현재 목록의 관심 선택을 모두 해제했습니다.', 'success');
+            }
+        }
+    }
+
+    function syncWatchAllCheckbox() {
+        var el = document.getElementById('inv-watch-all');
+        if (!el) return;
+        var rows = getFilteredSorted();
+        var watchedCount = rows.filter(function (r) { return r.watched; }).length;
+        var total = rows.length;
+        el.disabled = total === 0;
+        el.indeterminate = total > 0 && watchedCount > 0 && watchedCount < total;
+        el.checked = total > 0 && watchedCount === total;
+        el.title = total === 0
+            ? '선택할 SKU 없음'
+            : (el.checked ? '현재 목록 관심 전부 해제' : '현재 목록 관심 전체 선택');
     }
 
     function escapeHtmlAttr(s) {
@@ -297,6 +345,8 @@
                 '<p class="font-semibold text-gray-300 mb-1">조건에 맞는 SKU가 없습니다</p>' +
                 '<p class="text-xs">검색어·필터를 완화하거나 <button type="button" class="text-primary underline" onclick="resetInventoryFilters()">필터 초기화</button>를 눌러 주세요.</p>' +
                 '</td></tr>';
+            bindInventoryTableActions();
+            syncWatchAllCheckbox();
             return;
         }
 
@@ -340,6 +390,7 @@
                 '</tr>';
         }).join('');
         bindInventoryTableActions();
+        syncWatchAllCheckbox();
     }
 
     function setInventoryStatusFilter(status) {
@@ -532,7 +583,7 @@
 '      </div>' +
 '      <div class="flex flex-wrap justify-between items-center gap-2 text-[11px] text-gray-500">' +
 '        <span><strong class="text-gray-300" id="inv-result-count">0</strong> / <span id="inv-result-total">0</span>건 · 품절임박 <strong class="text-danger" id="inv-critical-count">0</strong></span>' +
-'        <span class="text-gray-600">열 헤더 클릭 = 정렬 · SKU 클릭 = 복사</span>' +
+'        <span class="text-gray-600">★ 헤더 = 현재목록 전체선택/해제 · SKU 클릭 = 복사</span>' +
 '      </div>' +
 '    </div>' +
 
@@ -540,7 +591,12 @@
 '      <table class="w-full text-sm" id="inventory-table">' +
 '        <thead class="text-gray-500 text-xs border-b border-border bg-surface/80 sticky top-0 z-10">' +
 '          <tr>' +
-'            <th class="px-3 py-3 text-center font-medium w-10" title="관심">★</th>' +
+'            <th class="px-3 py-3 text-center font-medium w-11" title="관심 전체선택/해제">' +
+'              <label class="inv-watch-all-wrap inline-flex flex-col items-center gap-0.5 cursor-pointer">' +
+'                <input type="checkbox" id="inv-watch-all" class="rounded inv-watch-all" aria-label="현재 목록 관심 전체선택 또는 전부해제" onchange="toggleInventoryWatchAll(this.checked)">' +
+'                <span class="text-[9px] font-bold text-gray-500 leading-none">★</span>' +
+'              </label>' +
+'            </th>' +
 '            <th class="px-3 py-3 text-left font-medium"><button type="button" class="inv-sort-btn" data-sort="sku" data-label="SKU" onclick="sortInventory(\'sku\')">SKU</button></th>' +
 '            <th class="px-4 py-3 text-left font-medium min-w-[180px]"><button type="button" class="inv-sort-btn" data-sort="name" data-label="상품명" onclick="sortInventory(\'name\')">상품명</button></th>' +
 '            <th class="px-3 py-3 text-center font-medium"><button type="button" class="inv-sort-btn" data-sort="total" data-label="사방넷" onclick="sortInventory(\'total\')">사방넷</button></th>' +
@@ -608,6 +664,7 @@
     global.toggleInventoryCompact = toggleInventoryCompact;
     global.toggleInventoryLowCover = toggleInventoryLowCover;
     global.toggleInventoryWatch = toggleWatch;
+    global.toggleInventoryWatchAll = toggleWatchAllVisible;
     global.copyInventorySku = copyInventorySku;
     global.exportInventoryCSV = exportInventoryCSV;
     global.focusInventorySearch = focusInventorySearch;
