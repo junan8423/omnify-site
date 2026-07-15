@@ -1303,7 +1303,11 @@ var PROMO_TYPE_OPTIONS = [
     { id: 'crm_push', label: 'CRM 푸시', css: 'type-crm' },
     { id: 'bundle', label: '번들 · 세트', css: 'type-bundle' },
 ];
-var PROMO_STATUS_OPTIONS = { planning: ['기획 중', 'bg-gray-700 text-gray-400'], active: ['진행 중', 'bg-success/20 text-success'], completed: ['완료', 'bg-gray-600 text-gray-400'] };
+var PROMO_STATUS_OPTIONS = {
+    planning: ['기획 중', 'promo-st promo-st-plan'],
+    active: ['진행 중', 'promo-st promo-st-active'],
+    completed: ['완료', 'promo-st promo-st-done']
+};
 var PROMO_CHANNEL_OPTIONS = ['cafe24', 'smartstore', 'coupang', 'ably', 'alimtalk'];
 var PROMO_SCHEDULE_TEMPLATES = [
     { id: 'season', label: '시즌 세일', type: 'season_sale', days: 7, budget: 8000000, channels: ['cafe24', 'smartstore'],
