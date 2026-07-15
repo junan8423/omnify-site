@@ -630,7 +630,7 @@
         .status-dot.warn { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
         .status-dot.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
         .table-row { transition: background 0.15s; }
-        .table-row:hover { background: rgba(31,41,55,0.6); }
+        .table-row:hover { background: var(--c-table-hover); }
         .cmd-palette { display: none; }
         .cmd-palette.open { display: flex; }
         .comms-modal { display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.72); }
@@ -809,11 +809,11 @@
             display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-top: 0.35rem;
         }
         .home-ops-cell {
-            background: rgba(15,23,42,0.55); border: 1px solid rgba(55,65,81,0.7);
+            background: var(--c-surface); border: 1px solid var(--c-border-strong);
             border-radius: 0.55rem; padding: 0.45rem 0.55rem;
         }
-        .home-ops-cell .lab { font-size: 0.65rem; color: #9ca3af; font-weight: 650; }
-        .home-ops-cell .val { font-size: 1rem; font-weight: 800; color: #f9fafb; letter-spacing: -0.02em; margin-top: 0.1rem; }
+        .home-ops-cell .lab { font-size: 0.65rem; color: var(--c-muted-strong); font-weight: 650; }
+        .home-ops-cell .val { font-size: 1rem; font-weight: 800; color: var(--c-text); letter-spacing: -0.02em; margin-top: 0.1rem; }
         .home-ops-cell .delta { font-size: 0.65rem; margin-top: 0.15rem; }
         .home-inv-alert {
             display: flex; flex-direction: column; min-height: 100%;
@@ -1314,6 +1314,105 @@
         }
         html[data-theme="light"] .home-promo-card .promo-chip.done {
             background: #d1fae5; color: #047857; border-color: #6ee7b7;
+        }
+        html[data-theme="light"] .home-promo-card .promo-chip.done {
+            background: #d1fae5; color: #047857; border-color: #6ee7b7;
+        }
+        html[data-theme="light"] #tier-demo-switcher {
+            background: #f8fafc !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] #tier-demo-switcher p { color: #64748b !important; }
+        .tier-demo-link.tier-demo-off { color: #94a3b8; background: transparent; }
+        .tier-demo-link.tier-demo-on { color: #93c5fd; background: rgba(59,130,246,0.15); }
+        html[data-theme="light"] .tier-demo-link.tier-demo-off { color: #475569 !important; }
+        html[data-theme="light"] .tier-demo-link.tier-demo-on {
+            color: #1e40af !important; background: #dbeafe !important;
+        }
+        html[data-theme="light"] a[data-tier="starter"].tier-demo-on { color: #047857 !important; background: #d1fae5 !important; }
+        html[data-theme="light"] a[data-tier="growth"].tier-demo-on { color: #1d4ed8 !important; background: #dbeafe !important; }
+        html[data-theme="light"] a[data-tier="enterprise"].tier-demo-on { color: #6d28d9 !important; background: #ede9fe !important; }
+        a[data-tier="starter"].tier-demo-on { color: #6ee7b7; background: rgba(16,185,129,0.15); }
+        a[data-tier="growth"].tier-demo-on { color: #93c5fd; background: rgba(59,130,246,0.15); }
+        a[data-tier="enterprise"].tier-demo-on { color: #c4b5fd; background: rgba(139,92,246,0.15); }
+        html[data-theme="light"] #tier-demo-switcher a:hover { filter: brightness(0.95); }
+        html[data-theme="light"] .glass {
+            background: rgba(255, 255, 255, 0.96) !important;
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] .glass-strong {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border-color: #94a3b8 !important;
+        }
+        html[data-theme="light"] #orders-table thead,
+        html[data-theme="light"] #inventory-table thead,
+        html[data-theme="light"] .db-table thead,
+        html[data-theme="light"] table thead {
+            background: #f1f5f9 !important;
+            color: #334155 !important;
+        }
+        html[data-theme="light"] #orders-table tbody tr,
+        html[data-theme="light"] table tbody tr {
+            border-color: #e2e8f0 !important;
+        }
+        html[data-theme="light"] .divide-y > :not([hidden]) ~ :not([hidden]),
+        html[data-theme="light"] .divide-border > :not([hidden]) ~ :not([hidden]) {
+            border-color: #e2e8f0 !important;
+        }
+        html[data-theme="light"] .border-border {
+            border-color: #cbd5e1 !important;
+        }
+        html[data-theme="light"] .bg-dark,
+        html[data-theme="light"] input.bg-dark,
+        html[data-theme="light"] .settings-input {
+            background-color: #ffffff !important;
+            border-color: #94a3b8 !important;
+            color: #0f172a !important;
+        }
+        html[data-theme="light"] .text-gray-200 { color: #1e293b !important; }
+        html[data-theme="light"] .text-gray-300 { color: #334155 !important; }
+        html[data-theme="light"] .hover\:text-white:hover { color: #0f172a !important; }
+        html[data-theme="light"] .promo-cal-grid {
+            background: #cbd5e1;
+            border-color: #94a3b8;
+        }
+        html[data-theme="light"] .promo-cal-cell {
+            background: #ffffff;
+        }
+        html[data-theme="light"] .promo-cal-cell:hover,
+        html[data-theme="light"] .promo-cal-cell.other-month {
+            background: #f8fafc;
+        }
+        html[data-theme="light"] .promo-cal-head {
+            background: #f1f5f9;
+            color: #334155;
+        }
+        html[data-theme="light"] .promo-cal-mode-btn.active {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        html[data-theme="light"] .promo-cal-shell {
+            background: #ffffff;
+            border-color: #cbd5e1;
+        }
+        html[data-theme="light"] .home-promo-mini-cal {
+            background: #ffffff;
+            border-color: #cbd5e1;
+        }
+        html[data-theme="light"] .home-promo-mini-cal .dow,
+        html[data-theme="light"] .home-promo-mini-cal .day {
+            border-color: #e2e8f0;
+        }
+        html[data-theme="light"] .home-promo-mini-cal .dnum { color: #334155; }
+        html[data-theme="light"] .home-promo-mini-cal .day.muted .dnum { color: #94a3b8; }
+        html[data-theme="light"] .bg-warning\/5 { background-color: #fffbeb !important; }
+        html[data-theme="light"] .border-warning\/25 { border-color: #fcd34d !important; }
+        html[data-theme="light"] .bg-primary\/5 { background-color: #eff6ff !important; }
+        html[data-theme="light"] .border-primary\/20 { border-color: #93c5fd !important; }
+        html[data-theme="light"] .kpi-card,
+        html[data-theme="light"] .chart-card {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
         }
         html[data-theme="light"] .home-promo-card .promo-chip.plan {
             background: #ede9fe; color: #6d28d9; border-color: #c4b5fd;
@@ -2192,8 +2291,9 @@
     <script src="js/data-schema.js?v=20260715-schema01"></script>
     <script src="js/report-print.js?v=20260715-report4"></script>
     <script src="js/cs-tickets.js?v=20260715-cs1"></script>
-    <script src="js/dashboard-app.js?v=20260715-chart1"></script>
-    <script src="js/dashboard-tier.js?v=20260715-ux2"></script>
+    <script src="js/dashboard-mock-data.js?v=20260715-mock1"></script>
+    <script src="js/dashboard-app.js?v=20260715-mock1"></script>
+    <script src="js/dashboard-tier.js?v=20260715-lightpromo1"></script>
     <script src="js/dashboard-guide-kb.js?v=20260715-guidekb1"></script>
     <script src="js/dashboard-guide.js?v=20260715-guidechat1"></script>
     <script>

@@ -436,12 +436,12 @@ function injectTierDemoSwitcher() {
     if (!aside || document.getElementById('tier-demo-switcher')) return;
     var box = document.createElement('div');
     box.id = 'tier-demo-switcher';
-    box.className = 'mx-3 mb-3 p-2.5 rounded-lg border border-border/60 bg-surface/40';
+    box.className = 'mx-3 mb-3 p-2.5 rounded-lg border border-border bg-surface';
     box.innerHTML = '<p class="text-[10px] text-gray-500 mb-2 text-center">플랜별 데모</p>' +
         '<div class="flex flex-col gap-1.5 text-center">' +
-        '<a href="demo-starter.html" class="text-[11px] font-semibold ' + (App.tier === 'starter' ? 'text-emerald-300' : 'text-gray-400 hover:text-emerald-300') + '">Starter</a>' +
-        '<a href="demo-growth.html" class="text-[11px] font-semibold ' + (App.tier === 'growth' ? 'text-blue-300' : 'text-gray-400 hover:text-blue-300') + '">Growth</a>' +
-        '<a href="demo-enterprise.html" class="text-[11px] font-semibold ' + (App.tier === 'enterprise' ? 'text-violet-300' : 'text-gray-400 hover:text-violet-300') + '">Enterprise</a>' +
+        '<a href="demo-starter.html" class="tier-demo-link text-[11px] font-semibold py-1.5 rounded-md ' + (App.tier === 'starter' ? 'tier-demo-on' : 'tier-demo-off') + '" data-tier="starter">Starter</a>' +
+        '<a href="demo-growth.html" class="tier-demo-link text-[11px] font-semibold py-1.5 rounded-md ' + (App.tier === 'growth' ? 'tier-demo-on' : 'tier-demo-off') + '" data-tier="growth">Growth</a>' +
+        '<a href="demo-enterprise.html" class="tier-demo-link text-[11px] font-semibold py-1.5 rounded-md ' + (App.tier === 'enterprise' ? 'tier-demo-on' : 'tier-demo-off') + '" data-tier="enterprise">Enterprise</a>' +
         '</div>';
     var footer = aside.querySelector('.p-4.border-t');
     if (footer) aside.insertBefore(box, footer);

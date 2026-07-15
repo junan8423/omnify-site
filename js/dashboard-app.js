@@ -156,9 +156,9 @@ const App = {
             label: '일상 운영',
             icon: '📦',
             items: [
-                { target: 'view-orders', title: '주문 · 발주', group: '일상 운영', icon: 'orders', badge: { text: '3', class: 'bg-warning/20 text-warning w-5 h-5 rounded-full' } },
-                { target: 'view-inventory', title: '통합 재고', subtitle: '조회', group: '일상 운영', icon: 'inventory', badge: { text: '2', class: 'bg-danger/20 text-danger w-5 h-5 rounded-full' } },
-                { target: 'view-comms', title: '커뮤니케이션', group: '일상 운영', icon: 'briefing', badge: { text: '3', class: 'bg-accent/20 text-purple-300 w-5 h-5 rounded-full' } },
+                { target: 'view-orders', title: '주문 · 발주', group: '일상 운영', icon: 'orders', badge: { text: '184', class: 'bg-warning/20 text-warning w-5 h-5 rounded-full' } },
+                { target: 'view-inventory', title: '통합 재고', subtitle: '조회', group: '일상 운영', icon: 'inventory', badge: { text: '6', class: 'bg-danger/20 text-danger w-5 h-5 rounded-full' } },
+                { target: 'view-comms', title: '커뮤니케이션', group: '일상 운영', icon: 'briefing', badge: { text: '5', class: 'bg-accent/20 text-purple-300 w-5 h-5 rounded-full' } },
             ]
         },
         {
@@ -181,7 +181,7 @@ const App = {
             icon: '🛡️',
             items: [
                 { target: 'view-archive', title: 'Google Drive 자료실', group: '관리', icon: 'workflow', badge: { text: 'Drive', class: 'bg-[#4285f4]/20 text-blue-300' } },
-                { target: 'view-activity', title: '활동 이력', group: '관리', icon: 'workflow', badge: { text: '7', class: 'bg-primary/20 text-blue-400 w-5 h-5 rounded-full' } },
+                { target: 'view-activity', title: '활동 이력', group: '관리', icon: 'workflow', badge: { text: '17', class: 'bg-primary/20 text-blue-400 w-5 h-5 rounded-full' } },
                 { target: 'view-settings', title: '설정', group: '관리', icon: 'workflow' },
             ]
         },
@@ -473,7 +473,7 @@ function refreshMetricsViews() {
 
 /* ── P1: Global date range, drill-down, notifications, briefing, user, datahub ── */
 var DATE_RANGE_KEY = 'sample_date_range_v1';
-var NOTIF_READ_KEY = 'sample_notifications_read_v1';
+var NOTIF_READ_KEY = 'sample_notifications_read_v2';
 var CURRENT_USER_KEY = 'sample_current_user_v1';
 var BRIEFING_CONFIG_KEY = 'sample_briefing_config_v1';
 var DATE_RANGE_PRESETS = [
@@ -1269,9 +1269,9 @@ function insertMention(userId) {
 
 /* ── 프로모션 기획 · 성과 (실행은 외부 도구) ── */
 var crmActiveTab = 'calendar';
-var PROMO_STORAGE_KEY = 'sample_promo_plans_v1';
+var PROMO_STORAGE_KEY = 'sample_promo_plans_v2';
 var promoPlans = null;
-var promoCalendarMode = 'week';
+var promoCalendarMode = 'month';
 var promoCalendarCursor = new Date(2026, 6, 10);
 var promoActivePlanId = null;
 var promoModalState = { editId: null, defaultDate: null, fromCalendar: false };
@@ -1559,31 +1559,106 @@ var PROMO_SCHEDULE_TEMPLATES = [
 function getPromoPlansDefaults() {
     return [
         { id: 'pp-demo-1', title: '7월 여름 시즌 프로모션', type: 'season_sale', status: 'active',
-          startDate: '2026-07-10', endDate: '2026-07-15', owner: 'lee', budget: 8000000,
-          channels: ['cafe24', 'smartstore', 'alimtalk'],
-          memo: '스킨케어 카테고리 집중 · VIP 동시 쿠폰',
+          startDate: '2026-07-08', endDate: '2026-07-20', owner: 'lee', budget: 12000000,
+          channels: ['cafe24', 'smartstore', 'ably', 'alimtalk'],
+          memo: '스킨케어·선케어 카테고리 · VIP 20% 동시 쿠폰 · 인스타 소재 3종',
           executionTool: '솔라피 · 카카오 비즈메시지 (외부 실행)',
           abTest: { enabled: true, variantALabel: 'A안 · 20% 쿠폰', variantBLabel: 'B안 · 25% 쿠폰', winner: 'B',
-            variantA: { sent: 4210, converted: 489, revenue: 20100000 },
-            variantB: { sent: 4210, converted: 555, revenue: 22700000 } },
-          kpi: { targetSent: 10000, targetOpenRate: 45, targetConversion: 3.0, targetRoas: 3.5, targetRevenue: 150000000,
-                 actualSent: 8420, actualOpened: 5894, actualConverted: 1044, actualRevenue: 42800000, actualRoas: 2.9, inputAt: '2026-07-10' } },
-        { id: 'pp-demo-2', title: '이탈 고객 복귀 캠페인', type: 'crm_push', status: 'planning',
-          startDate: '2026-07-15', endDate: '2026-07-22', owner: 'lee', budget: 3000000,
-          channels: ['alimtalk'], memo: '6개월 이상 미구매 고객 대상 15% 할인 쿠폰',
+            variantA: { sent: 6120, converted: 612, revenue: 28400000 },
+            variantB: { sent: 6120, converted: 734, revenue: 33100000 } },
+          kpi: { targetSent: 15000, targetOpenRate: 46, targetConversion: 3.2, targetRoas: 3.6, targetRevenue: 220000000,
+                 actualSent: 12240, actualOpened: 8813, actualConverted: 1346, actualRevenue: 98600000, actualRoas: 3.1, inputAt: '2026-07-14' } },
+        { id: 'pp-demo-2', title: '쿠팡 Wing 반짝특가', type: 'flash_sale', status: 'active',
+          startDate: '2026-07-12', endDate: '2026-07-14', owner: 'kim', budget: 3500000,
+          channels: ['coupang'], memo: '48h 히트 SKU 8종 · 로켓배송 강조 뱃지',
+          executionTool: '쿠팡 Wing 프로모션 센터',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 0, targetOpenRate: 0, targetConversion: 4.8, targetRoas: 4.2, targetRevenue: 72000000,
+                 actualSent: 0, actualOpened: 0, actualConverted: 918, actualRevenue: 51400000, actualRoas: 3.9, inputAt: '2026-07-14' } },
+        { id: 'pp-demo-3', title: '스마트스토어 리뷰 더블', type: 'coupon', status: 'active',
+          startDate: '2026-07-01', endDate: '2026-07-31', owner: 'lee', budget: 2500000,
+          channels: ['smartstore', 'alimtalk'], memo: '포토리뷰 적립금 2배 · 베스트리뷰 추첨',
+          executionTool: '스마트스토어 센터 · 알림톡',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 6000, targetOpenRate: 41, targetConversion: 2.4, targetRoas: 3.0, targetRevenue: 58000000,
+                 actualSent: 4380, actualOpened: 1927, actualConverted: 118, actualRevenue: 22100000, actualRoas: 2.7, inputAt: '2026-07-13' } },
+        { id: 'pp-demo-4', title: '이탈 고객 복귀 캠페인', type: 'crm_push', status: 'planning',
+          startDate: '2026-07-18', endDate: '2026-07-28', owner: 'lee', budget: 4200000,
+          channels: ['alimtalk', 'cafe24'], memo: '6개월 미구매 · 15% 쿠폰 · 세그먼트 A/B',
           executionTool: '카카오 비즈메시지 콘솔',
+          abTest: { enabled: true, variantALabel: 'A안 · 감성 카피', variantBLabel: 'B안 · 할인 강조', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 4800, targetOpenRate: 44, targetConversion: 2.8, targetRoas: 3.2, targetRevenue: 64000000,
+                 actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
+        { id: 'pp-demo-5', title: '주말 번들 세트 WEEK', type: 'bundle', status: 'planning',
+          startDate: '2026-07-25', endDate: '2026-07-27', owner: 'park', budget: 2800000,
+          channels: ['cafe24', 'smartstore', 'ably'], memo: '클렌징+토너 세트 · 사은품 미니 세럼',
+          executionTool: 'Cafe24 프로모션 · 에이블리 딜',
           abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
             variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
-          kpi: { targetSent: 1500, targetOpenRate: 40, targetConversion: 2.5, targetRoas: 3.0, targetRevenue: 45000000,
+          kpi: { targetSent: 2200, targetOpenRate: 38, targetConversion: 3.5, targetRoas: 3.4, targetRevenue: 48000000,
                  actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
-        { id: 'pp-demo-3', title: '7월 플래시 세일 (주말)', type: 'flash_sale', status: 'planning',
-          startDate: '2026-07-19', endDate: '2026-07-20', owner: 'kim', budget: 2000000,
-          channels: ['cafe24', 'coupang'], memo: '48시간 한정 30% 할인 · 인기 SKU 12종',
-          executionTool: 'Cafe24 · 쿠팡 프로모션 센터',
+        { id: 'pp-demo-6', title: '에이블리 첫구매 웰컴', type: 'coupon', status: 'planning',
+          startDate: '2026-08-01', endDate: '2026-08-10', owner: 'lee', budget: 1800000,
+          channels: ['ably', 'alimtalk'], memo: '신규 가입 3,000원 쿠폰 · D+1 리마인드 알림톡',
+          executionTool: '에이블리 셀러 · 솔라피',
           abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
             variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
-          kpi: { targetSent: 0, targetOpenRate: 0, targetConversion: 4.0, targetRoas: 4.0, targetRevenue: 80000000,
+          kpi: { targetSent: 3500, targetOpenRate: 48, targetConversion: 5.2, targetRoas: 4.0, targetRevenue: 36000000,
                  actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
+        { id: 'pp-demo-7', title: '6월 장마철 특집', type: 'season_sale', status: 'completed',
+          startDate: '2026-06-15', endDate: '2026-06-28', owner: 'kim', budget: 9500000,
+          channels: ['cafe24', 'smartstore', 'coupang', 'alimtalk'],
+          memo: '우산·선크림 크로스셀 · 완료 회고 작성됨',
+          executionTool: '솔라피 · 각 채널 프로모션',
+          abTest: { enabled: true, variantALabel: 'A안 · 무료배송', variantBLabel: 'B안 · 번들할인', winner: 'A',
+            variantA: { sent: 5200, converted: 676, revenue: 41200000 },
+            variantB: { sent: 5200, converted: 546, revenue: 33800000 } },
+          kpi: { targetSent: 12000, targetOpenRate: 43, targetConversion: 3.0, targetRoas: 3.3, targetRevenue: 180000000,
+                 actualSent: 11480, actualOpened: 5166, actualConverted: 1222, actualRevenue: 168400000, actualRoas: 3.5, inputAt: '2026-06-30' } },
+        { id: 'pp-demo-8', title: 'VIP 등급업 챌린지', type: 'crm_push', status: 'completed',
+          startDate: '2026-06-01', endDate: '2026-06-14', owner: 'lee', budget: 3200000,
+          channels: ['cafe24', 'alimtalk'], memo: '골드→VIP 승급 타겟 · 누적구매 유도',
+          executionTool: '카카오 비즈메시지',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 2100, targetOpenRate: 52, targetConversion: 4.1, targetRoas: 3.8, targetRevenue: 52000000,
+                 actualSent: 2088, actualOpened: 1253, actualConverted: 94, actualRevenue: 48700000, actualRoas: 3.6, inputAt: '2026-06-16' } },
+        { id: 'pp-demo-9', title: '카페24 라이브커머스 데이', type: 'flash_sale', status: 'planning',
+          startDate: '2026-08-07', endDate: '2026-08-07', owner: 'park', budget: 5000000,
+          channels: ['cafe24'], memo: '19:00 라이브 2시간 · 한정 수량 타임딜',
+          executionTool: 'Cafe24 라이브 스튜디오',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 0, targetOpenRate: 0, targetConversion: 6.0, targetRoas: 4.5, targetRevenue: 95000000,
+                 actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
+        { id: 'pp-demo-10', title: '멤버십 데이 전체몰', type: 'season_sale', status: 'planning',
+          startDate: '2026-08-15', endDate: '2026-08-18', owner: 'kim', budget: 15000000,
+          channels: ['cafe24', 'smartstore', 'coupang', 'ably', 'alimtalk'],
+          memo: '전 채널 동시 오픈 · 멤버십 등급별 추가 할인',
+          executionTool: '채널 어드민 + 솔라피',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 20000, targetOpenRate: 47, targetConversion: 3.6, targetRoas: 3.7, targetRevenue: 310000000,
+                 actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
+        { id: 'pp-demo-11', title: '재구매 리마인드 D+30', type: 'crm_push', status: 'active',
+          startDate: '2026-07-05', endDate: '2026-07-31', owner: 'lee', budget: 1500000,
+          channels: ['alimtalk'], memo: '구매 30일 후 소모품 리필 유도 · 매일 배치 발송',
+          executionTool: '솔라피 스케줄 발송',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 9000, targetOpenRate: 39, targetConversion: 2.1, targetRoas: 2.9, targetRevenue: 42000000,
+                 actualSent: 5120, actualOpened: 2099, actualConverted: 96, actualRevenue: 18700000, actualRoas: 2.6, inputAt: '2026-07-14' } },
+        { id: 'pp-demo-12', title: '앱푸시 야간 특가', type: 'flash_sale', status: 'completed',
+          startDate: '2026-07-03', endDate: '2026-07-04', owner: 'park', budget: 900000,
+          channels: ['cafe24'], memo: '22:00~02:00 야간몰 · 완료',
+          executionTool: 'Cafe24 앱푸시',
+          abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
+            variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
+          kpi: { targetSent: 8000, targetOpenRate: 28, targetConversion: 2.0, targetRoas: 2.8, targetRevenue: 28000000,
+                 actualSent: 7640, actualOpened: 2216, actualConverted: 168, actualRevenue: 31200000, actualRoas: 3.1, inputAt: '2026-07-05' } }
     ];
 }
 
@@ -2714,8 +2789,8 @@ App.views['view-crm'] = () => `
     <div id="crm-panel-calendar" class="space-y-5">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 promo-cal-toolbar">
             <div class="flex gap-1 p-1 rounded-lg bg-surface border border-border w-full sm:w-auto">
-                <button class="promo-cal-mode-btn flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-md font-semibold active" data-mode="week" onclick="setPromoCalendarMode('week')">주간</button>
-                <button class="promo-cal-mode-btn flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-md font-semibold" data-mode="month" onclick="setPromoCalendarMode('month')">월간</button>
+                <button class="promo-cal-mode-btn flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-md font-semibold" data-mode="week" onclick="setPromoCalendarMode('week')">주간</button>
+                <button class="promo-cal-mode-btn flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-md font-semibold active" data-mode="month" onclick="setPromoCalendarMode('month')">월간</button>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 promo-cal-nav w-full sm:w-auto">
                 <button onclick="shiftPromoCalendar(-1)" class="p-2 rounded-lg border border-border hover:border-primary/40 text-gray-400 hover:text-white transition-colors shrink-0" aria-label="이전">◀</button>
@@ -2865,7 +2940,7 @@ App.views['view-activity'] = () => `
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         ${[
-            ['오늘 활동', App.activityLogs.filter(l => l.date === '2026-07-10').length + '건', '4명 활동 중'],
+            ['오늘 활동', App.activityLogs.filter(l => l.date === '2026-07-10').length + '건', '5명 활동 중'],
             ['주의 필요', App.activityLogs.filter(l => l.type === 'warning' || l.type === 'danger').length + '건', '재고·광고·API'],
             ['최다 활동', '박서연', '주문·동기화 3건'],
             ['마지막 활동', '5분 전', '김지현 · 로그인'],
@@ -3033,7 +3108,7 @@ function renderOrders(data) {
         <td class="px-5 py-3"><input type="checkbox" class="rounded"></td>
         <td class="px-5 py-3 font-mono text-xs text-gray-400">${o.id}</td>
         <td class="px-5 py-3">${App.channelBadge(o.channel)}</td>
-        <td class="px-5 py-3 text-gray-300">${o.product}</td>
+        <td class="px-5 py-3 text-gray-300">${o.product || o.productTitle || ''}</td>
         <td class="px-5 py-3 text-right font-mono">${App.formatWon(o.amount)}</td>
         <td class="px-5 py-3 text-center">${App.statusBadge(o.status)}</td>
         <td class="px-5 py-3 text-right text-xs text-gray-500">${o.time}</td>
@@ -3076,8 +3151,8 @@ function openAdminLink(name, url) {
     window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-var SETTINGS_STORAGE_KEY = 'omnisync_settings_v1';
-var TEAM_STORAGE_KEY = 'omnify_team_v1';
+var SETTINGS_STORAGE_KEY = 'omnisync_settings_v2';
+var TEAM_STORAGE_KEY = 'omnify_team_v2';
 var settingsActiveTab = 'team';
 App.settings = null;
 
@@ -3849,8 +3924,8 @@ function toggleAdMediaActive(idx) {
     renderSettingsPanel();
 }
 
-var ARCHIVE_STORAGE_KEY = 'omnisync_archive_v1';
-var COMMS_STORAGE_KEY = 'omnisync_comms_v1';
+var ARCHIVE_STORAGE_KEY = 'omnisync_archive_v2';
+var COMMS_STORAGE_KEY = 'omnisync_comms_v2';
 var archiveFiles = [];
 var archiveFilter = { search: '', category: 'all', pinnedOnly: false, sort: 'recent' };
 var commsData = { threads: [], agenda: [], readIds: [] };
@@ -5617,6 +5692,10 @@ function applyTenantChrome(tenant) {
 
 document.addEventListener('DOMContentLoaded', function() {
     var start = function () {
+        if (typeof OmnifyDemoMock !== 'undefined' && OmnifyDemoMock.applyToApp) {
+            OmnifyDemoMock.applyToApp(App);
+            if (OmnifyDemoMock.patchDefaultFns) OmnifyDemoMock.patchDefaultFns();
+        }
         if (typeof OmnifySchema !== 'undefined' && OmnifySchema.hydrateAppDemo) {
             OmnifySchema.hydrateAppDemo(App);
         }
