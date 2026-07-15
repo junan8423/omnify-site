@@ -327,7 +327,7 @@
         if (document.getElementById('omnify-tip-root')) return;
         var root = el(
             '<div id="omnify-tip-root" class="otip-root" hidden aria-hidden="true">' +
-            '  <div class="otip-backdrop" data-otip-close></div>' +
+            '  <div class="otip-backdrop" aria-hidden="true"></div>' +
             '  <div class="otip-stage" role="dialog" aria-modal="true" aria-labelledby="otip-title">' +
             '    <div class="otip-top">' +
             '      <div class="otip-brand"><span class="otip-badge">옴니파이 TIP</span><span class="otip-progress-label" id="otip-step-label"></span></div>' +

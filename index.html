@@ -836,17 +836,65 @@
             .glass, .glass-strong { background: #f9fafb; border-color: #e5e7eb; }
         }
         /* ——— Omnify TIP theater ——— */
-        .otip-nav-btn {
-            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #1d4ed8 100%);
-            color: #fff !important;
-            border: 1px solid rgba(125, 211, 252, 0.45);
-            box-shadow: 0 8px 22px rgba(14, 165, 233, 0.28);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        .otip-inline { margin-top: -0.5rem; }
+        .otip-inline-card {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem 1.5rem;
+            text-align: left;
+            cursor: pointer;
+            padding: 1.15rem 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            background:
+                radial-gradient(ellipse 70% 120% at 0% 50%, rgba(14, 165, 233, 0.18), transparent 55%),
+                radial-gradient(ellipse 50% 100% at 100% 50%, rgba(37, 99, 235, 0.14), transparent 50%),
+                rgba(11, 17, 32, 0.88);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
         }
-        .otip-nav-btn:hover {
-            filter: brightness(1.06);
-            transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
+        .otip-inline-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(125, 211, 252, 0.55);
+            box-shadow: 0 20px 48px rgba(14, 165, 233, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+        .otip-inline-left { flex: 1 1 16rem; min-width: 0; }
+        .otip-inline-badge {
+            display: inline-flex; align-items: center;
+            padding: 0.22rem 0.55rem; border-radius: 999px;
+            font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em;
+            color: #0c4a6e; background: #7dd3fc; margin-bottom: 0.55rem;
+        }
+        .otip-inline-title {
+            margin: 0 0 0.35rem;
+            font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+            font-weight: 850; color: #f8fafc; letter-spacing: -0.02em; line-height: 1.3;
+        }
+        .otip-inline-desc {
+            margin: 0; font-size: 0.88rem; line-height: 1.55; color: #94a3b8;
+        }
+        .otip-inline-right {
+            flex: 0 0 auto;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 0.45rem;
+        }
+        .otip-inline-meta { font-size: 0.72rem; font-weight: 700; color: #7dd3fc; }
+        .otip-inline-cta {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.55rem 0.95rem; border-radius: 0.7rem;
+            font-size: 0.82rem; font-weight: 800; color: #fff;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            border: 1px solid rgba(125, 211, 252, 0.35);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+        }
+        .otip-inline-cta em { font-style: normal; }
+        .otip-inline-card:hover .otip-inline-cta { filter: brightness(1.06); }
+        @media (max-width: 640px) {
+            .otip-inline-right { width: 100%; align-items: stretch; }
+            .otip-inline-meta { text-align: left; }
+            .otip-inline-cta { justify-content: center; width: 100%; }
         }
         body.otip-open { overflow: hidden; }
         .otip-root {
@@ -1420,8 +1468,6 @@
         .accent-cyan .otip-kicker { color: #67e8f9; }
         .accent-indigo .otip-kicker { color: #a5b4fc; }
         @media (max-width: 639px) {
-            .otip-nav-btn .nav-btn-text { display: none; }
-            .otip-nav-btn .nav-btn-icon { display: inline; }
             .otip-footer { flex-wrap: wrap; }
             .otip-dots { order: 3; width: 100%; margin-top: 0.25rem; }
             .otip-title { font-size: 1.4rem; }
@@ -1796,9 +1842,6 @@
                 <span class="nav-btn-text">대시보드 체험</span><span class="nav-btn-icon" aria-hidden="true">🖥️</span>
             </a>
             <button type="button" class="text-xs font-bold px-3 sm:px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition-colors whitespace-nowrap page-tab-trigger" data-page-tab="contact">상담 문의</button>
-            <button type="button" data-omnify-tip class="otip-nav-btn text-xs font-bold px-2.5 sm:px-3 py-2 rounded-lg whitespace-nowrap" aria-haspopup="dialog" aria-controls="omnify-tip-root">
-                <span class="nav-btn-text">옴니파이TIP</span><span class="nav-btn-icon" aria-hidden="true">▶</span>
-            </button>
         </div>
     </div>
 </nav>
@@ -1893,6 +1936,21 @@
             </div>
         </div>
     </header>
+
+    <!-- Omnify TIP — between hero and The Power of Omni -->
+    <section class="otip-inline section-block !border-t-0 pt-0 pb-2 sm:pb-4" aria-label="옴니파이 TIP">
+        <button type="button" data-omnify-tip class="otip-inline-card" aria-haspopup="dialog" aria-controls="omnify-tip-root">
+            <div class="otip-inline-left">
+                <span class="otip-inline-badge">옴니파이 TIP</span>
+                <h2 class="otip-inline-title">13장면으로 보는 대시보드 사용법</h2>
+                <p class="otip-inline-desc">매출·마진·재고·CRM·API까지 — 스펙 나열이 아니라, 매일 쓰는 장면으로 이해하세요.</p>
+            </div>
+            <div class="otip-inline-right">
+                <span class="otip-inline-meta">약 2분 · 클릭 슬라이드</span>
+                <span class="otip-inline-cta">지금 보기 <em aria-hidden="true">→</em></span>
+            </div>
+        </button>
+    </section>
 
     <!-- Brand Identity → Problem bridge -->
     <section id="brand" class="section-block pb-6 sm:pb-8">
@@ -2934,7 +2992,7 @@
 })();
 </script>
 
-    <script src="js/omnify-tip.js?v=20260715-tip6"></script>
+    <script src="js/omnify-tip.js?v=20260715-tip7"></script>
 
 <a href="http://pf.kakao.com/_fxlxgwX" class="kakao-float no-print" target="_blank" rel="noopener noreferrer" aria-label="카카오채널 상담하기">
     <span class="kakao-float-icon" aria-hidden="true">
