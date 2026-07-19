@@ -8,7 +8,7 @@
 
     var OMNIFY_SUPPLIER = {
         companyName: 'JK글로벌컴퍼니',
-        ceo: '최준환',
+        ceo: '(주)JK글로벌컴퍼니',
         businessNo: '455-03-03979',
         address: '서울특별시 송파구 중대로 207, 2층 201-J545호',
         email: 'omnify@omnify.kr',
