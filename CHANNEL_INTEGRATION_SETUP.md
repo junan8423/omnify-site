@@ -30,8 +30,14 @@ CHANNEL_SYNC_BATCH_SIZE=20
 | 쿠팡 Wing | HMAC-SHA256 | 반품지 조회 | 주문서 |
 | 에이블리 | 파트너 Bearer Token | 계약 문서의 테스트 경로 | 계약 문서의 주문 경로 |
 | 사방넷 풀필먼트 2.0 | HMAC-SHA256 | 재고 조회 | 재고 |
+| 지그재그(카카오스타일) | HMAC-SHA1 서명(`CEA` Authorization) | `shop` 스토어 조회 | 주문(`order_item_list`) |
+| 무신사 파트너 | 파트너 API 인증키 | 계약 문서의 테스트 경로 | 계약 문서의 주문 경로 |
 
 에이블리는 공개 REST API 명세가 없으므로 셀러 Token만으로는 직접 연동할 수 없습니다. 계약 후 제공받은 Base URL, 연결 확인 경로, 주문 조회 경로를 연동센터에 입력해야 합니다.
+
+지그재그는 카카오스타일 공식 Open API(GraphQL, `https://openapi.zigzag.kr/1/graphql`)를 사용합니다. 파트너센터 > 스토어 정보 관리 > 상품/주문 API에서 Access Key·Secret Key를 발급받아 입력하면 되고, 별도 IP 등록은 필요 없습니다. 최초 연동 시 담당 MD를 통한 권한(GET-ORDER 등) 확인이 필요할 수 있습니다.
+
+무신사는 파트너센터(업체정보 > API 연동 정보)에서 API 인증키를 발급하지만 공개 개발자 문서가 없고, 인증키는 지정된 API 대행사 기준으로 동작합니다. 대행사 지정·API 명세는 무신사와의 계약을 통해 확보한 뒤 Base URL·경로를 연동센터에 입력해야 합니다. 무신사 보안 정책상 API Key는 약 1년 주기로 갱신됩니다.
 
 사방넷은 일반 사방넷과 **사방넷 풀필먼트 API 2.0**을 구분해야 합니다. 현재 커넥터는 공식 공개 명세가 확인되는 풀필먼트 API 2.0(`napi.sbfulfillment.co.kr`) 기준입니다.
 

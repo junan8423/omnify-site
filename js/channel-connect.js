@@ -48,6 +48,22 @@
         ['secretKey', 'API Secret Key', 'password'], ['memberId', '고객사 ID(물류사 권한 시)', 'text'],
         ['environment', '환경', 'select', [['live', 'LIVE'], ['sandbox', 'Sandbox']]]
       ]
+    },
+    {
+      id: 'zigzag', label: '지그재그(카카오스타일)', auth: 'HMAC 서명',
+      desc: '카카오스타일 파트너센터 > 스토어 정보 관리 > 상품/주문 API에서 발급한 Access Key·Secret Key로 주문을 수집합니다.',
+      fields: [
+        ['accessKey', 'Access Key', 'text'], ['secretKey', 'Secret Key', 'password'],
+        ['environment', '환경', 'select', [['live', 'LIVE'], ['dev', 'Dev(알파)']]]
+      ]
+    },
+    {
+      id: 'musinsa', label: '무신사 파트너', auth: '파트너 API Key',
+      desc: '파트너센터 > 업체정보 > API 연동 정보의 API 인증키가 필요합니다. 공개 문서가 없어 계약 시 안내받은 API 주소·경로를 함께 입력해야 합니다.',
+      fields: [
+        ['apiKey', 'API 인증키', 'password'], ['apiBase', '파트너 API Base URL', 'url'],
+        ['testPath', '연결 확인 경로', 'text'], ['ordersPath', '주문 조회 경로', 'text']
+      ]
     }
   ];
 

@@ -30,7 +30,7 @@
       sku: row.sku || row.externalId || '',
       name: '사방넷 출고상품 #' + (row.sku || row.externalId || ''),
       qtyWms: Number(row.available || row.total || 0),
-      qtyByChannel: { cafe24: 0, smartstore: 0, coupang: 0, ably: 0 },
+      qtyByChannel: { cafe24: 0, smartstore: 0, coupang: 0, ably: 0, zigzag: 0, musinsa: 0 },
       safety: Math.max(10, Math.round(Number(row.available || 0) * 0.2)),
       allocated: Number(row.allocated || 0),
       damaged: Number(row.damaged || 0),
