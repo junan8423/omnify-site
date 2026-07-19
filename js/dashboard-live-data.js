@@ -21,7 +21,8 @@
       status: normalizeStatus(row.status),
       sourceStatus: row.status || '',
       time: time,
-      buyerName: row.buyerName || ''
+      buyerName: row.buyerName || '',
+      orderedAt: row.orderedAt || ''
     };
   }
 
@@ -71,6 +72,12 @@
       showToast('실연동 데이터 적용 · 주문 ' + App.liveData.orders + '건 · 재고 ' + App.liveData.inventory + '건', 'success');
     }
   }
+
+  window.reloadLiveData = function () {
+    return loadLiveData().catch(function (error) {
+      if (typeof showToast === 'function') showToast('실연동 데이터 로드 실패: ' + error.message, 'warning');
+    });
+  };
 
   function start() {
     var attempts = 0;

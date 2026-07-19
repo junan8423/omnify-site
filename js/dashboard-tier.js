@@ -142,6 +142,7 @@ function isViewAllowedForTier(viewId) {
 
 function renderStarterDashboard() {
     var m = getMockMetrics();
+    var rolling24 = getRolling24HourChartData();
     var atRisk = App.inventory.filter(function(i) { return i.status !== 'safe'; });
     var recentOrders = App.orders.slice(0, 4);
     return `
@@ -186,15 +187,28 @@ function renderStarterDashboard() {
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 home-chart-row">
         <div class="glass rounded-xl p-4 xl:col-span-2 chart-card">
             <div class="chart-card-header">
-                <div class="chart-card-title">
-                    <h2>주간 채널별 매출</h2>
-                    <span class="chart-unit-badge">만 원</span>
+                <div class="min-w-0">
+                    <div class="chart-card-title">
+                        <h2>실시간 채널별 시간 매출</h2>
+                        <span class="live-status-pill"><span></span>LIVE</span>
+                        <span class="chart-unit-badge">만원</span>
+                    </div>
+                    <p class="realtime-chart-range">${rolling24.labels[0]} → ${rolling24.labels[rolling24.labels.length - 1]} · 최근 24시간 · 1시간 단위 합산</p>
                 </div>
+                <button type="button" class="realtime-refresh-btn shrink-0" onclick="refreshRealtimeChart()" title="실시간 데이터 새로고침">⟳ 새로고침</button>
             </div>
-            <div class="chart-legend-row">
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(59,130,246,0.8)"></span>Cafe24</span>
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(16,185,129,0.8)"></span>스마트스토어</span>
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(249,115,22,0.8)"></span>쿠팡</span>
+            <div class="realtime-summary-grid">
+                <div class="realtime-summary-click" onclick="openHomeDetailPopup('realtimeRevenue')" title="채널별 당일 매출 상세 보기"><span>당일 매출 <em class="realtime-click-hint">상세</em></span><strong>${App.formatWon(rolling24.todayRevenue)}</strong></div>
+                <div class="realtime-summary-click" onclick="openHomeDetailPopup('realtimeOrders')" title="채널별 당일 주문 상세 보기"><span>당일 주문 <em class="realtime-click-hint">상세</em></span><strong>${fmtCount(rolling24.todayOrders)}건</strong></div>
+                <div><span>최고 매출 시간대</span><strong>${rolling24.peakLabel}</strong></div>
+                <div><span>수집 지연</span><strong class="text-success">${rolling24.freshnessLabel}</strong></div>
+            </div>
+            <div class="chart-legend-row realtime-legend">
+                ${rolling24.channels.map(function(channel) {
+                    return '<span class="chart-legend-item"><span class="chart-legend-dot" style="background:' + channel.color + '"></span>' + channel.label + '</span>';
+                }).join('')}
+                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(250,204,21,0.9)"></span>주문건수(선)</span>
+                <span class="ml-auto text-[10px] text-gray-500">진한 색 + 흰 테두리 = 채널별 최고 매출 시간</span>
             </div>
             <div class="chart-canvas-wrap tall"><canvas id="multiChannelChart"></canvas></div>
         </div>

@@ -4,7 +4,6 @@ const App = {
     charts: [],
     currentView: 'view-dashboard',
     demoMode: true,
-    dashboardChartPeriod: 'weekly',
     demoLastRefresh: null,
     totalSkuCount: 128,
     unreadNotifications: 5,
@@ -290,52 +289,188 @@ function getMockMetrics() {
     };
 }
 
-function getDashboardChartData(period) {
-    var s = getSettings();
-    var scale = s.kpi.currentMonthlyRevenue / 637500000 * getDateRangeMultiplier();
-    function sc(arr) { return arr.map(function(v) { return Math.round(v * scale); }); }
-    var asOf = getDataHubAsOfDate();
-    var i, d, labels;
+function getRolling24HourChartData() {
+    var queryTime = App.demoLastRefresh || new Date();
+    var end = new Date(queryTime.getFullYear(), queryTime.getMonth(), queryTime.getDate(), queryTime.getHours());
+    var start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+    var channels = [
+        { id: 'cafe24', label: 'Cafe24', color: 'rgba(59,130,246,0.55)', peakColor: 'rgba(59,130,246,1)', weight: 0.32 },
+        { id: 'smartstore', label: '스마트스토어', color: 'rgba(16,185,129,0.55)', peakColor: 'rgba(16,185,129,1)', weight: 0.28 },
+        { id: 'coupang', label: '쿠팡', color: 'rgba(249,115,22,0.55)', peakColor: 'rgba(249,115,22,1)', weight: 0.25 },
+        { id: 'ably', label: '에이블리', color: 'rgba(236,72,153,0.55)', peakColor: 'rgba(236,72,153,1)', weight: 0.15 }
+    ];
+    var liveChannelIds = {};
+    (App.orders || []).forEach(function(order) {
+        if (order.channel) liveChannelIds[order.channel] = true;
+    });
+    [
+        { id: 'zigzag', label: '지그재그', color: 'rgba(139,92,246,0.55)', peakColor: 'rgba(139,92,246,1)', weight: 0.10 },
+        { id: 'musinsa', label: '무신사', color: 'rgba(245,158,11,0.55)', peakColor: 'rgba(245,158,11,1)', weight: 0.10 }
+    ].forEach(function(channel) {
+        if (liveChannelIds[channel.id]) channels.push(channel);
+    });
 
-    if (period === 'monthly') {
-        labels = [];
-        for (i = 6; i >= 0; i--) {
-            d = new Date(asOf.getFullYear(), asOf.getMonth() - i, 1);
-            labels.push((d.getMonth() + 1) + '월');
+    var buckets = [];
+    for (var step = 0; step <= 24; step++) {
+        buckets.push(new Date(start.getTime() + step * 60 * 60 * 1000));
+    }
+    function pad2(value) { return String(value).padStart(2, '0'); }
+    function pointLabel(date, index) {
+        if (index === 0 || index === buckets.length - 1) {
+            return (date.getMonth() + 1) + '/' + date.getDate() + ' ' + pad2(date.getHours()) + '시';
         }
-        return {
-            labels: labels,
-            cafe24: sc([820, 910, 880, 950, 1020, 980, 1100]),
-            smartstore: sc([650, 720, 690, 780, 840, 810, 900]),
-            coupang: sc([480, 520, 500, 580, 620, 590, 680]),
-            roas: [2.8, 3.0, 2.9, 3.1, 3.3, 3.2, 3.4].map(function(v) { return Math.round(v * 100); }),
-        };
+        if (date.getHours() === 0) return '24시';
+        if (date.getHours() === 1 && buckets[index - 1].getHours() === 0) {
+            return (date.getMonth() + 1) + '/' + date.getDate() + ' 01시';
+        }
+        return pad2(date.getHours()) + '시';
     }
 
-    /* 주간: 최근 7일 (과거→오늘) */
-    labels = [];
-    var cafe24 = [], smartstore = [], coupang = [], roas = [];
-    var baseC = [300, 320, 340, 360, 390, 480, 520];
-    var baseS = [240, 255, 270, 285, 310, 400, 450];
-    var baseP = [170, 180, 195, 210, 235, 310, 350];
-    var baseR = [2.2, 2.35, 2.4, 2.55, 2.7, 3.3, 3.5];
-    for (i = 6; i >= 0; i--) {
-        d = new Date(asOf.getFullYear(), asOf.getMonth(), asOf.getDate() - i);
-        labels.push((d.getMonth() + 1) + '/' + d.getDate());
-        var lift = dataHubWeekdayLift(d.getDay());
-        var noise = 0.96 + dataHubHashNoise(i * 7 + d.getDate()) * 0.08;
-        var idx = 6 - i;
-        cafe24.push(Math.round(baseC[idx] * lift * noise));
-        smartstore.push(Math.round(baseS[idx] * lift * noise));
-        coupang.push(Math.round(baseP[idx] * lift * noise));
-        roas.push(Math.round(baseR[idx] * lift * 100));
+    var liveOrders = (App.orders || []).map(function(order) {
+        var timestamp = order.orderedAt ? new Date(order.orderedAt) : null;
+        return { row: order, date: timestamp };
+    }).filter(function(item) {
+        return item.date && !isNaN(item.date.getTime()) && item.date >= start && item.date <= queryTime;
+    });
+    var useLive = !!(App.liveData && App.liveData.enabled && liveOrders.length);
+    var series = {};
+    var orderSeries = {};
+    var hourlyRevenue = new Array(buckets.length).fill(0);
+    var hourlyOrders = new Array(buckets.length).fill(0);
+    var totalRevenue = 0;
+    var totalOrders = 0;
+    // 실연동: 조회일 0시 컷오프. 데모(목업): KPI '금일 매출'과 수치가 일치하도록 스트림 전체(24h)를 당일로 간주.
+    var todayStart = useLive
+        ? new Date(queryTime.getFullYear(), queryTime.getMonth(), queryTime.getDate())
+        : start;
+
+    channels.forEach(function(channel) {
+        series[channel.id] = new Array(buckets.length).fill(0);
+        orderSeries[channel.id] = new Array(buckets.length).fill(0);
+    });
+
+    if (useLive) {
+        liveOrders.forEach(function(item) {
+            var channel = channels.find(function(candidate) { return candidate.id === item.row.channel; });
+            if (!channel) return;
+            var amount = Number(item.row.amount || 0);
+            var hourIndex = Math.min(24, Math.max(0, Math.floor((item.date - start) / 3600000)));
+            hourlyRevenue[hourIndex] += amount;
+            hourlyOrders[hourIndex] += 1;
+            series[channel.id][hourIndex] += amount;
+            orderSeries[channel.id][hourIndex] += 1;
+            totalRevenue += amount;
+            totalOrders += 1;
+        });
+    } else {
+        var metrics = getMockMetrics();
+        totalRevenue = metrics.dailyRevenue;
+        totalOrders = metrics.orderCount;
+        var channelWeightSum = channels.reduce(function(sum, channel) { return sum + channel.weight; }, 0);
+        var demand = [];
+        var demandSum = 0;
+        for (var hour = 0; hour < buckets.length; hour++) {
+            var absoluteHour = buckets[hour].getHours();
+            var businessLift = absoluteHour <= 5 ? 0.30
+                : absoluteHour <= 7 ? 0.52
+                : absoluteHour <= 9 ? 0.92
+                : absoluteHour <= 12 ? 1.42
+                : absoluteHour <= 14 ? 1.05
+                : absoluteHour <= 17 ? 1.18
+                : absoluteHour <= 21 ? 1.68
+                : absoluteHour === 22 ? 1.40 : 0.84;
+            var randomLift = 0.66 + dataHubHashNoise(hour * 29 + end.getDate() * 7) * 0.70;
+            var eventLift = dataHubHashNoise(hour * 47 + end.getMonth()) > 0.82 ? 1.38 : 1;
+            var partialHour = hour === buckets.length - 1
+                ? Math.max(0.08, queryTime.getMinutes() / 60)
+                : 1;
+            demand[hour] = businessLift * randomLift * eventLift * partialHour;
+            demandSum += demand[hour];
+        }
+        var rawOrderSum = 0;
+        var rawOrdersByHour = [];
+        for (hour = 0; hour < buckets.length; hour++) {
+            var aovNoise = 0.88 + dataHubHashNoise(hour * 53 + 5) * 0.24;
+            rawOrdersByHour[hour] = demand[hour] * aovNoise;
+            rawOrderSum += rawOrdersByHour[hour];
+        }
+        for (hour = 0; hour < buckets.length; hour++) {
+            var hourRevenue = totalRevenue * demand[hour] / demandSum;
+            var hourOrders = totalOrders * rawOrdersByHour[hour] / rawOrderSum;
+            hourlyRevenue[hour] = hourRevenue;
+            hourlyOrders[hour] = hourOrders;
+            var weightedShares = channels.map(function(channel, channelIdx) {
+                var shareNoise = 0.55 + dataHubHashNoise(hour * 31 + (channelIdx + 1) * 97) * 1.05;
+                return { id: channel.id, value: (channel.weight / channelWeightSum) * shareNoise };
+            });
+            var weightedShareSum = weightedShares.reduce(function(sum, share) { return sum + share.value; }, 0);
+            channels.forEach(function(channel) {
+                var weightedShare = weightedShares.find(function(share) { return share.id === channel.id; });
+                var share = weightedShare.value / weightedShareSum;
+                series[channel.id][hour] = hourRevenue * share;
+                orderSeries[channel.id][hour] = hourOrders * share;
+            });
+        }
     }
+
+    var todayRevenue = 0;
+    var todayOrders = 0;
+    var channelStats = channels.map(function(channel) {
+        var stat = { id: channel.id, label: channel.label, color: channel.peakColor, revenueToday: 0, ordersToday: 0, revenue24h: 0, orders24h: 0 };
+        buckets.forEach(function(bucket, index) {
+            stat.revenue24h += series[channel.id][index];
+            stat.orders24h += orderSeries[channel.id][index];
+            if (bucket >= todayStart) {
+                stat.revenueToday += series[channel.id][index];
+                stat.ordersToday += orderSeries[channel.id][index];
+            }
+        });
+        stat.ordersToday = Math.round(stat.ordersToday);
+        stat.orders24h = Math.round(stat.orders24h);
+        todayRevenue += stat.revenueToday;
+        todayOrders += stat.ordersToday;
+        return stat;
+    });
+
+    var peakIndex = 0;
+    hourlyRevenue.forEach(function(value, index) {
+        if (value > hourlyRevenue[peakIndex]) peakIndex = index;
+    });
+    var peakIndexByChannel = {};
+    channels.forEach(function(channel) {
+        var best = -1;
+        series[channel.id].forEach(function(value, index) {
+            if (value > 0 && (best < 0 || value > series[channel.id][best])) best = index;
+        });
+        peakIndexByChannel[channel.id] = best;
+    });
+    var peakStart = new Date(start.getTime() + peakIndex * 3600000);
+    var peakEnd = new Date(peakStart.getTime() + 3600000);
+    var collectedAt = App.liveData && App.liveData.loadedAt
+        ? new Date(App.liveData.loadedAt)
+        : App.demoLastRefresh;
+    var freshnessSeconds = collectedAt && !isNaN(collectedAt.getTime())
+        ? Math.max(0, Math.round((Date.now() - collectedAt.getTime()) / 1000))
+        : 12;
+
     return {
-        labels: labels,
-        cafe24: sc(cafe24),
-        smartstore: sc(smartstore),
-        coupang: sc(coupang),
-        roas: roas
+        start: start,
+        end: end,
+        queryTime: queryTime,
+        labels: buckets.map(pointLabel),
+        channels: channels,
+        series: series,
+        orderSeries: orderSeries,
+        hourlyOrders: hourlyOrders,
+        peakIndexByChannel: peakIndexByChannel,
+        totalRevenue: totalRevenue,
+        totalOrders: Math.round(totalOrders),
+        todayRevenue: todayRevenue,
+        todayOrders: todayOrders,
+        channelStats: channelStats,
+        peakLabel: pad2(peakStart.getHours()) + ':00–' + pad2(peakEnd.getHours()) + ':00',
+        freshnessLabel: freshnessSeconds < 60 ? freshnessSeconds + '초' : Math.floor(freshnessSeconds / 60) + '분',
+        sourceLabel: useLive ? '실연동 주문' : '데모 실시간 스트림'
     };
 }
 
@@ -410,34 +545,6 @@ function addActivityLog(entry) {
     refreshDemoUI();
 }
 
-function setDashboardChartPeriod(period, skipChart) {
-    App.dashboardChartPeriod = period;
-    var wrap = document.getElementById('chart-period');
-    if (wrap) {
-        var btns = wrap.querySelectorAll('.tab-btn');
-        btns.forEach(function(btn, i) {
-            var active = (period === 'weekly' && i === 0) || (period === 'monthly' && i === 1);
-            btn.classList.toggle('active', active);
-            btn.classList.toggle('text-gray-400', !active);
-        });
-    }
-    var titleEl = document.getElementById('chart-period-title');
-    if (titleEl) titleEl.textContent = (period === 'weekly' ? '주간' : '월간') + ' 채널별 매출 & ROAS';
-    if (!skipChart) {
-        var multi = document.getElementById('multiChannelChart');
-        if (multi && App.charts.length) initCharts();
-    }
-}
-
-function bindChartPeriodTabs() {
-    var wrap = document.getElementById('chart-period');
-    if (!wrap) return;
-    wrap.querySelectorAll('.tab-btn').forEach(function(btn, i) {
-        btn.onclick = function() { setDashboardChartPeriod(i === 0 ? 'weekly' : 'monthly'); };
-    });
-    setDashboardChartPeriod(App.dashboardChartPeriod, true);
-}
-
 function processOrder(id) {
     var order = App.orders.find(function(o) { return o.id === id; });
     if (!order) return;
@@ -453,6 +560,17 @@ function syncOrdersDemo() {
     showToast('데모: 전 채널 동기화 완료 (' + fmtCount(App.mockPipeline.collected) + '건)', 'success');
     addActivityLog({ userId: 'kim', action: '수동 동기화', category: 'sync', type: 'success', detail: '전 채널 주문 수동 동기화 실행', meta: fmtCount(App.mockPipeline.collected) + '건 수집 (데모)' });
     refreshDemoUI();
+    if (App.currentView === 'view-dashboard') switchView('view-dashboard');
+}
+
+function refreshRealtimeChart() {
+    App.demoLastRefresh = new Date();
+    updateDemoHeader();
+    if (App.currentView === 'view-dashboard') switchView('view-dashboard');
+    if (typeof window !== 'undefined' && typeof window.reloadLiveData === 'function') {
+        window.reloadLiveData();
+    }
+    showToast('실시간 매출 차트를 새로고침했습니다.', 'success');
 }
 
 function markAllNotificationsRead() {
@@ -983,7 +1101,7 @@ function _homeDetailEscHandler(e) {
     if (e.key === 'Escape') closeHomeDetailPopup();
 }
 
-function buildHomeDetailPayload(type) {
+function buildHomeDetailPayload(type, arg) {
     var m = getMockMetrics();
     var s = typeof getSettings === 'function' ? getSettings() : { margins: {}, kpi: {} };
     var channels = [
@@ -1065,6 +1183,73 @@ function buildHomeDetailPayload(type) {
                 (rows2 || '<tr><td colspan="4">대기 주문 없음</td></tr>') + '</tbody></table>'
         };
     }
+    if (type === 'realtimeRevenue' || type === 'realtimeOrders') {
+        var rt = getRolling24HourChartData();
+        var isRevenue = type === 'realtimeRevenue';
+        var stats = rt.channelStats.slice().sort(function (a, b) {
+            return isRevenue ? b.revenueToday - a.revenueToday : b.ordersToday - a.ordersToday;
+        });
+        var totalValue = isRevenue ? rt.todayRevenue : rt.todayOrders;
+        var maxValue = stats.length ? (isRevenue ? stats[0].revenueToday : stats[0].ordersToday) : 0;
+        var statRows = stats.map(function (stat, index) {
+            var value = isRevenue ? stat.revenueToday : stat.ordersToday;
+            var share = totalValue > 0 ? Math.round((value / totalValue) * 100) : 0;
+            var barWidth = maxValue > 0 ? Math.max(2, Math.round((value / maxValue) * 100)) : 0;
+            return '<tr><td class="whitespace-nowrap"><span class="chart-legend-dot" style="background:' + stat.color + ';display:inline-block;margin-right:6px;vertical-align:middle"></span>' +
+                (index === 0 ? '<strong>' + stat.label + '</strong>' : stat.label) + '</td>' +
+                '<td class="text-right font-mono">' + (isRevenue ? App.formatWon(Math.round(stat.revenueToday)) : fmtCount(stat.ordersToday) + '건') + '</td>' +
+                '<td class="text-right font-mono text-gray-400">' + share + '%</td>' +
+                '<td class="w-[34%]"><div class="w-full bg-gray-800 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:' + barWidth + '%;background:' + stat.color + '"></div></div></td></tr>';
+        }).join('');
+        var topStat = stats[0];
+        var isLiveRt = rt.sourceLabel === '실연동 주문';
+        return {
+            title: isRevenue ? '당일 채널별 매출' : '당일 채널별 주문',
+            sub: isLiveRt
+                ? (rt.queryTime.getMonth() + 1 + '/' + rt.queryTime.getDate() + ' 00시 이후 누적 · ' + rt.sourceLabel)
+                : ('금일 영업 누적 · ' + rt.sourceLabel),
+            report: 'dashboard',
+            body: '<div class="grid grid-cols-3 gap-2 mb-3">' +
+                '<div class="home-ops-cell"><p class="lab">' + (isRevenue ? '당일 매출' : '당일 주문') + '</p><p class="val" style="font-size:.95rem">' +
+                (isRevenue ? App.formatWon(Math.round(totalValue)) : fmtCount(totalValue) + '건') + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">1위 채널</p><p class="val" style="font-size:.95rem">' + (topStat ? topStat.label : '-') + '</p></div>' +
+                '<div class="home-ops-cell"><p class="lab">연동 채널</p><p class="val" style="font-size:.95rem">' + stats.length + '개</p></div></div>' +
+                '<table class="home-detail-table"><thead><tr><th>채널</th><th class="text-right">' + (isRevenue ? '매출' : '주문') + '</th><th class="text-right">비중</th><th></th></tr></thead><tbody>' +
+                (statRows || '<tr><td colspan="4">데이터 없음</td></tr>') + '</tbody></table>' +
+                '<p class="text-[11px] text-gray-500 mt-3">' + (isLiveRt
+                    ? '조회일 0시부터 현재 조회 시각까지의 누적 기준입니다. 차트는 최근 24시간 롤링 구간을 표시합니다.'
+                    : '금일 영업 기준 누적이며 KPI 카드의 금일 매출·주문건수와 일치합니다. 차트는 최근 24시간 롤링 구간을 표시합니다.') + '</p>'
+        };
+    }
+    if (type === 'promoDay') {
+        var dayStr = arg ? String(arg) : '';
+        if (typeof loadPromoPlans === 'function' && (!promoPlans || !promoPlans.length)) loadPromoPlans();
+        var dayPlans = dayStr && typeof getPromoPlansForDate === 'function' ? getPromoPlansForDate(dayStr) : [];
+        var dayParts = dayStr.split('-');
+        var dayLabel = dayParts.length === 3 ? parseInt(dayParts[1], 10) + '월 ' + parseInt(dayParts[2], 10) + '일' : dayStr;
+        var statusInfo = { active: ['진행중', 'promo-chip'], planning: ['기획', 'promo-chip plan'], completed: ['완료', 'promo-chip done'] };
+        var dayCards = dayPlans.map(function (p) {
+            var st = statusInfo[p.status] || statusInfo.planning;
+            var typeInfo = typeof getPromoTypeInfo === 'function' ? getPromoTypeInfo(p.type) : { label: '' };
+            var pct = p.kpi && p.kpi.targetRevenue ? Math.min(100, Math.round(((p.kpi.actualRevenue || 0) / p.kpi.targetRevenue) * 100)) : 0;
+            return '<div class="p-3 rounded-lg bg-surface border border-border mb-2">' +
+                '<div class="flex items-center gap-2 mb-1 flex-wrap"><span class="' + st[1] + '">' + st[0] + '</span>' +
+                '<p class="text-sm font-bold">' + (p.title || '') + '</p>' +
+                '<span class="text-[10px] text-gray-500">' + typeInfo.label + '</span></div>' +
+                '<p class="text-[11px] text-gray-500 mb-1.5">' + (p.startDate || '') + ' ~ ' + (p.endDate || '') + ' · ' + (p.channels || []).join(', ') + '</p>' +
+                (p.memo ? '<p class="text-[11px] text-gray-400 mb-1.5">' + p.memo + '</p>' : '') +
+                '<div class="flex items-center justify-between text-[10px] text-gray-500 mb-1">' +
+                '<span>목표 대비 실적</span><span class="font-mono text-gray-300">' + App.formatWon(p.kpi && p.kpi.actualRevenue || 0) + ' / ' + App.formatWon(p.kpi && p.kpi.targetRevenue || 0) + '</span></div>' +
+                '<div class="w-full bg-gray-800 rounded-full h-1.5"><div class="h-1.5 rounded-full bg-gradient-to-r from-primary to-accent" style="width:' + pct + '%"></div></div>' +
+                '</div>';
+        }).join('');
+        return {
+            title: dayLabel + ' 프로모션',
+            sub: dayPlans.length ? dayPlans.length + '건 진행 · 기획 포함' : '해당 일자에 등록된 프로모션 없음',
+            report: 'promo',
+            body: dayCards || '<p class="text-sm text-gray-400 py-4 text-center">이 날짜에 걸친 프로모션이 없습니다.<br><span class="text-[11px] text-gray-500">프로모션 기획 메뉴에서 새 일정을 등록할 수 있습니다.</span></p>'
+        };
+    }
     if (type === 'promo') {
         var ps = getHomePromoSummary();
         var list = (typeof promoPlans !== 'undefined' && promoPlans) ? promoPlans : [];
@@ -1095,8 +1280,8 @@ function buildHomeDetailPayload(type) {
     };
 }
 
-function openHomeDetailPopup(type) {
-    var payload = buildHomeDetailPayload(type);
+function openHomeDetailPopup(type, arg) {
+    var payload = buildHomeDetailPayload(type, arg);
     var modal = document.getElementById('home-detail-modal');
     var title = document.getElementById('home-detail-title');
     var sub = document.getElementById('home-detail-sub');
@@ -1269,7 +1454,7 @@ function insertMention(userId) {
 
 /* ── 프로모션 기획 · 성과 (실행은 외부 도구) ── */
 var crmActiveTab = 'calendar';
-var PROMO_STORAGE_KEY = 'sample_promo_plans_v2';
+var PROMO_STORAGE_KEY = 'sample_promo_plans_v3';
 var promoPlans = null;
 var promoCalendarMode = 'month';
 var promoCalendarCursor = new Date(2026, 6, 10);
@@ -1326,8 +1511,11 @@ function renderHomePromoMiniCalHtml() {
             return '<span class="pill' + cls + '" title="' + (p.label || p.title || '') + '">' + lab + '</span>';
         }).join('');
         if (events.length > 2) pills += '<span class="pill plan">+' + (events.length - 2) + '</span>';
-        days.push('<div class="day' + (dateStr === todayStr ? '" style="outline:1px solid rgba(59,130,246,.55)' : '') +
-            '"><div class="dnum">' + day + '</div>' + pills + '</div>');
+        days.push('<div class="day' + (events.length ? ' has-promo' : '') + '" ' +
+            (dateStr === todayStr ? 'style="outline:1px solid rgba(59,130,246,.55)" ' : '') +
+            'role="button" tabindex="0" title="' + (m + 1) + '/' + day + ' 프로모션 보기" ' +
+            'onclick="openHomeDetailPopup(\'promoDay\',\'' + dateStr + '\')"' +
+            '><div class="dnum">' + day + '</div>' + pills + '</div>');
     }
     var total = startOffset + daysInMonth;
     var remain = total % 7 === 0 ? 0 : 7 - (total % 7);
@@ -1344,19 +1532,34 @@ function renderHomePromoMiniCalHtml() {
 
 function renderHomePromoCardHtml() {
     var ps = getHomePromoSummary();
-    var focus = ps.focus;
-    var focusTitle = focus ? (focus.label || focus.title) : '등록된 프로모션 없음';
-    var focusMeta = focus
-        ? ((focus.startDate || '') + (focus.endDate ? ' ~ ' + focus.endDate : '') + ' · ' + (focus.channels || []).slice(0, 3).join(', '))
-        : '기간·채널·목표를 등록하면 여기에 요약됩니다';
-    var statusChip = focus
-        ? (focus.status === 'active' ? '<span class="promo-chip">진행중</span>'
-            : focus.status === 'planning' ? '<span class="promo-chip plan">기획</span>'
-            : '<span class="promo-chip done">완료</span>')
-        : '<span class="promo-chip plan">대기</span>';
+    var list = Array.isArray(promoPlans) ? promoPlans : [];
+    var demoToday = new Date(2026, 6, 10);
     var revLabel = ps.target >= 100000000
         ? (ps.actual / 100000000).toFixed(1) + ' / ' + (ps.target / 100000000).toFixed(1) + '억'
         : App.formatWon(ps.actual) + ' / ' + App.formatWon(ps.target);
+
+    var activePlans = list.filter(function (p) { return p.status === 'active'; })
+        .sort(function (a, b) { return (b.kpi && b.kpi.actualRevenue || 0) - (a.kpi && a.kpi.actualRevenue || 0); })
+        .slice(0, 3);
+    var activeRows = activePlans.map(function (p) {
+        var endDate = typeof parsePromoDate === 'function' ? parsePromoDate(p.endDate) : new Date(p.endDate);
+        var dday = Math.ceil((endDate - demoToday) / 86400000);
+        var ddayLabel = dday > 0 ? 'D-' + dday : (dday === 0 ? 'D-Day' : '종료');
+        var pct = p.kpi && p.kpi.targetRevenue ? Math.min(100, Math.round(((p.kpi.actualRevenue || 0) / p.kpi.targetRevenue) * 100)) : 0;
+        var barClass = pct >= 70 ? 'bg-success' : pct >= 40 ? 'bg-primary' : 'bg-warning';
+        var typeInfo = typeof getPromoTypeInfo === 'function' ? getPromoTypeInfo(p.type) : { label: '' };
+        return '<div class="home-promo-item" onclick="openHomeDetailPopup(\'promoDay\',\'' + (p.startDate || '') + '\')" role="button" tabindex="0">' +
+            '<div class="flex items-center gap-2 min-w-0">' +
+            '<span class="home-promo-dday' + (dday <= 2 ? ' urgent' : '') + '">' + ddayLabel + '</span>' +
+            '<div class="min-w-0 flex-1">' +
+            '<p class="text-xs font-bold truncate">' + (p.title || '') + '</p>' +
+            '<p class="text-[10px] text-gray-500 truncate">' + typeInfo.label + ' · ' + (p.channels || []).length + '개 채널 · ~' + formatPromoShortDate(p.endDate) + '</p>' +
+            '</div>' +
+            '<span class="text-[11px] font-mono font-bold shrink-0 ' + (pct >= 70 ? 'text-success' : pct >= 40 ? 'text-primary' : 'text-warning') + '">' + pct + '%</span>' +
+            '</div>' +
+            '<div class="w-full bg-gray-800 rounded-full h-1 mt-1.5"><div class="h-1 rounded-full ' + barClass + '" style="width:' + pct + '%"></div></div>' +
+            '</div>';
+    }).join('');
 
     return `
     <div class="glass rounded-xl p-4 home-promo-card" id="home-promo-card">
@@ -1369,32 +1572,82 @@ function renderHomePromoCardHtml() {
         </div>
         <div class="home-promo-split">
             <div class="min-w-0 flex flex-col">
-                <div class="flex items-start gap-2 mb-3">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2 mb-1 flex-wrap">${statusChip}<p class="text-sm font-bold truncate">${focusTitle}</p></div>
-                        <p class="text-[11px] text-gray-500">${focusMeta}</p>
-                    </div>
-                </div>
                 <div class="grid grid-cols-3 gap-2 mb-3">
-                    <div class="home-ops-cell"><p class="lab">진행</p><p class="val">${ps.active}</p></div>
-                    <div class="home-ops-cell"><p class="lab">기획</p><p class="val">${ps.planning}</p></div>
-                    <div class="home-ops-cell"><p class="lab">완료</p><p class="val">${ps.completed}</p></div>
+                    <div class="home-ops-cell"><p class="lab">진행</p><p class="val text-success">${ps.active}</p></div>
+                    <div class="home-ops-cell"><p class="lab">기획</p><p class="val text-primary">${ps.planning}</p></div>
+                    <div class="home-ops-cell"><p class="lab">완료</p><p class="val text-gray-400">${ps.completed}</p></div>
                 </div>
-                <div class="mb-1 flex justify-between text-[10px] text-gray-500">
-                    <span>기간 매출 목표 대비</span><span class="font-mono text-gray-300">${revLabel} · ${ps.pct}%</span>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">진행중 프로모션 · 목표 달성률</p>
+                <div class="space-y-2 mb-3">
+                    ${activeRows || '<p class="text-xs text-gray-500 py-3 text-center">진행중인 프로모션이 없습니다</p>'}
                 </div>
-                <div class="w-full bg-gray-800 rounded-full h-1.5 mb-3">
-                    <div class="h-1.5 rounded-full bg-gradient-to-r from-primary to-accent" style="width:${ps.pct}%"></div>
-                </div>
-                <p class="text-[11px] text-gray-500 mb-3 leading-relaxed">좌측은 기간 프로모션 써머리, 우측은 스케줄 축소판입니다. 메뉴 바로가기 없이 홈에서만 확인합니다.</p>
-                <div class="mt-auto flex gap-2">
-                    <button type="button" onclick="openHomeDetailPopup('promo')" class="flex-1 text-xs font-semibold py-2 rounded-lg bg-surface border border-border hover:border-primary/40">써머리 상세</button>
-                    <button type="button" onclick="typeof openPromoPlanModal==='function'&&openPromoPlanModal()" class="flex-1 text-xs font-semibold py-2 rounded-lg bg-primary/90 text-white hover:bg-primary">+ 프로모션</button>
+                <div class="mt-auto">
+                    <div class="mb-1 flex justify-between text-[10px] text-gray-500">
+                        <span>전체 기간 매출 목표 대비</span><span class="font-mono text-gray-300">${revLabel} · ${ps.pct}%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-1.5 mb-3">
+                        <div class="h-1.5 rounded-full bg-gradient-to-r from-primary to-accent" style="width:${ps.pct}%"></div>
+                    </div>
+                    <button type="button" onclick="openHomeDetailPopup('promo')" class="w-full text-xs font-semibold py-2 rounded-lg bg-surface border border-border hover:border-primary/40">써머리 상세</button>
                 </div>
             </div>
             <div class="min-w-0">${renderHomePromoMiniCalHtml()}</div>
         </div>
     </div>`;
+}
+
+/* ── 주문 피드 베스트 상품 ── */
+var homeBestTab = 'revenue';
+
+function getHomeBestProducts() {
+    var map = {};
+    (App.orders || []).forEach(function (order) {
+        var name = String(order.product || order.productTitle || '').replace(/ 외 \d+건$/, '').trim();
+        if (!name) return;
+        if (!map[name]) map[name] = { name: name, revenue: 0, count: 0, channels: {} };
+        map[name].revenue += Number(order.amount || 0);
+        map[name].count += 1;
+        if (order.channel) map[name].channels[order.channel] = true;
+    });
+    return Object.keys(map).map(function (key) { return map[key]; });
+}
+
+function renderHomeBestProductsHtml() {
+    var byRevenue = homeBestTab === 'revenue';
+    var items = getHomeBestProducts().sort(function (a, b) {
+        return byRevenue ? b.revenue - a.revenue : b.count - a.count;
+    }).slice(0, 5);
+    var maxValue = items.length ? (byRevenue ? items[0].revenue : items[0].count) : 0;
+    var rows = items.map(function (item, index) {
+        var value = byRevenue ? item.revenue : item.count;
+        var barWidth = maxValue > 0 ? Math.max(4, Math.round((value / maxValue) * 100)) : 0;
+        var channelCount = Object.keys(item.channels).length;
+        return '<div class="home-best-row">' +
+            '<span class="home-best-rank rank-' + (index + 1) + '">' + (index + 1) + '</span>' +
+            '<div class="min-w-0 flex-1">' +
+            '<div class="flex items-center justify-between gap-2">' +
+            '<p class="text-xs font-semibold truncate">' + item.name + '</p>' +
+            '<span class="text-[11px] font-mono font-bold shrink-0">' + (byRevenue ? App.formatWon(item.revenue) : fmtCount(item.count) + '건') + '</span>' +
+            '</div>' +
+            '<div class="flex items-center gap-2 mt-1">' +
+            '<div class="flex-1 bg-gray-800 rounded-full h-1"><div class="h-1 rounded-full bg-gradient-to-r from-primary to-accent" style="width:' + barWidth + '%"></div></div>' +
+            '<span class="text-[9px] text-gray-500 shrink-0">' + (byRevenue ? fmtCount(item.count) + '건' : App.formatWon(item.revenue)) + ' · ' + channelCount + '채널</span>' +
+            '</div></div></div>';
+    }).join('');
+    return '<div id="home-best-products" class="home-best-wrap">' +
+        '<div class="flex items-center justify-between mb-2">' +
+        '<p class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">베스트 5 상품 · 최근 24시간</p>' +
+        '<div class="home-best-tabs">' +
+        '<button type="button" class="' + (byRevenue ? 'on' : '') + '" onclick="setHomeBestTab(\'revenue\')">매출액</button>' +
+        '<button type="button" class="' + (!byRevenue ? 'on' : '') + '" onclick="setHomeBestTab(\'count\')">주문건수</button>' +
+        '</div></div>' +
+        '<div class="home-best-list">' + (rows || '<p class="text-xs text-gray-500 py-3 text-center">주문 데이터 없음</p>') + '</div></div>';
+}
+
+function setHomeBestTab(tab) {
+    homeBestTab = tab === 'count' ? 'count' : 'revenue';
+    var el = document.getElementById('home-best-products');
+    if (el) el.outerHTML = renderHomeBestProductsHtml();
 }
 
 function getPipelineHealth() {
@@ -1576,16 +1829,16 @@ function getPromoPlansDefaults() {
             variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
           kpi: { targetSent: 0, targetOpenRate: 0, targetConversion: 4.8, targetRoas: 4.2, targetRevenue: 72000000,
                  actualSent: 0, actualOpened: 0, actualConverted: 918, actualRevenue: 51400000, actualRoas: 3.9, inputAt: '2026-07-14' } },
-        { id: 'pp-demo-3', title: '스마트스토어 리뷰 더블', type: 'coupon', status: 'active',
-          startDate: '2026-07-01', endDate: '2026-07-31', owner: 'lee', budget: 2500000,
+        { id: 'pp-demo-3', title: '스마트스토어 리뷰 더블', type: 'coupon', status: 'completed',
+          startDate: '2026-07-02', endDate: '2026-07-07', owner: 'lee', budget: 2500000,
           channels: ['smartstore', 'alimtalk'], memo: '포토리뷰 적립금 2배 · 베스트리뷰 추첨',
           executionTool: '스마트스토어 센터 · 알림톡',
           abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
             variantA: { sent: 0, converted: 0, revenue: 0 }, variantB: { sent: 0, converted: 0, revenue: 0 } },
           kpi: { targetSent: 6000, targetOpenRate: 41, targetConversion: 2.4, targetRoas: 3.0, targetRevenue: 58000000,
-                 actualSent: 4380, actualOpened: 1927, actualConverted: 118, actualRevenue: 22100000, actualRoas: 2.7, inputAt: '2026-07-13' } },
+                 actualSent: 4380, actualOpened: 1927, actualConverted: 118, actualRevenue: 22100000, actualRoas: 2.7, inputAt: '2026-07-08' } },
         { id: 'pp-demo-4', title: '이탈 고객 복귀 캠페인', type: 'crm_push', status: 'planning',
-          startDate: '2026-07-18', endDate: '2026-07-28', owner: 'lee', budget: 4200000,
+          startDate: '2026-07-28', endDate: '2026-07-31', owner: 'lee', budget: 4200000,
           channels: ['alimtalk', 'cafe24'], memo: '6개월 미구매 · 15% 쿠폰 · 세그먼트 A/B',
           executionTool: '카카오 비즈메시지 콘솔',
           abTest: { enabled: true, variantALabel: 'A안 · 감성 카피', variantBLabel: 'B안 · 할인 강조', winner: null,
@@ -1644,7 +1897,7 @@ function getPromoPlansDefaults() {
           kpi: { targetSent: 20000, targetOpenRate: 47, targetConversion: 3.6, targetRoas: 3.7, targetRevenue: 310000000,
                  actualSent: 0, actualOpened: 0, actualConverted: 0, actualRevenue: 0, actualRoas: 0, inputAt: null } },
         { id: 'pp-demo-11', title: '재구매 리마인드 D+30', type: 'crm_push', status: 'active',
-          startDate: '2026-07-05', endDate: '2026-07-31', owner: 'lee', budget: 1500000,
+          startDate: '2026-07-06', endDate: '2026-07-13', owner: 'lee', budget: 1500000,
           channels: ['alimtalk'], memo: '구매 30일 후 소모품 리필 유도 · 매일 배치 발송',
           executionTool: '솔라피 스케줄 발송',
           abTest: { enabled: false, variantALabel: 'A안', variantBLabel: 'B안', winner: null,
@@ -2264,6 +2517,7 @@ function savePromoResults(planId) {
 // Build view templates
 App.views['view-dashboard'] = () => {
     var m = getMockMetrics();
+    var rolling24 = getRolling24HourChartData();
     return `
 <div id="view-dashboard" class="view-section fade-in max-w-[1400px] mx-auto space-y-5">
     <!-- Morning Briefing Banner -->
@@ -2333,20 +2587,31 @@ App.views['view-dashboard'] = () => {
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 home-chart-row">
         <div class="glass rounded-xl p-4 xl:col-span-2 chart-card h-full">
             <div class="chart-card-header">
-                <div class="chart-card-title">
-                    <h2 id="chart-period-title">${App.dashboardChartPeriod === 'monthly' ? '월간' : '주간'} 채널별 매출 & ROAS</h2>
-                    <span class="chart-unit-badge">만 원</span>
+                <div class="min-w-0">
+                    <div class="chart-card-title">
+                        <h2>실시간 채널별 시간 매출</h2>
+                        <span class="live-status-pill"><span></span>LIVE</span>
+                        <span class="chart-unit-badge">만원</span>
+                    </div>
+                    <p class="realtime-chart-range">${rolling24.labels[0]} → ${rolling24.labels[rolling24.labels.length - 1]} · 최근 24시간 · 1시간 단위 합산</p>
                 </div>
-                <div class="flex bg-surface border border-border rounded-lg p-0.5 shrink-0" id="chart-period">
-                    <button class="tab-btn ${App.dashboardChartPeriod === 'weekly' ? 'active' : ''} px-2.5 py-1 text-[11px] font-medium rounded-md ${App.dashboardChartPeriod !== 'weekly' ? 'text-gray-400' : ''}">주간</button>
-                    <button class="tab-btn ${App.dashboardChartPeriod === 'monthly' ? 'active' : ''} px-2.5 py-1 text-[11px] font-medium rounded-md ${App.dashboardChartPeriod !== 'monthly' ? 'text-gray-400' : ''}">월간</button>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-[10px] text-gray-500">${rolling24.sourceLabel} · ${rolling24.freshnessLabel} 전 수집</span>
+                    <button type="button" class="realtime-refresh-btn" onclick="refreshRealtimeChart()" title="실시간 데이터 새로고침">⟳ 새로고침</button>
                 </div>
             </div>
-            <div class="chart-legend-row">
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(59,130,246,0.8)"></span>Cafe24</span>
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(16,185,129,0.8)"></span>스마트스토어</span>
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(249,115,22,0.8)"></span>쿠팡</span>
-                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:#a78bfa;border-radius:50%"></span>ROAS</span>
+            <div class="realtime-summary-grid">
+                <div class="realtime-summary-click" onclick="openHomeDetailPopup('realtimeRevenue')" title="채널별 당일 매출 상세 보기"><span>당일 매출 <em class="realtime-click-hint">상세</em></span><strong>${App.formatWon(rolling24.todayRevenue)}</strong></div>
+                <div class="realtime-summary-click" onclick="openHomeDetailPopup('realtimeOrders')" title="채널별 당일 주문 상세 보기"><span>당일 주문 <em class="realtime-click-hint">상세</em></span><strong>${fmtCount(rolling24.todayOrders)}건</strong></div>
+                <div><span>최고 매출 시간대</span><strong>${rolling24.peakLabel}</strong></div>
+                <div><span>수집 지연</span><strong class="text-success">${rolling24.freshnessLabel}</strong></div>
+            </div>
+            <div class="chart-legend-row realtime-legend">
+                ${rolling24.channels.map(function(channel) {
+                    return '<span class="chart-legend-item"><span class="chart-legend-dot" style="background:' + channel.color + '"></span>' + channel.label + '</span>';
+                }).join('')}
+                <span class="chart-legend-item"><span class="chart-legend-dot" style="background:rgba(250,204,21,0.9)"></span>주문건수(선)</span>
+                <span class="ml-auto text-[10px] text-gray-500">진한 색 + 흰 테두리 = 채널별 최고 매출 시간</span>
             </div>
             <div class="chart-canvas-wrap tall"><canvas id="multiChannelChart"></canvas></div>
         </div>
@@ -2395,6 +2660,9 @@ App.views['view-dashboard'] = () => {
         <div class="p-4 border-b border-border flex justify-between items-center">
             <h2 class="font-bold text-sm">실시간 주문 피드</h2>
             <button onclick="navigateTo('view-orders')" class="text-xs text-primary font-semibold hover:underline">전체 보기 →</button>
+        </div>
+        <div class="p-4 border-b border-border">
+            ${typeof renderHomeBestProductsHtml === 'function' ? renderHomeBestProductsHtml() : ''}
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -5335,26 +5603,102 @@ function initCharts() {
 
     var multi = document.getElementById('multiChannelChart');
     if (multi) {
-        var chData = getDashboardChartData(App.dashboardChartPeriod);
+        var chData = getRolling24HourChartData();
         App.charts.push(new Chart(multi, {
             type: 'bar',
             data: {
                 labels: chData.labels,
-                datasets: [
-                    { label: 'Cafe24', data: chData.cafe24, backgroundColor: 'rgba(59,130,246,0.5)', borderRadius: 4, stack: 'a' },
-                    { label: '스마트스토어', data: chData.smartstore, backgroundColor: 'rgba(16,185,129,0.5)', borderRadius: 4, stack: 'a' },
-                    { label: '쿠팡', data: chData.coupang, backgroundColor: 'rgba(249,115,22,0.5)', borderRadius: 4, stack: 'a' },
-                    { label: 'ROAS (%)', type: 'line', data: chData.roas, borderColor: '#a78bfa', borderWidth: 2, pointRadius: 3, tension: 0.4, yAxisID: 'y1' }
-                ]
+                datasets: [{
+                    type: 'line',
+                    label: '주문건수',
+                    data: chData.hourlyOrders.map(function(value) { return Math.round(value); }),
+                    borderColor: 'rgba(250,204,21,0.9)',
+                    backgroundColor: 'rgba(250,204,21,0.9)',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    tension: 0.35,
+                    fill: false,
+                    yAxisID: 'y1',
+                    order: 0
+                }].concat(chData.channels.map(function(channel) {
+                    var peakIdx = chData.peakIndexByChannel[channel.id];
+                    return {
+                        label: channel.label,
+                        data: chData.series[channel.id].map(function(value) { return Math.round(value / 10000); }),
+                        backgroundColor: function(context) {
+                            return context.dataIndex === peakIdx ? channel.peakColor : channel.color;
+                        },
+                        borderColor: function(context) {
+                            return context.dataIndex === peakIdx ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0)';
+                        },
+                        borderWidth: function(context) {
+                            return context.dataIndex === peakIdx ? 1.5 : 0;
+                        },
+                        borderRadius: 3,
+                        borderSkipped: false,
+                        stack: 'hourly',
+                        order: 1
+                    };
+                }))
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: false } },
+                animation: { duration: 650 },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) {
+                                return items.length ? items[0].label + ' 시간 매출' : '';
+                            },
+                            label: function(context) {
+                                if (context.dataset.yAxisID === 'y1') {
+                                    return '주문건수 ' + Number(context.raw || 0).toLocaleString('ko-KR') + '건 (전 채널 합계)';
+                                }
+                                var channel = chData.channels[context.datasetIndex - 1];
+                                var isPeak = channel && chData.peakIndexByChannel[channel.id] === context.dataIndex;
+                                return context.dataset.label + ' ' + Number(context.raw || 0).toLocaleString('ko-KR') + '만원' + (isPeak ? ' ★ 채널 최고' : '');
+                            },
+                            footer: function(items) {
+                                var total = items.reduce(function(sum, item) {
+                                    return item.dataset.yAxisID === 'y1' ? sum : sum + Number(item.raw || 0);
+                                }, 0);
+                                return '매출 통합 ' + total.toLocaleString('ko-KR') + '만원';
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    x: { stacked: true, grid: { display: false } },
-                    y: { stacked: true, position: 'left' },
-                    y1: { position: 'right', grid: { drawOnChartArea: false } }
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: window.innerWidth < 768,
+                            maxTicksLimit: window.innerWidth < 768 ? 7 : 25,
+                            font: { size: 9 }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        title: { display: true, text: '시간 매출 (만원)', color: '#6b7280', font: { size: 10 } },
+                        ticks: {
+                            callback: function(value) { return Number(value).toLocaleString('ko-KR'); }
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: '주문 (건)', color: 'rgba(250,204,21,0.75)', font: { size: 10 } },
+                        ticks: {
+                            color: 'rgba(250,204,21,0.75)',
+                            callback: function(value) { return Number(value).toLocaleString('ko-KR'); }
+                        }
+                    }
                 }
             }
         }));
@@ -5549,7 +5893,6 @@ function switchView(targetId) {
     }
     requestAnimationFrame(function() {
         initCharts();
-        bindChartPeriodTabs();
     });
     if (typeof DashboardGuide !== 'undefined') DashboardGuide.onViewChange(targetId);
 }
