@@ -1222,11 +1222,46 @@ function applyTenantCustomAfterLoad() {
     }
 }
 
+function builtInTestTenant(id) {
+    if (id !== 'test0719') return null;
+    var base = {
+        id: 'test0719',
+        version: 1,
+        status: 'ready',
+        keyId: 'test0719',
+        projectFolder: 'test0719',
+        lifecycle: 'building',
+        health: 'green',
+        accountOwner: 'JK',
+        createdAt: '2026-07-19T00:00:00.000Z',
+        updatedAt: '2026-07-19T00:00:00.000Z',
+        companyName: 'API 연동 테스트 대시보드',
+        companyNameEn: 'Omnify Integration Lab',
+        billingPlan: 'enterprise',
+        serviceTier: 'enterprise',
+        seats: 10,
+        briefingRecipients: 10,
+        channels: ['cafe24', 'smartstore', 'coupang', 'ably'],
+        channelCount: 4,
+        wms: 'sabangnet',
+        inventoryWrite: false,
+        skuApprox: 5000,
+        notes: '실제 채널 자격증명 연결 및 정규화 수집 검증용 테넌트',
+        infra: {
+            storagePrefix: 'tenants/test0719',
+            previewPath: 'demo-dashboard.html?tenant=test0719&tier=enterprise',
+            connectionPath: 'channel-connect.html?tenant=test0719'
+        }
+    };
+    base.custom = defaultCustomConfig(base);
+    return normalizeTenantRecord(base);
+}
+
 function resolveTenantFromQuery() {
     try {
         var q = new URLSearchParams(window.location.search).get('tenant');
         if (!q) return null;
-        return getTenantById(q);
+        return getTenantById(q) || builtInTestTenant(q);
     } catch (e) {
         return null;
     }
@@ -1239,7 +1274,11 @@ function resolveTenantFromQueryAsync() {
         if (!q) return Promise.resolve(null);
         var local = getTenantById(q);
         if (local) return Promise.resolve(local);
-        return TenantStore.fetchOne(q).catch(function () { return null; });
+        return TenantStore.fetchOne(q).then(function (remote) {
+            return remote || builtInTestTenant(q);
+        }).catch(function () {
+            return builtInTestTenant(q);
+        });
     } catch (e) {
         return Promise.resolve(null);
     }

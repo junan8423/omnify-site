@@ -103,9 +103,9 @@
                 tip('셀러센터·파트너센터에서 「API / 개발자」 메뉴의 키·토큰을 복사하세요. 막히면 가이드를 따라 하세요.') +
                 '<a class="btn-guide" href="guides/channel-api.html' + anchor + '" target="_blank" rel="noopener">가이드 확인</a>' +
                 '</div>' +
-                '<label class="field"><span>Mall / Vendor / 판매자 ID</span><input type="text" data-f="sellerId" placeholder="예: mall_id / A00123456"></label>' +
-                '<label class="field"><span>API Key 또는 Client ID</span><input type="text" data-f="apiKey" placeholder="발급받은 키"></label>' +
-                '<label class="field"><span>Secret / Access Token</span><input type="text" data-f="secret" placeholder="시크릿 또는 액세스 토큰"></label>' +
+                '<label class="field"><span>Mall / Vendor / 판매자 ID</span><input type="text" data-f="sellerId" placeholder="예: mall_id / A00123456" autocomplete="off"></label>' +
+                '<label class="field"><span>API Key 또는 Client ID</span><input type="password" data-f="apiKey" placeholder="발급받은 키" autocomplete="new-password"></label>' +
+                '<label class="field"><span>Secret / Access Token</span><input type="password" data-f="secret" placeholder="시크릿 또는 액세스 토큰" autocomplete="new-password"></label>' +
                 '<label class="field"><span>메모 (선택)</span><input type="text" data-f="note" placeholder="예: 유효기간 2026-12, 담당 김OO"></label>' +
                 '</div>';
         }).join('');
@@ -152,11 +152,21 @@
             var card = document.querySelector('.api-card[data-ch="' + id + '"]');
             if (!card) return;
             var a = apis[id] || {};
-            var map = { sellerId: a.sellerId, apiKey: a.apiKey, secret: a.secret, note: a.note };
+            var map = { sellerId: a.sellerId, note: a.note };
             Object.keys(map).forEach(function (k) {
                 var el = card.querySelector('[data-f="' + k + '"]');
                 if (el && map[k] != null) el.value = map[k];
             });
+            var keyEl = card.querySelector('[data-f="apiKey"]');
+            var secretEl = card.querySelector('[data-f="secret"]');
+            if (keyEl) {
+                keyEl.value = '';
+                keyEl.placeholder = a.apiKeyConfigured ? '저장됨 — 변경 시에만 재입력' : '발급받은 키';
+            }
+            if (secretEl) {
+                secretEl.value = '';
+                secretEl.placeholder = a.secretConfigured ? '저장됨 — 변경 시에만 재입력' : '시크릿 또는 액세스 토큰';
+            }
         });
     }
 
@@ -251,7 +261,10 @@
             $('wms-yes').checked = !!intake.wms.useSabangnet;
             $('wms-no').checked = !intake.wms.useSabangnet;
             if ($('wms-shop-id')) $('wms-shop-id').value = intake.wms.shopId || '';
-            if ($('wms-api-key')) $('wms-api-key').value = intake.wms.apiKey || '';
+            if ($('wms-api-key')) {
+                $('wms-api-key').value = '';
+                $('wms-api-key').placeholder = intake.wms.apiKeyConfigured ? '저장됨 — 변경 시에만 재입력' : '연동키 / API Key';
+            }
             $('wms-note').value = intake.wms.note || '';
             toggleWms();
         }

@@ -5630,6 +5630,9 @@ function applyTenantChrome(tenant) {
             : '') +
         (tenant.commercial && tenant.commercial.aopEnabled
             ? '<span class="text-amber-200/80">AOP ' + tenant.commercial.prepaidTerm + 'm</span>'
+            : '') +
+        (tenant.id === 'test0719'
+            ? '<a class="ml-auto font-bold text-sky-300 hover:text-sky-200" href="channel-connect.html?tenant=test0719">채널 API 연동센터 →</a>'
             : '');
     main.insertBefore(bar, main.firstChild);
 }

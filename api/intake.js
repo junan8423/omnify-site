@@ -52,6 +52,69 @@ function stripUndefined(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+function maskSecret(value) {
+  return value ? true : false;
+}
+
+/** Public intake GET must never re-expose stored API secrets. */
+function redactIntakeForPublic(record) {
+  if (!record) return null;
+  var copy = stripUndefined(record);
+  var payload = copy.intake && typeof copy.intake === 'object' ? copy.intake : copy;
+  if (payload.channelApis && typeof payload.channelApis === 'object') {
+    Object.keys(payload.channelApis).forEach(function (channelId) {
+      var row = payload.channelApis[channelId] || {};
+      payload.channelApis[channelId] = {
+        sellerId: row.sellerId || '',
+        note: row.note || '',
+        apiKeyConfigured: maskSecret(row.apiKey),
+        secretConfigured: maskSecret(row.secret),
+        apiKey: '',
+        secret: ''
+      };
+    });
+  }
+  if (payload.wms && typeof payload.wms === 'object') {
+    payload.wms = {
+      useSabangnet: !!payload.wms.useSabangnet,
+      shopId: payload.wms.shopId || '',
+      note: payload.wms.note || '',
+      apiKeyConfigured: maskSecret(payload.wms.apiKey),
+      apiKey: ''
+    };
+  }
+  if (copy.intake) copy.intake = payload;
+  return copy;
+}
+
+function keepPreviousSecret(nextValue, previousValue) {
+  var next = String(nextValue || '').trim();
+  if (next) return next;
+  return previousValue || '';
+}
+
+function mergeIntakeSecrets(incoming, previous) {
+  var next = stripUndefined(incoming || {});
+  var prev = previous || {};
+  var prevApis = prev.channelApis || {};
+  var nextApis = next.channelApis || {};
+  Object.keys(nextApis).forEach(function (channelId) {
+    var row = nextApis[channelId] || {};
+    var old = prevApis[channelId] || {};
+    nextApis[channelId] = Object.assign({}, row, {
+      apiKey: keepPreviousSecret(row.apiKey, old.apiKey),
+      secret: keepPreviousSecret(row.secret, old.secret)
+    });
+  });
+  next.channelApis = nextApis;
+  if (next.wms || prev.wms) {
+    next.wms = Object.assign({}, prev.wms || {}, next.wms || {}, {
+      apiKey: keepPreviousSecret((next.wms || {}).apiKey, (prev.wms || {}).apiKey)
+    });
+  }
+  return next;
+}
+
 function findTenantByToken(db, token) {
   return db.collection('tenants').where('intakeToken', '==', token).limit(1).get()
     .then(function (snap) {
@@ -92,7 +155,7 @@ module.exports = async function handler(req, res) {
           return res.status(404).json({ error: 'invalid_token', message: '유효하지 않거나 만료된 수집 링크입니다.' });
         }
         var intakeSnap = await intakes.doc(token).get();
-        var intake = intakeSnap.exists ? intakeSnap.data() : null;
+        var intake = intakeSnap.exists ? redactIntakeForPublic(intakeSnap.data()) : null;
         var t = found.data || {};
         return res.status(200).json({
           ok: true,
@@ -135,13 +198,18 @@ module.exports = async function handler(req, res) {
         return res.status(404).json({ error: 'invalid_token' });
       }
       var now = new Date().toISOString();
+      var prevSnap = await intakes.doc(postToken).get();
+      var prevPayload = prevSnap.exists && prevSnap.data() && prevSnap.data().intake
+        ? prevSnap.data().intake
+        : null;
+      var mergedPayload = mergeIntakeSecrets(payload, prevPayload);
       var record = stripUndefined({
         token: postToken,
         tenantId: tenantHit.id,
-        companyName: tenantHit.data.companyName || payload.companyName || '',
+        companyName: tenantHit.data.companyName || mergedPayload.companyName || '',
         keyId: tenantHit.data.keyId || tenantHit.data.projectFolder || '',
-        intake: payload,
-        submittedAt: now,
+        intake: mergedPayload,
+        submittedAt: (prevSnap.exists && prevSnap.data().submittedAt) || now,
         updatedAt: now,
         status: 'submitted'
       });
@@ -149,8 +217,8 @@ module.exports = async function handler(req, res) {
       await db.collection('tenants').doc(tenantHit.id).set({
         customerIntake: {
           status: 'submitted',
-          submittedAt: now,
-          token: postToken
+          submittedAt: record.submittedAt,
+          updatedAt: now
         },
         updatedAt: now
       }, { merge: true });

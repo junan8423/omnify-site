@@ -2,6 +2,7 @@
   "name": "omnify-site",
   "private": true,
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "firebase-admin": "^13.4.0",
     "popbill": "^1.64.2"
   }

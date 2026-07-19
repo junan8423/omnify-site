@@ -53,6 +53,55 @@ function stripUndefined(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+/** Public dashboard bootstrap — never include intakeToken or PII secrets. */
+function publicTenantBootstrap(raw) {
+  var t = raw || {};
+  var commercial = t.commercial || null;
+  return {
+    id: t.id || '',
+    keyId: t.keyId || t.projectFolder || '',
+    projectFolder: t.projectFolder || t.keyId || '',
+    companyName: t.companyName || '',
+    companyNameEn: t.companyNameEn || '',
+    serviceTier: t.serviceTier || '',
+    billingPlan: t.billingPlan || '',
+    specialPricing: !!t.specialPricing,
+    seats: t.seats,
+    briefingRecipients: t.briefingRecipients,
+    channels: Array.isArray(t.channels) ? t.channels : [],
+    channelCount: t.channelCount || (Array.isArray(t.channels) ? t.channels.length : 0),
+    wms: t.wms || 'none',
+    inventoryWrite: !!t.inventoryWrite,
+    skuApprox: t.skuApprox || 0,
+    driveEnabled: !!t.driveEnabled,
+    driveFolderUrl: t.driveFolderUrl || '',
+    driveFolderId: t.driveFolderId || '',
+    lifecycle: t.lifecycle || '',
+    health: t.health || '',
+    status: t.status || '',
+    custom: t.custom || null,
+    commercial: commercial
+      ? {
+          aopEnabled: !!commercial.aopEnabled,
+          prepaidTerm: commercial.prepaidTerm || null
+        }
+      : null,
+    infra: t.infra
+      ? {
+          storagePrefix: t.infra.storagePrefix || '',
+          previewPath: t.infra.previewPath || '',
+          connectionPath: t.infra.connectionPath || ''
+        }
+      : null,
+    customerIntake: t.customerIntake
+      ? {
+          status: t.customerIntake.status || '',
+          submittedAt: t.customerIntake.submittedAt || ''
+        }
+      : null
+  };
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
@@ -83,7 +132,11 @@ module.exports = async function handler(req, res) {
         if (!snap.exists) {
           return res.status(404).json({ error: 'not found', id: id });
         }
-        return res.status(200).json({ tenant: snap.data() });
+        var full = snap.data() || {};
+        if (checkAdminAuth(req)) {
+          return res.status(200).json({ tenant: full });
+        }
+        return res.status(200).json({ tenant: publicTenantBootstrap(full) });
       }
       if (!checkAdminAuth(req)) return unauthorized(res);
       var all = await col.get();
